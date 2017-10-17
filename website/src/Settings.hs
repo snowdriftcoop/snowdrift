@@ -11,6 +11,7 @@ import Data.Aeson (Result(..), fromJSON, withObject, (.!=), (.:?))
 import Data.FileEmbed (embedFile)
 import Data.Yaml (decodeEither')
 import Database.Persist.Postgresql (PostgresConf)
+import Text.Shakespeare.Sass (wfsSass)
 import Language.Haskell.TH.Syntax (Exp, Name, Q)
 import Network.Wai.Handler.Warp (HostPreference)
 import Web.Stripe (StripeKey(..))
@@ -55,14 +56,16 @@ data AppSettings = AppSettings
     , appDiscourseSsoSecret     :: DiscourseSecret
     }
 
+runningDevelopment :: Bool
+runningDevelopment =
+#if DEVELOPMENT
+    True
+#else
+    False
+#endif
+
 instance FromJSON AppSettings where
     parseJSON = withObject "AppSettings" $ \o -> do
-        let runningDevelopment =
-#if DEVELOPMENT
-                True
-#else
-                False
-#endif
         appStaticDir              <- o .:? "static-dir" .!= "static"
         appDatabaseConf           <- o .: "database"
         appRoot                   <- o .:? "approot"
@@ -89,7 +92,7 @@ instance FromJSON AppSettings where
 --
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
-widgetFileSettings = def
+widgetFileSettings = wfsSass runningDevelopment []
 
 -- | How static files should be combined.
 combineSettings :: CombineSettings
