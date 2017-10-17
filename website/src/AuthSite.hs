@@ -482,7 +482,7 @@ runToken :: (Yesod m
 runToken tok = do
     -- Have to check the token and insert the user in the same
     -- transaction, lest race conditions boggle the contraptions
-    m <- lift $ runDB $ sequence . fmap upsertUser =<< checkDestroyToken tok
+    m <- lift $ runDB $ traverse upsertUser =<< checkDestroyToken tok
     case m of
         Nothing -> do
             -- For https://tree.taiga.io/project/snowdrift/task/405, we
