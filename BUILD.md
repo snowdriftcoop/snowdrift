@@ -29,27 +29,23 @@ as appropriate.
 
 Install Git and needed libraries:
 
-    sudo yum update
-    sudo yum install ncurses-devel gmp-devel zlib-devel git openssl-devel
+    sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
 
-For newer versions of Fedora, replace the `yum` commands with `dnf`. Install the
-following libraries if you don't already have them:
-
-    sudo dnf install libstdc++-static gcc-c++
+For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
+may also need the `libstdc++-static` package.
 
 You'll also need PostgreSQL >= 9.3:
 
-    sudo yum install postgres-server postgres-devel
+    sudo dnf install postgresql-server postgresql-devel
 
-If the version in the base repositories is too old, follow the
-[instructions on the PostgreSQL wiki] to install from their repositories. Get
-the postgresqlXX-server and postgresqlXX-devel packages, where XX is the version
-number.
-
-So that the Snowdrift database cluster tool sees the pgsql executables at
-`/usr/pgsql-X.X/bin` on your PATH, either add that route (with the correct
-numbers instead of X.X) to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or
-`~/.profile`) or create symlinks somewhere already on your PATH.
+If the version in the distro repositories is too old, follow the [instructions
+on the PostgreSQL wiki] to install from their repositories. Get the
+postgresqlXX-server and postgresqlXX-devel packages, where XX is the version
+number. In this case, the pgsql executables will be installed in
+`/usr/pgsql-X.X/bin`. For the Snowdrift database cluster tool to see the
+executables, either add that route (with the correct numbers instead of X.X) to
+your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or create
+symlinks somewhere already on your PATH.
 
 Then follow the [Stack install instructions] for your distribution.
 
