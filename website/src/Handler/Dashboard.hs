@@ -2,7 +2,6 @@ module Handler.Dashboard (getDashboardR) where
 
 import Import
 
-import Data.Time
 import Text.Blaze.Html (ToMarkup(..))
 
 import Crowdmatch
