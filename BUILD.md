@@ -1,7 +1,6 @@
 # Building and Running Snowdrift
 
-Snowdrift has been built successfully on GNU/Linux distributions of all sorts
-and on OS X.
+Snowdrift has been built successfully on many GNU/Linux distros and on macOS.
 
 Windows and \*BSD distributions are not currently supported, but we will assist
 any efforts to add such support. See below for partial setup instructions.
@@ -27,27 +26,27 @@ as appropriate.
 
 ### CentOS/RHEL and Fedora
 
-- Install Git and needed libraries:
+* Install Git and needed libraries:
 
         sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
 
     For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
 may also need the `libstdc++-static` package.
 
-- You'll also need PostgreSQL >= 9.3:
+* You'll also need PostgreSQL >= 9.3:
 
         sudo dnf install postgresql-server postgresql-devel
 
-    If the version in the distro repositories is too old, follow the [instructions
-on the PostgreSQL wiki] to install from their repositories. Get the
-postgresqlXX-server and postgresqlXX-devel packages, where XX is the version
-number. In this case, the pgsql executables will be installed in
-`/usr/pgsql-X.X/bin`. For the Snowdrift database cluster tool to see the
-executables, either add that route (with the correct numbers instead of X.X) to
-your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or create
-symlinks somewhere already on your PATH.
+    If the version in the distro repositories is too old, follow the
+    [instructions on the PostgreSQL wiki] to install from their repositories.
+    Get the postgresqlXX-server and postgresqlXX-devel packages, where XX is the
+    version number. In this case, the pgsql executables will be installed in
+    `/usr/pgsql-X.X/bin`. For the Snowdrift database cluster tool to see the
+    executables, either add that route (with the correct numbers instead of X.X)
+    to your PATH (e.g. in `~/.bash_profile`, `~/.bashrc` or `~/.profile`) or
+    create symlinks somewhere already on your PATH.
 
-- Follow the [Stack install instructions] for your distribution.
+* Follow the [Stack install instructions] for your distribution.
 
 ### Arch Linux
 
@@ -156,54 +155,58 @@ Access the site in your browser at <http://localhost:3000>
 
 ### Using auth in development
 
-You may need to add a new account to reach certain places in the locally-running
-site.
+If during development, you need to log in to the locally-running site, follow
+these instructions:
 
-By default, the development site does not send out emails, which the
-authentication system uses to send out tokens for verification during
-registration and password reset. Instead, the auth token can be found on the
-debug output in the terminal. After sending an auth form request, look for the
-following line, where `TOKEN` is a random alpha-numerical string that you can
-input when prompted to verify the request:
+As the development site does not normally send out emails (the authentication
+approach for the live Snowdrift.coop system), you can get the necessary auth
+tokens from the debug output in the terminal.
+
+After sending an auth form request in the web interface, look for the following
+line
 
     (AuthToken {fromAuthToken = "TOKEN"})
 
-Although it's not recommended, you can also enable sending mail by setting
-the environment variable `SD_EMAILS` to "true", or by modifying
-`website/config/settings.yml` with the setting
-`send-email: "_env:SD_EMAILS:true"`. Just be careful who you try to send
+but where `TOKEN` is instead a random alpha-numerical string that you can input
+when prompted to verify the request (and don't get confused by other shorter
+random strings that also show up nearby in the terminal).
+
+Although it's not recommended, you can also enable sending mail (if you have an
+appropriate mail server accessible) by setting the environment variable
+`SD_EMAILS` to "true", or by modifying `website/config/settings.yml` with the
+setting `send-email: "_env:SD_EMAILS:true"`. Just be careful who you try to send
 mail to.
 
 ### Using Stripe in development
 
 1. Register an account on the [Stripe] website.
 
-2. Go to your Stripe dashboard and make sure "View test data" is turned **on**.
-   (It will already be on if your account is brand new, but it's good to double
-   check.)
+2. At your Stripe dashboard, make sure "View test data" is turned **on**
+   (which is default for new accounts but worth double-checking).
 
 3. Click the "API" link to obtain your publishable and secret test keys.
 
-2. Create a new text file named `.stripe_keys` in the top-level directory of the
-   snowdrift project (next to builld.sh). Add your keys as environment variables:
+4. In the top-level directory of the snowdrift project (where we have build.sh),
+   create a new text file named `.stripe_keys` and add your keys as environment
+   variables:
 >>>
 export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key  
 export STRIPE_SECRET_KEY=your_stripe_sec_key
 >>>
 
-3. Build your snowdrift development site and log in.
+5. Build your snowdrift development site and log in.
 
-4. Make sure Javascript is enabled, and that no blockers prevent Stripe's
-   JavaScript form from showing up.
-   
-5. Navigate to the dashboard payment settings page. Press the "Set up Stripe"
+6. Make sure Javascript is enabled and that no plugins block Stripe's JavaScript
+   form.
+
+7. Navigate to the dashboard payment settings page. Press the "Set up Stripe"
    button and provide the following details on the Checkout form:
-  - One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
-  - Any future expiration date
-  - Any 3-digit CVC code
-  - Any postal code, e.g. "12345"
+   * One of the [Stripe test card numbers], e.g. "4242 4242 4242 4242"
+   * Any future expiration date
+   * Any 3-digit CVC code
+   * Any postal code, e.g. "12345"
 
-4. Click "Register" to submit the form and complete the setup.
+8. Click "Register" to submit the form and complete the setup.
 
 #### Updating static files
 
@@ -236,10 +239,8 @@ about technical development.
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
-[Sass]: http://sass-lang.com/
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
 [Stack install instructions]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md
 [Stripe]: https://stripe.com
 [Stripe test card numbers]: https://stripe.com/docs/testing#cards
-[TEXTEDITORS.md]: TEXTEDITORS.md
 [Ubuntu Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#ubuntu
