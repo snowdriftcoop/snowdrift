@@ -10,8 +10,8 @@ import Language.Haskell.TH
 -- handlers.
 widget :: String -> Text -> Q Exp
 widget name title =
-    [|navbarLayout name (snowdriftTitle title >> $(widgetFile name))|]
+    [|navbarLayout Cassius name (snowdriftTitle title >> $(widgetFile name))|]
 
 widgetSass :: String -> Text -> Q Exp
 widgetSass name title =
-    [|navbarLayoutSass name (snowdriftTitle title >> $(widgetFile name))|]
+    [|navbarLayout Sass name (snowdriftTitle title >> $(widgetFile name))|]
