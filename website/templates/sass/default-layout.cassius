@@ -92,8 +92,8 @@ a:hover, a:active, a:focus
     ul
         list-style: outside disc
         margin: 1.5rem 0 4.5rem 3rem
-      li, li p
-          margin: 1rem 0
+        li, li p
+            margin: 1rem 0
     ol
         list-style-type: decimal;
         margin: 1.5rem 3rem 4.5rem 3rem

@@ -5,22 +5,18 @@
     margin: 0px
 
 /*  GROUPING  ============================================================================= */
-.group:before,
 .group:after
-    content:""
-    display:table
-.group:after
-    clear:both
+    clear: both
 .group
-    zoom:1; /* For IE 6/7 (trigger hasLayout) */
+    zoom: 1 /* For IE 6/7 (trigger hasLayout) */
 
 /*  GRID COLUMN SETUP   ==================================================================== */
 .col
     display: block
-    float:left
+    float: left
     margin: 2.85% 0 0 2.85% /* 2.85% should equal 30px in full width */
 .col:first-child
-    margin-left: 0; /* all browsers except IE6 and lower */
+    margin-left: 0 /* all browsers except IE6 and lower */
 
 /*  REMOVE MARGINS AS ALL GO FULL WIDTH AT 480 PIXELS */
 @media (max-width: 571px)
