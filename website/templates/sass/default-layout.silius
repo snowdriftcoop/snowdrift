@@ -22,21 +22,21 @@ html
 
 body
     font-size: 2rem
-    color: #{DarkBlue}
+    color: %{DarkBlue}
     font-weight: 200
     line-height: 1.5
     font-family: "Nunito", sans-serif
-    background-color: #{White}
+    background-color: %{White}
     padding: 0
 
 *::selection
-    color: #{White};
-    background: #{DarkBlue}
+    color: %{White};
+    background: %{DarkBlue}
     text-shadow: none
 
 *::-moz-selection
-    color: #{White};
-    background: #{DarkBlue}
+    color: %{White};
+    background: %{DarkBlue}
     text-shadow: none
 
 p
@@ -46,16 +46,16 @@ img
     max-width: 100%
     height: auto
 a
-    color: #{GreenShade}
+    color: %{GreenShade}
     transition: all 0.12s ease-out 0s
     text-decoration: none
 a:visited
-    color: #{Green}
+    color: %{Green}
 a:hover, a:active, a:focus
-    color: #{DarkBlue}
+    color: %{DarkBlue}
     outline: 0
 .bigbutton
-    color: #{White}
+    color: %{White}
     transition: all 0.12s ease-out 0s
     cursor: pointer
     display: table
@@ -68,17 +68,17 @@ a:hover, a:active, a:focus
     border-radius: 2.7rem/4.7rem
     border: 0
     text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4)
-    background-color: #{GreenShade}
-    background-image: linear-gradient(#{Green}, #{GreenShade})
+    background-color: %{GreenShade}
+    background-image: linear-gradient(%{Green}, %{GreenShade})
     transition: all 0 ease-out 0.03s
     &:visited
-        color: #{White}
+        color: %{White}
     &:hover
-        color: #{White}
+        color: %{White}
         padding: 1.5rem 3.5rem 1rem
         text-shadow: .2rem .2rem 0 rgba(19,98,142,0.4), 0rem 0rem 1rem rgba(255,255,255,0.5)
     &:focus
-        color: #{White}
+        color: %{White}
         top: 0.1rem
         left: 0.1rem
 .container
@@ -99,16 +99,16 @@ a:hover, a:active, a:focus
         margin: 1.5rem 3rem 4.5rem 3rem
     form
         label
-            color: #{BrightBlueText}
+            color: %{BrightBlueText}
             display: block
         input
-            background-color: #{White}
-            border: 0.1rem solid #{DarkBlue}
+            background-color: %{White}
+            border: 0.1rem solid %{DarkBlue}
             border-radius: 0.3rem
             padding: 0.5rem 0.3rem
             margin-bottom: 1.5rem
             font: 400 2rem "Nunito"
-            color: #{DarkBlue}
+            color: %{DarkBlue}
 
 h1
     font-weight: 600
@@ -158,9 +158,9 @@ hr
         opacity: 1
 
 [class*='alert-']
-    border: 0.2rem solid #{BrightBlueText}
+    border: 0.2rem solid %{BrightBlueText}
     border-radius: 0.3rem
-    background: #{BrightBlue}
+    background: %{BrightBlue}
     padding: 0 1rem
     margin: 3rem 0
     font-weight: 400
@@ -176,7 +176,7 @@ hr
         top: 9rem
         margin: -21rem 0 0 -7rem
     a
-        color: #{DarkBlue}
+        color: %{DarkBlue}
         font-weight: 600
         text-decoration: underline
 
@@ -193,11 +193,11 @@ hr
         background: url(@{StaticR img_eunice_success_png}) no-repeat bottom center
         right: -7rem
 .alert-info
-    color: #{BrightBlueText}
+    color: %{BrightBlueText}
     border-color: #8BE2FA
     background-color: #D6F6FD
     a
-        color: #{BrightBlueText}
+        color: %{BrightBlueText}
     &:before
         background: url(@{StaticR img_eunice_info_png}) no-repeat bottom center
         right: -7rem

@@ -33,7 +33,7 @@ footer
             text-align: center
             font-size: 1.8rem
             font-weight: 600
-            color: #{BrightBlueText}
+            color: %{BrightBlueText}
             padding: 0 0 3rem
         .supporters
             margin: 0 -2.85%
