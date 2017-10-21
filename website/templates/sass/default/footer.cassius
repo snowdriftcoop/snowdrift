@@ -1,0 +1,76 @@
+footer
+    .section
+        margin: 0 auto
+        max-width: 105rem
+        padding: 3rem 2.85%
+        ul
+            padding: 0 0 6rem 0
+        ul.nav
+            padding: 0 0 6rem 3rem
+        ul.bg
+            &:before
+                margin: -2rem 0 0 0
+                position: absolute
+                content: " "
+                height: 21rem
+                left: 0
+                right: 0
+                background: url(@{StaticR img_footer_bg_png}) center top repeat-x
+                z-index: -1
+        a.logo
+            display: block
+            padding: 6rem 2rem 0rem
+            text-align: center
+            max-width: 20rem
+            margin: 0 auto
+            opacity: 0.85
+            &:hover
+                opacity: 1
+            img
+                width: 100%
+        span
+            display: block
+            text-align: center
+            font-size: 1.8rem
+            font-weight: 600
+            color: #{BrightBlueText}
+            padding: 0 0 3rem
+        .supporters
+            margin: 0 -2.85%
+            li
+                margin: 0 0 2.85% 2.85%
+                a
+                    display: block
+                    height: 6rem
+                    font-size: 0
+                    color: transparent
+                    background: center top no-repeat
+                    opacity: 0.7
+                    &:hover
+                        opacity: 1
+                .fsfe
+                    background-image: url(@{StaticR img_supporter_fsfe_png})
+                .april
+                    background-image: url(@{StaticR img_supporter_april_png})
+                .oin
+                    background-image: url(@{StaticR img_supporter_oin_png})
+                .eff
+                    background-image: url(@{StaticR img_supporter_eff_png})
+                .p2p
+                    background-image: url(@{StaticR img_supporter_p2p_png})
+                .osi
+                    background-image: url(@{StaticR img_supporter_osi_png})
+                .qco
+                    background-image: url(@{StaticR img_supporter_qco_png})
+@media (min-width: 571px)
+    footer
+        .section
+            ul.nav
+                padding: 0 0 6rem 3rem
+            a.logo
+                max-width: 28rem
+        .supporters
+            li
+                float: left
+                a
+                    width: 21rem

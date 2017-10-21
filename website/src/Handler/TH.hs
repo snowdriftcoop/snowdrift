@@ -11,3 +11,7 @@ import Language.Haskell.TH
 widget :: String -> Text -> Q Exp
 widget name title =
     [|navbarLayout name (snowdriftTitle title >> $(widgetFile name))|]
+
+widgetSass :: String -> Text -> Q Exp
+widgetSass name title =
+    [|navbarLayoutSass name (snowdriftTitle title >> $(widgetFile name))|]

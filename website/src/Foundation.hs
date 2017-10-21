@@ -168,7 +168,13 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
 
 navbarLayout :: Text -> Widget -> Handler Html
-navbarLayout pageName widget = do
+navbarLayout = navbarLayoutImpl False
+
+navbarLayoutSass :: Text -> Widget -> Handler Html
+navbarLayoutSass = navbarLayoutImpl True
+
+navbarLayoutImpl :: Bool -> Text -> Widget -> Handler Html
+navbarLayoutImpl useSass pageName widget = do
     msgs <- getMessages
     maybeUser  <- maybeAuth
     avatar <- getUserAvatar (StaticR img_default_avatar_png)
@@ -187,15 +193,27 @@ navbarLayout pageName widget = do
             _                     -> False
 
     let navbar, footer :: Widget
-        navbar = $(widgetFile "default/navbar")
-        footer = $(widgetFile "default/footer")
+        (navbar, footer) = if useSass
+        then ( $(widgetFile "sass/default/navbar")
+             , $(widgetFile "sass/default/footer")
+             )
+        else ( $(widgetFile "default/navbar")
+             , $(widgetFile "default/footer")
+             )
 
-    pc <- widgetToPageContent $ do
-        $(widgetFile "default/reset")
-        $(widgetFile "default/breaks")
-        $(widgetFile "default/fonts")
-        $(widgetFile "default/grid")
-        $(widgetFile "default-layout")
+    pc <- widgetToPageContent $ if useSass
+        then do
+            $(widgetFile "sass/default/reset")
+            $(widgetFile "sass/default/breaks")
+            $(widgetFile "sass/default/fonts")
+            $(widgetFile "sass/default/grid")
+            $(widgetFile "sass/default-layout")
+        else do
+            $(widgetFile "default/reset")
+            $(widgetFile "default/breaks")
+            $(widgetFile "default/fonts")
+            $(widgetFile "default/grid")
+            $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
   where
     pageClasses :: (Text, Text)
