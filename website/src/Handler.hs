@@ -50,7 +50,7 @@ getAboutR :: Handler Html
 getAboutR = $(widgetSass "page/about" "About")
 
 getSponsorsR :: Handler Html
-getSponsorsR = $(widget "page/sponsors" "Sponsors")
+getSponsorsR = $(widgetSass "page/sponsors" "Sponsors")
 
 getJsLicensesR :: Handler Html
 getJsLicensesR = $(widget "page/js-licenses" "JavaScript Licenses")
