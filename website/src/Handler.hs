@@ -30,7 +30,7 @@ getPrivacyR :: Handler Html
 getPrivacyR = $(widget "page/privacy" "Privacy")
 
 getTermsR :: Handler Html
-getTermsR = $(widget "page/terms" "Terms of Use")
+getTermsR = $(widgetSass "page/terms" "Terms of Use")
 
 getSearchR :: Handler Html
 getSearchR = do
