@@ -39,7 +39,7 @@ getPaymentInfoR = do
     -- code. Triplicated, now. :) Fixing this requires reworking the whole
     -- navbarLayout scheme. In turn, that idea lends itself to the idea of
     -- fixing defaultLayout, which is doable now that AppDataTypes exists.
-    navbarLayout "page/payment-info" $ do
+    navbarLayout Cassius "page/payment-info" $ do
         addScriptRemote "https://checkout.stripe.com/checkout.js"
         snowdriftTitle "Payment Info"
         paymentFormId <- newIdent
