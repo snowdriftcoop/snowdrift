@@ -56,7 +56,7 @@ getJsLicensesR :: Handler Html
 getJsLicensesR = $(widget "page/js-licenses" "JavaScript Licenses")
 
 getMerchandiseR :: Handler Html
-getMerchandiseR = $(widget "page/merchandise" "Merchandise")
+getMerchandiseR = $(widgetSass "page/merchandise" "Merchandise")
 
 getContactR :: Handler Html
 getContactR = $(widget "page/contact" "Contact")
