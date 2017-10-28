@@ -51,7 +51,7 @@ instance Yesod App where
     --    => HandlerT site IO res -> HandlerT site IO res
     yesodMiddleware = TestHooks.middleware
 
-    defaultLayout = navbarLayout Cassius ""
+    defaultLayout = navbarLayout Sass ""
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
@@ -115,7 +115,7 @@ instance AuthMaster App where
 
     createAccountHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        navbarLayout Cassius "page/auth/create-account" $ do
+        navbarLayout Sass "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
@@ -123,7 +123,7 @@ instance AuthMaster App where
         ((_, tokenField), enctype) <-
             runFormPost
                 (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
-        navbarLayout Cassius "page/auth/verify-account" $ do
+        navbarLayout Sass "page/auth/verify-account" $ do
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
@@ -133,7 +133,7 @@ instance AuthMaster App where
         where
           reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-              navbarLayout Cassius "page/auth/reset-passphrase" $ do
+              navbarLayout Sass "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
 

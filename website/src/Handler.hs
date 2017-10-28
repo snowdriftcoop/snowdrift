@@ -27,7 +27,7 @@ getHowItWorksR :: Handler Html
 getHowItWorksR = $(widgetSass "page/how-it-works" "How it Works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = $(widget "page/privacy" "Privacy")
+getPrivacyR = $(widgetSass "page/privacy" "Privacy")
 
 getTermsR :: Handler Html
 getTermsR = $(widgetSass "page/terms" "Terms of Use")
@@ -35,13 +35,13 @@ getTermsR = $(widgetSass "page/terms" "Terms of Use")
 getSearchR :: Handler Html
 getSearchR = do
     q <- lookupGetParam "q"
-    $(widget "page/search" "Search")
+    $(widgetSass "page/search" "Search")
 
 getProjectsR :: Handler Html
 getProjectsR = $(widgetSass "page/projects" "Projects")
 
 getTrademarksR :: Handler Html
-getTrademarksR = $(widget "page/trademarks" "Trademarks")
+getTrademarksR = $(widgetSass "page/trademarks" "Trademarks")
 
 getDonateR :: Handler Html
 getDonateR = $(widgetSass "page/donate" "Donate")
@@ -53,13 +53,13 @@ getSponsorsR :: Handler Html
 getSponsorsR = $(widgetSass "page/sponsors" "Sponsors")
 
 getJsLicensesR :: Handler Html
-getJsLicensesR = $(widget "page/js-licenses" "JavaScript Licenses")
+getJsLicensesR = $(widgetSass "page/js-licenses" "JavaScript Licenses")
 
 getMerchandiseR :: Handler Html
 getMerchandiseR = $(widgetSass "page/merchandise" "Merchandise")
 
 getContactR :: Handler Html
-getContactR = $(widget "page/contact" "Contact")
+getContactR = $(widgetSass "page/contact" "Contact")
 
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html
