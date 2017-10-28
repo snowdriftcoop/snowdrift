@@ -38,7 +38,7 @@ getSearchR = do
     $(widget "page/search" "Search")
 
 getProjectsR :: Handler Html
-getProjectsR = $(widget "page/projects" "Projects")
+getProjectsR = $(widgetSass "page/projects" "Projects")
 
 getTrademarksR :: Handler Html
 getTrademarksR = $(widget "page/trademarks" "Trademarks")
