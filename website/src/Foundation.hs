@@ -51,7 +51,7 @@ instance Yesod App where
     --    => HandlerT site IO res -> HandlerT site IO res
     yesodMiddleware = TestHooks.middleware
 
-    defaultLayout = navbarLayout Sass ""
+    defaultLayout = navbarLayout ""
 
     -- The page to be redirected to when authentication is required.
     authRoute _ = Just $ AuthR LoginR
@@ -109,13 +109,13 @@ instance AuthMaster App where
 
     loginHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        navbarLayout Sass "page/auth/login" $ do
+        navbarLayout "page/auth/login" $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        navbarLayout Sass "page/auth/create-account" $ do
+        navbarLayout "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
 
@@ -123,7 +123,7 @@ instance AuthMaster App where
         ((_, tokenField), enctype) <-
             runFormPost
                 (renderDivs (areq textField "Token"{fsAttrs=af} Nothing))
-        navbarLayout Sass "page/auth/verify-account" $ do
+        navbarLayout "page/auth/verify-account" $ do
             setTitle "Verify Account — Snowdrift.coop"
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
@@ -133,7 +133,7 @@ instance AuthMaster App where
         where
           reset = do
               (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-              navbarLayout Sass "page/auth/reset-passphrase" $ do
+              navbarLayout "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
 
@@ -167,10 +167,8 @@ unsafeHandler = Unsafe.fakeHandlerGetLogger appLogger
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
 
-data StyleLang = Cassius | Sass
-
-navbarLayout :: StyleLang -> Text -> Widget -> Handler Html
-navbarLayout style pageName widget = do
+navbarLayout :: Text -> Widget -> Handler Html
+navbarLayout pageName widget = do
     msgs <- getMessages
     maybeUser  <- maybeAuth
     avatar <- getUserAvatar (StaticR img_default_avatar_png)
@@ -189,29 +187,15 @@ navbarLayout style pageName widget = do
             _                     -> False
 
     let navbar, footer :: Widget
-        (navbar, footer) = case style of
-            Sass ->
-                ( $(widgetFile "sass/default/navbar")
-                , $(widgetFile "sass/default/footer")
-                )
-            Cassius ->
-                ( $(widgetFile "default/navbar")
-                , $(widgetFile "default/footer")
-                )
+        navbar = $(widgetFile "sass/default/navbar")
+        footer = $(widgetFile "sass/default/footer")
 
-    pc <- widgetToPageContent $ case style of
-        Sass -> do
-            $(widgetFile "sass/default/reset")
-            $(widgetFile "sass/default/breaks")
-            $(widgetFile "sass/default/fonts")
-            $(widgetFile "sass/default/grid")
-            $(widgetFile "sass/default-layout")
-        Cassius -> do
-            $(widgetFile "default/reset")
-            $(widgetFile "default/breaks")
-            $(widgetFile "default/fonts")
-            $(widgetFile "default/grid")
-            $(widgetFile "default-layout")
+    pc <- widgetToPageContent $ do
+        $(widgetFile "sass/default/reset")
+        $(widgetFile "sass/default/breaks")
+        $(widgetFile "sass/default/fonts")
+        $(widgetFile "sass/default/grid")
+        $(widgetFile "sass/default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
   where
     pageClasses :: (Text, Text)

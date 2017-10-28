@@ -21,45 +21,45 @@ getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
 getWelcomeR :: Handler Html
-getWelcomeR = $(widgetSass "page/welcome" "Crowdmatching for Public Goods")
+getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
 
 getHowItWorksR :: Handler Html
-getHowItWorksR = $(widgetSass "page/how-it-works" "How it Works")
+getHowItWorksR = $(widget "page/how-it-works" "How it Works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = $(widgetSass "page/privacy" "Privacy")
+getPrivacyR = $(widget "page/privacy" "Privacy")
 
 getTermsR :: Handler Html
-getTermsR = $(widgetSass "page/terms" "Terms of Use")
+getTermsR = $(widget "page/terms" "Terms of Use")
 
 getSearchR :: Handler Html
 getSearchR = do
     q <- lookupGetParam "q"
-    $(widgetSass "page/search" "Search")
+    $(widget "page/search" "Search")
 
 getProjectsR :: Handler Html
-getProjectsR = $(widgetSass "page/projects" "Projects")
+getProjectsR = $(widget "page/projects" "Projects")
 
 getTrademarksR :: Handler Html
-getTrademarksR = $(widgetSass "page/trademarks" "Trademarks")
+getTrademarksR = $(widget "page/trademarks" "Trademarks")
 
 getDonateR :: Handler Html
-getDonateR = $(widgetSass "page/donate" "Donate")
+getDonateR = $(widget "page/donate" "Donate")
 
 getAboutR :: Handler Html
-getAboutR = $(widgetSass "page/about" "About")
+getAboutR = $(widget "page/about" "About")
 
 getSponsorsR :: Handler Html
-getSponsorsR = $(widgetSass "page/sponsors" "Sponsors")
+getSponsorsR = $(widget "page/sponsors" "Sponsors")
 
 getJsLicensesR :: Handler Html
-getJsLicensesR = $(widgetSass "page/js-licenses" "JavaScript Licenses")
+getJsLicensesR = $(widget "page/js-licenses" "JavaScript Licenses")
 
 getMerchandiseR :: Handler Html
-getMerchandiseR = $(widgetSass "page/merchandise" "Merchandise")
+getMerchandiseR = $(widget "page/merchandise" "Merchandise")
 
 getContactR :: Handler Html
-getContactR = $(widgetSass "page/contact" "Contact")
+getContactR = $(widget "page/contact" "Contact")
 
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html

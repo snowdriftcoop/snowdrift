@@ -16,6 +16,6 @@ getSnowdriftProjectR = do
     (pledgeNoCSRF, _) <- generateFormPost (renderDivs pledgeForm)
     deletePledgeWidget <-
         maybe (pure "") (const genDeleteWidget) (patronPledgeSince =<< mpatron)
-    $(widgetSass "page/snowdrift-project" "Snowdrift.coop Project")
+    $(widget "page/snowdrift-project" "Snowdrift.coop Project")
   where
     genDeleteWidget = fst <$> generateFormPost pledgeDeleteForm

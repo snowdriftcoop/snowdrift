@@ -16,7 +16,7 @@ getDashboardR = do
     (pledgeNoCSRF, _) <- generateFormPost (renderDivsNoLabels pledgeForm)
     let crowdmatchTotal = (sum . map snd . patronCrowdmatches) patron
         crowdmatches = map withMonthView (patronCrowdmatches patron)
-    $(widgetSass "page/dashboard" "Dashboard")
+    $(widget "page/dashboard" "Dashboard")
   where
     withMonthView (CrowdmatchDay d, amt) = (MonthView d, amt)
 
