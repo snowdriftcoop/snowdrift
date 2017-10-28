@@ -24,7 +24,7 @@ getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
 
 getHowItWorksR :: Handler Html
-getHowItWorksR = $(widget "page/how-it-works" "How it Works")
+getHowItWorksR = $(widgetSass "page/how-it-works" "How it Works")
 
 getPrivacyR :: Handler Html
 getPrivacyR = $(widget "page/privacy" "Privacy")
