@@ -21,7 +21,7 @@ getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
 getWelcomeR :: Handler Html
-getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
+getWelcomeR = $(widgetSass "page/welcome" "Crowdmatching for Public Goods")
 
 getHowItWorksR :: Handler Html
 getHowItWorksR = $(widgetSass "page/how-it-works" "How it Works")
