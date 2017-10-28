@@ -109,7 +109,7 @@ instance AuthMaster App where
 
     loginHandler = do
         (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
-        navbarLayout Cassius "page/auth/login" $ do
+        navbarLayout Sass "page/auth/login" $ do
             setTitle "Login — Snowdrift.coop"
             $(widgetFile "page/auth/login")
 
@@ -128,7 +128,7 @@ instance AuthMaster App where
             $(widgetFile "page/auth/verify-account")
       where af = [("autofocus","true")]
 
-    resetPassphraseHandler = 
+    resetPassphraseHandler =
         maybeAuth >>= maybe reset (const (redirect DashboardR))
         where
           reset = do
