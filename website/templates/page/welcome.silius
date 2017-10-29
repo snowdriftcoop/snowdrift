@@ -39,7 +39,7 @@
             width: 4rem
             height: 4rem
             border-radius: 4rem
-            background: #{White}
+            background: %{White}
     .background
         position: absolute
         left: 0
@@ -47,7 +47,7 @@
         top: 6rem
         width: 100%
         height: 10rem
-        background: linear-gradient(#{BrightBlue} 30%,#e0f7fe 95%)
+        background: linear-gradient(%{BrightBlue} 30%,#e0f7fe 95%)
         z-index: -2
         overflow: hidden
     .foreground
