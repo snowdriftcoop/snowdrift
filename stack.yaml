@@ -13,12 +13,8 @@ packages:
      commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
     extra-dep: true
   - location:
-     git: https://git.snowdrift.coop/h30/hsass.git
-     commit: 9a6e1f053d5f78dbc7de9e0b9dd73f06dcbd0cc6
-    extra-dep: true
-  - location:
      git: https://notabug.org/fr33domlover/shakespeare-sass.git
-     commit: 0bb1b5cf8a63e1ace064f0de4ddea6d544af01bd
+     commit: 70dc41d6df75e77d94125ad8a8613868d8d76b03
     extra-dep: true
 
 extra-deps:
@@ -28,6 +24,7 @@ extra-deps:
   - tasty-discover-3.0.2
   # Upsert is fixed in 2.7, which is not in lts-8
   - persistent-2.7.0
+  - hsass-0.5.0
 nix:
   pure: false
   packages:
