@@ -64,7 +64,7 @@ getContactR = $(widget "page/contact" "Contact")
 -- | Prevents breakage of external links to the old blog.
 getSnowdriftLegacyBlogR :: Text -> Handler Html
 getSnowdriftLegacyBlogR slug =
-    redirectWith movedPermanently301 $ "https://wiki.snowdrift.coop/blog/" <> slug
+    redirectWith movedPermanently301 $ "https://blog.snowdrift.coop/" <> slug
 
 -- Redirect to new wiki
 getSnowdriftWikiR :: Handler Html
