@@ -36,12 +36,14 @@ $nothing
   <h2>Updates and Announcements
   <ol>
     <li>
-      See the
-      <a href="https://wiki.snowdrift.coop/blog">blog
-      on our wiki
+      <a href="https://blog.snowdrift.coop">Blog
     <li>
-      <a href="https://git.snowdrift.coop/sd/snowdrift/activity">
-        Code activity at git.snowdrift.coop
+      <a href="https://git.snowdrift.coop/groups/sd/activity">
+        Code and other activity at git.snowdrift.coop
+    <li>
+      Follow us on GNU Social via
+      <a href="https://quitter.se/snowdriftcoop">
+        quitter.se/snowdriftcoop
 <.plans>
   <h2>Plans
   <p>
@@ -53,9 +55,7 @@ $nothing
     building out the full co-op governance.
   <p>
     For more details on what your donations support, see the
-    <a href="https://wiki.snowdrift.coop/planning">planning section of our wiki
-    and our project management stuff at
-    <a href="https://tree.taiga.io/project/snowdrift">our Taiga.io project
+    <a href="https://wiki.snowdrift.coop/planning">planning section of our wiki.
 <.transparency>
   <h2>Transparency report
   <p>
