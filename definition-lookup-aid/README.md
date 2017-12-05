@@ -44,7 +44,7 @@ data type: a functionality ctags do not have.
 
 ## An Issue
 
-However, the parital solution discussed above is not enough on its own to
+However, the partial solution discussed above is not enough on its own to
 produce tags for anything outside the project, such as the _fp_ mentioned
 earlier, which is defined in the Turtle package, which is outside the Snowdrift
 project. Even though _fp_ is defined outside the project, it *is* used *in* the
@@ -111,7 +111,7 @@ The following commands may be helpful for maintenance:
 
     The below lists packages not found in your Hackage indices. Ignore the
     Snowdrift packages Snowdrift, crowdmatch, run-persist and "scripts". They
-    are of course local and not pulled from Hacakge. The others need to be
+    are of course local and not pulled from Hackage. The others need to be
     handled in Step Thee of unpack.sh.
 3. `cat unpack.log | grep "not found"`
 

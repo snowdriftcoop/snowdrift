@@ -260,7 +260,7 @@ see the codex docs for how to use, including a vim-specific setting). Otherwise,
 almost all of our dependencies.
 
 To get tags for the project and *all* its dependencies, including those of any
-Haskell scripts (which are not compiled), see /definition-lookup-aid/README.md.
+Haskell scripts (which are not compiled), see [definition-lookup-aid/README.md].
 Also, if you happen to have any struggles with Codex, this solution should work,
 provided it's maintained.
 
@@ -284,7 +284,7 @@ regenerate the TAGS file for you (provided you have loaded a file with `C-c C-l`
 beforehand). If you don't want to use haskell-interactive-mode for whatever
 reason, you can generate the tags file with:
 
-    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
+    git ls-tree -r HEAD --name-only | grep -E '\*.hs' | xargs hasktags -e --ignore-close-implementation
 
 `M-t` is a good keybinding for `helm-etags-select`, provided you don't use
 `transpose-words`:
@@ -314,3 +314,5 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
 
 NB: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.
+
+[definition-lookup-aid/README.md]: definition-lookup-aid/README.md

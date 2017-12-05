@@ -425,7 +425,7 @@ possibilities.
 If you introduce a dependency in a Haskell script or in Haskell code for
 compilation, please add the dependency to the appropriate stack.yaml or cabal
 file if it isn't already. In the case of scripts, please see
-/definition-lookup-aid/README.md. The below very briefly explains what packages
+[definition-lookup-aid/README.md]. The below very briefly explains what packages
 and dependencies are and how stack.yaml / cabal files are involved.
 
 Haskell modules are often bundled into things called "packages". Although there
@@ -512,6 +512,7 @@ here are some resources (nearly all fully-FLO):
     and #haskell-beginners (among many other relevant channels).
 
 [Build guide]: BUILD.md
+[definition-lookup-aid/README.md]: definition-lookup-aid/README.md
 [design]: https://wiki.snowdrift.coop/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
