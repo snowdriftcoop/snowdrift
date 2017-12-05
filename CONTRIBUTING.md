@@ -420,6 +420,37 @@ JavaScript. If contributors want to work with either of those, we would happily
 accept that. [Yesod JavaScript Options] explains further about those or other
 possibilities.
 
+### Packages / Dependencies
+
+If you introduce a dependency in a Haskell script or in Haskell code for
+compilation, please add the dependency to the appropriate stack.yaml or cabal
+file if it isn't already. In the case of scripts, please see
+/definition-lookup-aid/README.md. The below very briefly explains what packages
+and dependencies are and how stack.yaml / cabal files are involved.
+
+Haskell modules are often bundled into things called "packages". Although there
+is no "package" keyword in the Haskell language, we use them through a tool
+called Stack. Having the package installed through Stack allows us to import any
+module of that package. Any external package that a project uses is called a
+"dependency".
+
+A project may or may not be a package. In our case, there is no package
+encompassing the entire project (thus our project is not itself a package), but
+there are packages developed in this project, which are kept to their respective
+subdirectories.
+
+In our case, a stack.yaml file in the root directory defines the project as far
+as compilation and "runability" is concerned. It lists dependencies needed for
+compilation that are not listed elsewhere and points to subdirectories
+containing packages defined in this project. In those directories, there are
+Cabal files that each define a package, and they may list dependencies of their
+own.
+
+So: Cabal files define packages and stack.yaml files inform Stack of what
+dependencies it must get to compile the project. (Yes, Stack is a multi-talented
+tool, it downloads dependencies *and* compiles.)
+
+
 ## Learning resources and helpful tools
 
 For deeper understanding of various elements in our development,

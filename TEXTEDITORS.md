@@ -54,6 +54,27 @@ Other useful Atom packages to consider:
     * incidentally, many normal Atom editing operations still work as well
     * search packages for "vim-mode" to see extra related addons
 
+Also, you may find it surprisingly alleviating to install a built-in terminal.
+If you do, you'll have one less window to manage and leave Atom less often,
+achieving a more integrated programming experience. And it opens right to the
+project directory, saving you from that boilerplate "cd" command. See
+[platformio-ide-terminal](https://atom.io/packages/platformio-ide-terminal).
+
+However, if you install this, modify your Atom launcher to run Atom from a Bash
+script -- not directly from the binary. Running from Bash sets up the needed
+environment variables for the built-in terminal. If you don't do this, the
+terminal will spew annoying errors at you.
+In at least one case of KDE, the launcher was in "~/.local/share/applications"
+as "atom.desktop". The appropriate modification was to make the exec be
+"/usr/bin/atom", which really was the Bash script, despite being in the "bin"
+directory. The "file" command was useful here: it reveals whether a file is a
+script, binary executable or otherwise.
+
+Further, if you are tinkering with Atom plugins, you may find it helpful to
+launch Atom in developer mode. This allows live loading of plugins and themes,
+instead of having to restart Atom. Simply pass Atom the `--dev` flag when you
+start it. You can even edit the launcher mentioned earlier to always open Atom
+in dev mode.
 ### Emacs
 
 [GNU Emacs](https://www.gnu.org/software/emacs/) is a traditional, robust,
@@ -232,11 +253,16 @@ The following works for all text-editors that recognize tags files.
 Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 The setup above works for functions defined within our local codebase. To add
-tags for all the dependencies too, install
+tags for all the dependencies (for compiling) too, install
 [codex](https://github.com/aloiscochard/codex) via `stack install codex` (and
 see the codex docs for how to use, including a vim-specific setting). Otherwise,
 [Stackage](https://www.stackage.org/lts-5/hoogle) will have documentation on
 almost all of our dependencies.
+
+To get tags for the project and *all* its dependencies, including those of any
+Haskell scripts (which are not compiled), see /definition-lookup-aid/README.md.
+Also, if you happen to have any struggles with Codex, this solution should work,
+provided it's maintained.
 
 ### Atom tag usage and updating
 
