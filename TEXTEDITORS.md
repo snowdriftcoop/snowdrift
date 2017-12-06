@@ -284,7 +284,7 @@ regenerate the TAGS file for you (provided you have loaded a file with `C-c C-l`
 beforehand). If you don't want to use haskell-interactive-mode for whatever
 reason, you can generate the tags file with:
 
-    git ls-tree -r HEAD --name-only | grep -E '\*.hs' | xargs hasktags -e --ignore-close-implementation
+    git ls-tree -r HEAD --name-only | grep -E '*.hs' | xargs hasktags -e --ignore-close-implementation
 
 `M-t` is a good keybinding for `helm-etags-select`, provided you don't use
 `transpose-words`:
