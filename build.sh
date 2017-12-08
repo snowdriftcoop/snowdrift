@@ -36,7 +36,7 @@ run_devel () {
 }
 
 dbenv () {
-    ./sdb.hs start
+    ./sdb.hs start &&
     source <(./sdb.hs env)
 }
 
