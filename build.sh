@@ -51,19 +51,23 @@ main () {
     # Configure local Stripe keys for shell, devel, and test.
     [ -e .stripe_keys ] && source .stripe_keys
 
-    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
-    dbenv &&
     case $CMD in
         devel)
+            stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+            dbenv &&
             run_devel
             ;;
         test)
+            stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+            dbenv &&
             exec stack test --flag Snowdrift:library-only --fast $@
             ;;
         psql)
+            dbenv &&
             exec psql $@
             ;;
         shell)
+            dbenv &&
             exec stack exec bash
             ;;
         *)
