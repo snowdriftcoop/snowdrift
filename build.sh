@@ -40,6 +40,17 @@ dbenv () {
     source <(./sdb.hs env)
 }
 
+build_deps_and_install_ghc () {
+    # Some dependencies are considered local packages by Stack, but we don't
+    # want './build.sh test --pedantic' to error out on warnings in
+    # dependencies. Therefore we build dependencies first without passing on
+    # flags.
+    #
+    # This is fixed in Stack 1.6.1 (and 1.6.1 installs GHC by default, making
+    # this function entirely redundant).
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test
+}
+
 main () {
     if [ -z "$1" ]; then
         CMD=devel
@@ -53,12 +64,12 @@ main () {
 
     case $CMD in
         devel)
-            stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+            build_deps_and_install_ghc &&
             dbenv &&
             run_devel
             ;;
         test)
-            stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+            build_deps_and_install_ghc &&
             dbenv &&
             exec stack test --flag Snowdrift:library-only --fast $@
             ;;
