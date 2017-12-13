@@ -109,7 +109,7 @@ initCluster pghost pgdata = do
     mktree pgdata
 
     step "Initializing cluster..."
-    hush $ procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
+    procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
 
     step "Updating cluster configuration file..."
     setPgConfigOpts (pgdata </> "postgresql.conf")
@@ -119,7 +119,7 @@ initCluster pghost pgdata = do
         , ("unix_socket_directories", pghost')
         , ("archive_mode", "off")
         , ("fsync", "off")
-        , ("wal_level", "minimal")
+        , ("wal_level", "archive")
           -- don't bother listening on a port, just a socket.
         , ("listen_addresses", "''")
         ]
