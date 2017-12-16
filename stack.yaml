@@ -1,7 +1,7 @@
 flags:
   Snowdrift:
     dev: true
-resolver: lts-8.24
+resolver: lts-9.18
 packages:
   - website
   - crowdmatch
@@ -16,15 +16,14 @@ packages:
      git: https://notabug.org/fr33domlover/shakespeare-sass.git
      commit: 70dc41d6df75e77d94125ad8a8613868d8d76b03
     extra-dep: true
-
 extra-deps:
   - hashids-1.0.2.3
   - libravatar-0.4
-  # Version in lts-8 is still old and bad
-  - tasty-discover-3.0.2
-  # Upsert is fixed in 2.7, which is not in lts-8
-  - persistent-2.7.0
   - hsass-0.5.0
+  # Stripe is absent from lts-9
+  - stripe-core-2.2.3
+  - stripe-haskell-2.2.3
+  - stripe-http-streams-2.2.3
 nix:
   pure: false
   packages:

@@ -119,7 +119,6 @@ initCluster pghost pgdata = do
         , ("unix_socket_directories", pghost')
         , ("archive_mode", "off")
         , ("fsync", "off")
-        , ("wal_level", "minimal")
           -- don't bother listening on a port, just a socket.
         , ("listen_addresses", "''")
         ]

@@ -18,7 +18,7 @@ import AppDataTypes
 
 snowdriftTitle :: MonadWidget m => Text -> m ()
 snowdriftTitle t = setTitle $
-    toHtml (titlecase t) `mappend` toHtml (" | Snowdrift.coop" :: Text)
+    toHtml (titlecase $ unpack t) `mappend` toHtml (" | Snowdrift.coop" :: Text)
 
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x `mappend` " — " `mappend` y
