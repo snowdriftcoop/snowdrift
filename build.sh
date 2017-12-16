@@ -36,8 +36,19 @@ run_devel () {
 }
 
 dbenv () {
-    ./sdb.hs start
+    ./sdb.hs start &&
     source <(./sdb.hs env)
+}
+
+build_deps_and_install_ghc () {
+    # Some dependencies are considered local packages by Stack, but we don't
+    # want './build.sh test --pedantic' to error out on warnings in
+    # dependencies. Therefore we build dependencies first without passing on
+    # flags.
+    #
+    # This is fixed in Stack 1.6.1 (and 1.6.1 installs GHC by default, making
+    # this function entirely redundant).
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test
 }
 
 main () {
@@ -51,19 +62,23 @@ main () {
     # Configure local Stripe keys for shell, devel, and test.
     [ -e .stripe_keys ] && source .stripe_keys
 
-    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
-    dbenv &&
     case $CMD in
         devel)
+            build_deps_and_install_ghc &&
+            dbenv &&
             run_devel
             ;;
         test)
+            build_deps_and_install_ghc &&
+            dbenv &&
             exec stack test --flag Snowdrift:library-only --fast $@
             ;;
         psql)
+            dbenv &&
             exec psql $@
             ;;
         shell)
+            dbenv &&
             exec stack exec bash
             ;;
         *)
