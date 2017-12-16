@@ -109,7 +109,7 @@ initCluster pghost pgdata = do
     mktree pgdata
 
     step "Initializing cluster..."
-    procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
+    hush $ procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
 
     step "Updating cluster configuration file..."
     setPgConfigOpts (pgdata </> "postgresql.conf")
