@@ -209,7 +209,7 @@ credentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
                 => AForm m Credentials
 credentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField "What is your email?"{fsAttrs=emailAttrs}  Nothing)
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField

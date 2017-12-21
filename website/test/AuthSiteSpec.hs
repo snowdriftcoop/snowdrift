@@ -331,7 +331,7 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
 
     fillCredentialsForm e p = do
         addToken
-        byLabel "What is your email?" e
+        byLabel "Email" e
         byLabel "Please tell us your passphrase, too." p
         setMethod "POST"
     fillTokenForm t = do
