@@ -58,6 +58,14 @@ Arch also requires installation of the ncurses5-compat-libs package, found in
 the AUR.  If you are unsure how to install from the AUR, please refer to the
 [AUR ArchWiki Page].
 
+Once ncurses5-compat-libs is installed, enter the following line to
+~/.stack/config.yaml:
+
+~~~~~
+ghc-build: nopie
+~~~~~
+
+> NOTE: Entering this into ~/.stack/config.yaml will make changes to *all* Haskell projects that you build using stack going forward.  This command tells stack to download/use a version of ghc that compiles without PIE.  While we would have preferred to provide a solution that is project specific, we are not aware of any such solution at this time.
 
 ### NixOS
 
