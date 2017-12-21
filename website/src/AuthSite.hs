@@ -213,7 +213,7 @@ credentialsForm = Credentials
     <*> (ClearPassphrase <$>
             areq
                 passwordField
-                "Please tell us your passphrase, too."{fsAttrs=ppAttrs}
+                "Passphrase"{fsAttrs=ppAttrs}
                 Nothing)
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]

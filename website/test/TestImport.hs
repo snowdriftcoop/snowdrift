@@ -44,7 +44,7 @@ dummyLogin = do
     request $ do
         addToken
         byLabel "Email" "alice"
-        byLabel "Please tell us your passphrase, too." "ccccccccccccc"
+        byLabel "Passphrase" "ccccccccccccc"
         setMethod "POST"
         setUrl (AuthR LoginR)
 
@@ -55,7 +55,7 @@ login username password = do
     request $ do
         addToken
         byLabel "Email" username
-        byLabel "Please tell us your passphrase, too." password
+        byLabel "Passphrase" password
         setMethod "POST"
         setUrl (AuthR LoginR)
 
