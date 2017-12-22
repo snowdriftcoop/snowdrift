@@ -314,13 +314,13 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     goForget e p = do
         get (AuthSub ResetPassphraseR)
         request $ do
-            fillCreateCredentialsForm e p
+            fillCredentialsForm e p
             setUrl (AuthSub ResetPassphraseR)
         statusIs 303
     goCreate e p = do
         get (AuthSub CreateAccountR)
         request $ do
-            fillCreateCredentialsForm e p
+            fillCredentialsForm e p
             setUrl (AuthSub CreateAccountR)
     bypassProvisionalAA = bypassProvisional "alice@example.com" "aaaaaaaaaaaaa"
     bypassProvisionalBob = bypassProvisional "bob@example.com" "ccccccccccccc"
@@ -333,11 +333,6 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
         addToken
         byLabel "Email" e
         byLabel "Passphrase" p
-        setMethod "POST"
-    fillCreateCredentialsForm e p = do
-        addToken
-        byLabel "Email" e
-        byLabel "New Passphrase" p
         setMethod "POST"
     fillTokenForm t = do
         addToken
