@@ -58,6 +58,14 @@ Arch also requires installation of the ncurses5-compat-libs package, found in
 the AUR.  If you are unsure how to install from the AUR, please refer to the
 [AUR ArchWiki Page].
 
+Once ncurses5-compat-libs is installed, add the following line to
+~/.stack/config.yaml:
+
+~~~~~
+ghc-build: nopie
+~~~~~
+
+**NOTE: Entering this into ~/.stack/config.yaml will apply to *all* Haskell projects that you build using stack going forward.**  This command tells stack to use a version of ghc that compiles without PIE.  We were unable to find a way to set this configuration *just* for Snowdrift, however we don't believe making this change will cause any issues with compiling other Haskell projects.
 
 ### NixOS
 
