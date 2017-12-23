@@ -68,14 +68,13 @@ import Data.Time (UTCTime, getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
 import System.IO
-import Web.Stripe (stripe, (-&-), StripeConfig, Expandable(..))
+import Web.Stripe (stripe, (-&-), StripeConfig, Expandable(..), StripeError)
 import Web.Stripe.Balance
 import Web.Stripe.Charge
 import Web.Stripe.Customer
         ( updateCustomer
         , createCustomer
         , deleteCustomer)
-import Web.Stripe.Error (StripeError)
 
 import Crowdmatch.Model hiding (Patron(..))
 import qualified Crowdmatch.Model as Model

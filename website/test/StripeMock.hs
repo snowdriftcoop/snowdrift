@@ -8,7 +8,6 @@ import ClassyPrelude.Yesod hiding (method)
 
 import Data.Typeable
 import Web.Stripe
-import Web.Stripe.Error
 import Test.Tasty.Hspec (shouldBe)
 
 data StripeMockEffects

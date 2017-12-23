@@ -12,7 +12,6 @@ import Crowdmatch
 import Text.Julius (rawJS)
 import Web.Stripe
 import Web.Stripe.Customer
-import Web.Stripe.Error
 
 import Alerts
 import Handler.Util
