@@ -12,7 +12,7 @@ alertSite = LiteApp go
         pure $ toTypedContent ("" :: Html)
     go _ ["get"] = Just $ do
         msgs <- getMessages
-        fmap toTypedContent $ defaultLayout
+        toTypedContent <$> defaultLayout
             [whamlet|
                 $forall (level, msg) <- msgs
                     <div .alert .alert-#{level}>

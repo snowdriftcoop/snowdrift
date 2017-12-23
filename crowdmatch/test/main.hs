@@ -12,7 +12,7 @@ import Control.Exception.Safe (bracket)
 import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ask)
-import Data.Foldable (traverse_)
+import Data.Foldable (traverse_, for_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
@@ -75,7 +75,7 @@ instance Arbitrary PaymentToken where
 instance Arbitrary TokenId where
     arbitrary = TokenId <$> arbitrary
 
-data StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
+newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
 
 -- | Use this instead of actually talking to Stripe during tests. Uses an MVar
 -- to maintain stripe's internal state.
@@ -261,7 +261,7 @@ unitTests runner = describe "unit tests" $ do
             let thunor = 0
                 woden = 1
             now <- liftIO getCurrentTime
-            runner $ flip traverse_ [thunor, woden] (\p -> do
+            runner $ for_ [thunor, woden] (\p ->
                 insert_
                     (Model.Patron
                         (PPtr p)
