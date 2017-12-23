@@ -30,7 +30,6 @@ import Network.Wai.Middleware.RequestLogger
 import System.Log.FastLogger
         (defaultBufSize, newStdoutLoggerSet, toLogStr)
 import Web.Stripe
-import Web.Stripe.Error
 import qualified Yesod.GitRev as G
 
 import Handler

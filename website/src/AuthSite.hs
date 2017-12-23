@@ -209,11 +209,11 @@ credentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
                 => AForm m Credentials
 credentialsForm = Credentials
     <$> (AuthEmail <$>
-            areq textField "What is your email?"{fsAttrs=emailAttrs}  Nothing)
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
     <*> (ClearPassphrase <$>
             areq
                 passwordField
-                "Please tell us your passphrase, too."{fsAttrs=ppAttrs}
+                "Passphrase"{fsAttrs=ppAttrs}
                 Nothing)
   where
     emailAttrs = [("autofocus",""), ("autocomplete","email")]

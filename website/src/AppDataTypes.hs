@@ -11,7 +11,6 @@ import ClassyPrelude.Yesod
 
 import Database.Persist.Sql (ConnectionPool)
 import Web.Stripe
-import Web.Stripe.Error
 import Yesod.Core.Types (Logger)
 import Yesod.GitRev
 

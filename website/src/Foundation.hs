@@ -100,6 +100,20 @@ instance YesodPersist App where
 instance YesodPersistRunner App where
     getDBRunner = defaultGetDBRunner appConnPool
 
+-- | A form for 'Credentials', to be used when a new passphrase is chosen
+createCredentialsForm :: (RenderMessage (HandlerSite m) FormMessage, MonadHandler m)
+                => AForm m Credentials
+createCredentialsForm = Credentials
+    <$> (AuthEmail <$>
+            areq textField "Email"{fsAttrs=emailAttrs}  Nothing)
+    <*> (ClearPassphrase <$>
+            areq
+                passwordField
+                "New Passphrase"{fsAttrs=ppAttrs}
+                Nothing)
+  where
+    emailAttrs = [("autofocus",""), ("autocomplete","email")]
+    ppAttrs = [("minlength","9")]
 
 -- Create the pages for auth
 instance AuthMaster App where
@@ -114,7 +128,7 @@ instance AuthMaster App where
             $(widgetFile "page/auth/login")
 
     createAccountHandler = do
-        (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+        (loginFields, enctype) <- generateFormPost (renderDivs createCredentialsForm)
         navbarLayout "page/auth/create-account" $ do
             setTitle "Create Account — Snowdrift.coop"
             $(widgetFile "page/auth/create-account")
@@ -132,7 +146,7 @@ instance AuthMaster App where
         maybeAuth >>= maybe reset (const (redirect DashboardR))
         where
           reset = do
-              (loginFields, enctype) <- generateFormPost (renderDivs credentialsForm)
+              (loginFields, enctype) <- generateFormPost (renderDivs createCredentialsForm)
               navbarLayout "page/auth/reset-passphrase" $ do
                   setTitle "Passphrase Reset — Snowdrift.coop"
                   $(widgetFile "page/auth/reset-passphrase")
