@@ -14,8 +14,8 @@ module Crowdmatch (
         , SqlRunner
 
         -- * Interface with stripe
-        , StripeRunner
-        , runStripe
+--        , StripeRunner
+--        , runStripe
 
         -- * Store/delete payment tokens
         , storePaymentToken
@@ -50,7 +50,6 @@ module Crowdmatch (
         -- * Internal stuff, mostly for tests
         , CrowdmatchI(..)
         , runMech
-        , StripeI(..)
         , PPtr(..)
         , centsToUnits
         , unitsToCents
@@ -91,8 +90,8 @@ type SqlRunner io env = forall a. SqlPersistT io a -> env a
 
 -- | A method that runs 'StripeI' instructions in IO. A default that uses
 -- 'stripe' is provided by 'runStripe'.
-type StripeRunner = forall io.
-    MonadIO io => forall a. StripeI a -> io (Either StripeError a)
+--type StripeRunner = forall io.
+--    MonadIO io => forall a. StripeI a -> io (Either StripeError a)
 
 --
 -- THE ACTUAL INTERFACE USED BY THE WEBSITE
@@ -121,12 +120,12 @@ data Project = Project
 -- | Record a 'TokenId' for a patron.
 storePaymentToken
     :: (ToCrowdmatchPatron usr, MonadIO env)
-    => StripeRunner
+    => StripeConfig
     -> usr -- ^ your model's user, an instance of ToCrowdmatchPatron
     -> TokenId -- ^ you must independently get this from stripe
     -> SqlPersistT env (Either StripeError ())
-storePaymentToken strp usr =
-    runMech . StorePaymentTokenI strp (usr ^. from external)
+storePaymentToken c usr =
+    runMech . StorePaymentTokenI c (usr ^. from external)
 
 -- NB: The "-- ^" in the following methods is intentional. It forces
 -- Haddocks to reformat the arguments in a pleasing way.
@@ -135,11 +134,11 @@ storePaymentToken strp usr =
 -- a token is required for pledging.
 deletePaymentToken
     :: (ToCrowdmatchPatron usr, MonadIO env)
-    => StripeRunner -- ^
+    => StripeConfig
     -> usr
     -> SqlPersistT env (Either StripeError ())
-deletePaymentToken strp =
-    runMech . DeletePaymentTokenI strp . (^. from external)
+deletePaymentToken c =
+    runMech . DeletePaymentTokenI c . (^. from external)
 
 -- | Stores a pledge, joining the crowd. Requires the patron to already
 -- have a payment token available.
@@ -184,9 +183,9 @@ crowdmatch = runMech CrowdmatchI
 -- operational mistakes, rather than bad/duplicate charges. :)
 makePayments
     :: MonadIO env
-    => StripeRunner -- ^
+    => StripeConfig
     -> SqlPersistT env ()
-makePayments strp = runMech (MakePaymentsI strp)
+makePayments = runMech . MakePaymentsI
 
 --
 -- ONE LEVEL DOWN
@@ -196,12 +195,12 @@ makePayments strp = runMech (MakePaymentsI strp)
 -- | Actions provided by the library
 data CrowdmatchI return where
     StorePaymentTokenI
-        :: StripeRunner
+        :: StripeConfig
         -> PPtr
         -> TokenId
         -> CrowdmatchI (Either StripeError ())
     DeletePaymentTokenI
-        :: StripeRunner
+        :: StripeConfig
         -> PPtr
         -> CrowdmatchI (Either StripeError ())
     StorePledgeI :: PPtr -> CrowdmatchI ()
@@ -209,7 +208,7 @@ data CrowdmatchI return where
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
     CrowdmatchI :: CrowdmatchI ()
-    MakePaymentsI :: StripeRunner -> CrowdmatchI ()
+    MakePaymentsI :: StripeConfig -> CrowdmatchI ()
 
 -- | Executing the actions
 runMech :: MonadIO env => CrowdmatchI return -> SqlPersistT env return
@@ -218,27 +217,27 @@ runMech :: MonadIO env => CrowdmatchI return -> SqlPersistT env return
 -- Payment token (store/delete)
 --
 
-runMech (StorePaymentTokenI strp pptr cardToken) = do
+runMech (StorePaymentTokenI c pptr cardToken) = do
     Entity pid p <- upsertPatron pptr []
     runExceptT $ do
         ret <- ExceptT $ maybe create' update' (Model.patronPaymentToken p)
         ExceptT (Right <$> updatePatron' pid ret)
   where
-    create' = stripeCreateCustomer strp cardToken
-    update' = stripeUpdateCustomer strp cardToken . unPaymentToken
-    updatePatron' pid c = do
+    create' = stripeCreateCustomer c cardToken
+    update' = stripeUpdateCustomer c cardToken . unPaymentToken
+    updatePatron' pid cust = do
         now <- liftIO getCurrentTime
-        let payToken = PaymentToken (customerId c)
+        let payToken = PaymentToken (customerId cust)
         _ <- insert (PaymentTokenHistory pid (HistoryTime now) Create)
         update pid [PatronPaymentToken =. Just payToken]
 
 -- FIXME: Feedback on nonexisting CustomerId.
-runMech (DeletePaymentTokenI strp pptr) = do
+runMech (DeletePaymentTokenI c pptr) = do
     Entity pid p <- upsertPatron pptr []
     maybe (pure (Right ())) (deleteToken' pid) (Model.patronPaymentToken p)
   where
     deleteToken' pid (PaymentToken cust) = do
-        res <- stripeDeleteCustomer strp cust
+        res <- stripeDeleteCustomer c cust
         traverse (const (onStripeSuccess' pid)) res
     onStripeSuccess' pid = do
         now <- liftIO getCurrentTime
@@ -322,7 +321,7 @@ runMech CrowdmatchI = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
 
-runMech (MakePaymentsI strp) = do
+runMech (MakePaymentsI c) = do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
     -- without a CustomerId :/
     chargeable <- Skeleton.patronsReceivable minimumDonation
@@ -334,13 +333,13 @@ runMech (MakePaymentsI strp) = do
                      <*> fmap unPaymentToken (Model.patronPaymentToken p)
                      <*> Just (Model.patronDonationPayable p)))
                 chargeable
-        chargeAction = traverse (traverse sendCharge) donors
+        chargeAction = traverse (traverse $ sendCharge c) donors
         simplifiedOutcomes =
             fmap
                 (map (either NoPaymentInfo (either ChargeFailure PayOk)))
                 chargeAction
     chargeResults <- liftIO simplifiedOutcomes
-    mapM_ recordResults chargeResults
+    mapM_ (recordResults c) chargeResults
   where
     -- | Send the charge command to Stripe
     --
@@ -348,12 +347,13 @@ runMech (MakePaymentsI strp) = do
     -- to calculate the 'payment'.
     sendCharge
         :: MonadIO io
-        => Donor
+        => StripeConfig
+        -> Donor
         -> io (Either StripeError ChargeResult)
-    sendCharge Donor{..} =
+    sendCharge c Donor{..} =
         fmap
             (fmap (ChargeResult _donorPatron fee net))
-            (stripeChargeCustomer strp _donorCustomer cents)
+            (stripeChargeCustomer c _donorCustomer cents)
       where
         cents = payment (unitsToCents _donorDonationPayable)
         fee = stripeFee cents
@@ -361,19 +361,20 @@ runMech (MakePaymentsI strp) = do
 
     recordResults
         :: (MonadIO m, Show b, Show c)
-        => PaymentOutcome ChargeResult b c
+        => StripeConfig
+        -> PaymentOutcome ChargeResult b c
         -> SqlPersistT m ()
-    recordResults = \case
+    recordResults c = \case
         NoPaymentInfo pId ->
             liftIO
                 (hPrint
                     stderr
                     ("Skipped patron with no payment info: " ++ show pId))
         ChargeFailure e -> liftIO (hPrint stderr e)
-        PayOk chargeResult -> recordDonation chargeResult
+        PayOk chargeResult -> recordDonation c chargeResult
       where
-        recordDonation ChargeResult{..} = do
-            ts <- liftIO (stripeDonationTimestamp strp _chargeResultCharge)
+        recordDonation c ChargeResult{..} = do
+            ts <- liftIO (stripeDonationTimestamp c _chargeResultCharge)
             insert_
                 (DonationHistory
                     _chargeResultPatron
@@ -392,31 +393,29 @@ runMech (MakePaymentsI strp) = do
 --
 
 stripeCreateCustomer
-    :: MonadIO io => StripeRunner -> TokenId -> io (Either StripeError Customer)
-stripeCreateCustomer strp = liftIO . strp . CreateCustomerI
+    :: MonadIO io => StripeConfig -> TokenId -> io (Either StripeError Customer)
+stripeCreateCustomer c cardToken = liftIO (stripe c (createCustomer -&- cardToken))
 
 stripeUpdateCustomer
-    :: MonadIO io
-    => StripeRunner
-    -> TokenId
-    -> CustomerId
-    -> io (Either StripeError Customer)
-stripeUpdateCustomer strp tok = liftIO . strp . UpdateCustomerI tok
+    :: MonadIO io => StripeConfig -> TokenId -> CustomerId -> io (Either StripeError Customer)
+stripeUpdateCustomer c cardToken cust = liftIO (stripe c (updateCustomer cust -&- cardToken))
 
 stripeDeleteCustomer
-    :: MonadIO io
-    => StripeRunner
-    -> CustomerId
-    -> io (Either StripeError ())
-stripeDeleteCustomer strp = liftIO . strp . DeleteCustomerI
+    :: MonadIO io => StripeConfig -> CustomerId -> io (Either StripeError ())
+stripeDeleteCustomer c cust = void <$> liftIO (stripe c (deleteCustomer cust))
 
 stripeChargeCustomer
-    :: MonadIO io
-    => StripeRunner
-    -> CustomerId
-    -> Cents
-    -> io (Either StripeError Charge)
-stripeChargeCustomer strp cust cents = liftIO . strp $ ChargeCustomerI cust cents
+    :: MonadIO io => StripeConfig -> CustomerId -> Cents -> io (Either StripeError Charge)
+stripeChargeCustomer c cust cents =
+          liftIO
+            . stripe c
+            . (-&- cust)
+            -- Supported upstream as of 2016-10-06, but not in our resolver yet
+            -- . (-&- ExpandParams ["balance_transaction"])
+            . flip createCharge USD
+            . view chargeCents
+            $ cents
+
 
 -- | Tries to get the timestamp from the Charge's TransactionBalance
 -- sub-item. If that fails, it's cool, we'll just use a local variant of
@@ -429,8 +428,8 @@ stripeChargeCustomer strp cust cents = liftIO . strp $ ChargeCustomerI cust cent
 -- status, but let's slap that together later.
 stripeDonationTimestamp
     :: MonadIO io
-    => StripeRunner -> Charge -> io HistoryTime
-stripeDonationTimestamp strp charge = fmap HistoryTime (chargeTime charge)
+    => StripeConfig -> Charge -> io HistoryTime
+stripeDonationTimestamp c charge = fmap HistoryTime (chargeTime charge)
   where
     fallback = liftIO getCurrentTime
     chargeTime Charge{..} =
@@ -439,38 +438,38 @@ stripeDonationTimestamp strp charge = fmap HistoryTime (chargeTime charge)
         Expanded BalanceTransaction{..} -> pure balanceTransactionCreated
         Id transId -> (=<<)
             (either (const fallback) (pure . balanceTransactionCreated))
-            (strp (BalanceTransactionI transId))
+            (liftIO (stripe c (getBalanceTransaction transId)))
 
 -- | Stripe instructions we use
-data StripeI a where
-    CreateCustomerI :: TokenId -> StripeI Customer
-    UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
-    DeleteCustomerI :: CustomerId -> StripeI ()
-    ChargeCustomerI :: CustomerId -> Cents -> StripeI Charge
-    BalanceTransactionI :: TransactionId -> StripeI BalanceTransaction
+-- data StripeI a where
+--     CreateCustomerI :: TokenId -> StripeI Customer
+--     UpdateCustomerI :: TokenId -> CustomerId -> StripeI Customer
+--     DeleteCustomerI :: CustomerId -> StripeI ()
+--     ChargeCustomerI :: CustomerId -> Cents -> StripeI Charge
+--     BalanceTransactionI :: TransactionId -> StripeI BalanceTransaction
 
 -- | A default stripe runner
-runStripe
-    :: MonadIO io
-    => StripeConfig -> StripeI a -> io (Either StripeError a)
-runStripe c = \case
-    CreateCustomerI cardToken ->
-        liftIO (stripe c (createCustomer -&- cardToken))
-    UpdateCustomerI cardToken cust ->
-        liftIO (stripe c (updateCustomer cust -&- cardToken))
-    DeleteCustomerI cust ->
-        void <$> liftIO (stripe c (deleteCustomer cust))
-    ChargeCustomerI cust cents ->
-        liftIO
-            . stripe c
-            . (-&- cust)
-            -- Supported upstream as of 2016-10-06, but not in our resolver yet
-            -- . (-&- ExpandParams ["balance_transaction"])
-            . flip createCharge USD
-            . view chargeCents
-            $ cents
-    BalanceTransactionI transId ->
-        liftIO (stripe c (getBalanceTransaction transId))
+--runStripe
+--    :: MonadIO io
+--    => StripeConfig -> StripeI a -> io (Either StripeError a)
+--runStripe c = \case
+--    CreateCustomerI cardToken ->
+--        liftIO (stripe c (createCustomer -&- cardToken))
+--    UpdateCustomerI cardToken cust ->
+--        liftIO (stripe c (updateCustomer cust -&- cardToken))
+--    DeleteCustomerI cust ->
+--        void <$> liftIO (stripe c (deleteCustomer cust))
+--    ChargeCustomerI cust cents ->
+--        liftIO
+--            . stripe c
+--            . (-&- cust)
+--            -- Supported upstream as of 2016-10-06, but not in our resolver yet
+--            -- . (-&- ExpandParams ["balance_transaction"])
+--            . flip createCharge USD
+--            . view chargeCents
+--            $ cents
+--    BalanceTransactionI transId ->
+--        liftIO (stripe c (getBalanceTransaction transId))
 
 --
 -- Making payments
