@@ -20,6 +20,7 @@ hscope.out
 .hpc/
 TAGS
 tags
+*.tags
 
 *.keter
 
