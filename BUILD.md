@@ -93,8 +93,8 @@ With brew, install the core dependencies:
 ### Windows
 
 *Status:* We welcome testing but do not officially support Windows. In the past,
-we have had only partial success running on Windows. We know that the sdb.hs
-tool won't work on Windows because it uses UNIX sockets. We welcome any patches,
+we have had only partial success running on Windows. We know that the sdb tool
+won't work on Windows because it uses UNIX sockets. We welcome any patches,
 feedback, or Postgres-on-Windows help to get an alternative working. Steps used
 in past testing:
 
@@ -144,8 +144,8 @@ To stop the site, type `quit` in the terminal, then press Enter.
 
 ## Troubleshooting
 
-If `./build.sh` commands fail in any way, try running `./sdb.hs clean` and then
-try building again.
+If `./build.sh` commands fail in any way, try running `stack exec sdb clean` and
+then try building again.
 
 ## Using the local site
 
@@ -228,7 +228,7 @@ about technical development.
 [AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [brew]: http://brew.sh/
 [Contributing Guide]: CONTRIBUTING.md
-[DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
+[DATABASE-MANAGEMENT.md]: admin-tools/DATABASE-MANAGEMENT.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
 [discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads

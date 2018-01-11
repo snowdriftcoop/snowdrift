@@ -5,7 +5,7 @@ read -d '' usage <<EOF
 .  build.sh CMD [OPTIONS]
 .
 
-  Used to do standard Haskell/yesod things like run tests and run the
+  Used to do standard Haskell/Yesod things like run tests and run the
   devel site.
 
   It uses the shake build system to make sure a dev/test database is
@@ -26,7 +26,7 @@ read -d '' usage <<EOF
 EOF
 
 run_devel () {
-    cd `dirname $0`/website
+    cd `dirname "$0"`/website
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
         exec stack exec yesod devel
@@ -36,32 +36,38 @@ run_devel () {
 }
 
 dbenv () {
-    ./sdb.hs start
-    source <(./sdb.hs env)
+    stack exec sdb start
+    source <(stack exec sdb env)
 }
 
 main () {
     if [ -z "$1" ]; then
         CMD=devel
     else
-        CMD=$1
+        CMD="$1"
         shift
     fi
 
     # Configure local Stripe keys for shell, devel, and test.
     [ -e .stripe_keys ] && source .stripe_keys
 
-    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+    # De-mystification: Recall from stack.yaml that we have 4 packages to compile:
+    # Snowdrift (in the website subdir), crowdmatch, run-persist and admin-tools.
+    # The below explicitly compiles the Snowdrift and admin-tools packages.
+    # This causes a chain-reaction: Snowdrift has crowdmatch built, because the
+    # latter is a direct dependency of the former. Then, crowdmatch causes
+    # run-persist to be built for the same reason.
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test admin-tools &&
     dbenv &&
-    case $CMD in
+    case "$CMD" in
         devel)
             run_devel
             ;;
         test)
-            exec stack test --flag Snowdrift:library-only --fast $@
+            exec stack test --flag Snowdrift:library-only --fast "$@"
             ;;
         psql)
-            exec psql $@
+            exec psql "$@"
             ;;
         shell)
             exec stack exec bash
@@ -72,4 +78,4 @@ main () {
     esac
 }
 
-main $@
+main "$@"

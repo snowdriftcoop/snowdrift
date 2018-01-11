@@ -29,4 +29,5 @@ test:
     script:
         - ./build.sh test
         # Stop the database, so gitlab-runner knows the whole job is done.
-        - ./sdb.hs clean
+        # This also wipes out the database's contents.
+        - stack exec sdb clean

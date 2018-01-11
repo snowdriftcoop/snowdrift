@@ -35,11 +35,15 @@ direction before committing everything, you will need to both reset your
 database and remove the unwanted migration files (as well as reset the relevant
 code).
 
-## Database management with the sdb.hs tool
+## Database management with the sdb tool
 
-Our sdb.hs tool has several functions for database management.
+Our sdb tool has several functions for database management.
 
-**All commands below should be run from your snowdrift project directory.**
+**All commands below should be run from your snowdrift project directory.**  
+NB: If you need to run multiple commands that begin with "stack exec", you
+can save yourself keystrokes by entering a shell with "stack exec bash". From
+there, "stack exec" is effectively assumed, shortening "stack exec
+sdb [command]" to just "sdb [command]".
 
 ### Resetting or updating your development database
 
@@ -47,15 +51,15 @@ To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
 or to start clean before making changes you plan to commit) run:
 
-    ./sdb.hs clean
+    stack exec sdb clean
 
 ### Sharing updates to the devDB database
 
 If you make specific improvements or additions to your database that you think
-will make for a better start for other contributors, use the `./sdb.hs env`
+will make for a better start for other contributors, use the `stack exec sdb env`
 command to get the code needed.
 
-*TODO: add instructions for how to use those commands for those unfamiliar* 
+*TODO: add instructions for how to use those commands for those unfamiliar*
 
 Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.
@@ -64,6 +68,6 @@ Then, the new devDB.sql file may be committed and shared like other changes.
 
 ### More database operations
 
-To see all the commands sdb.hs supports, run:
+To see all the commands sdb supports, run:
 
-    ./sdb.hs help
+    stack exec sdb help

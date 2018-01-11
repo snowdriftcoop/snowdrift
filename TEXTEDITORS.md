@@ -53,35 +53,7 @@ Other useful Atom packages to consider:
     * consider the Clipboard as Default Register and Smartcase Search options
     * incidentally, many normal Atom editing operations still work as well
     * search packages for "vim-mode" to see extra related addons
-
-##### Atom terminal
-
-Having a built-in terminal may not seem like much of a benefit, until you try
-it:
-* One less window to manage
-* Leave Atom less often
-* No boilerplate "cd" command: opens in project directory
-
-See
-[platformio-ide-terminal](https://atom.io/packages/platformio-ide-terminal).
-
-**Setup Note:** if you install this, modify your launcher to open Atom via Bash
-script -- not directly from the binary. Bash sets up environment variables the
-built-in terminal needs. If you don't do this, the terminal will spew annoying
-errors at you.
-
-In at least one case of KDE, the launcher was in "~/.local/share/applications"
-as "atom.desktop". The appropriate modification was to make the exec be
-"/usr/bin/atom", which really was the Bash script, despite being in the "bin"
-directory. The "file" command was useful here: it reveals whether a file is a
-script, binary executable or otherwise.
-
-#### Atom dev mode
-
-If you are tinkering with Atom plugins, consider launching Atom in developer
-mode. This allows live loading of plugins and themes, instead of having to
-restart Atom. Simply pass Atom the `--dev` flag when you start it. You can even
-edit the launcher mentioned earlier to always open Atom in dev mode.
+* [Built-in terminal](https://atom.io/packages/platformio-ide-terminal)
 
 ### Emacs
 
@@ -229,6 +201,9 @@ strongly recommended):
 more on building Snowdrift than maximizing their Vim expertise.
 
 ## Setting up tags to jump to function definitions
+*(For a beginner's explanation of what tags are and what they have to do with
+definition lookup, please see the tags.sh section in
+dev-tools/FILES-EXPLAINED.md.)*
 
 The following works for all text-editors that recognize tags files.
 
@@ -260,18 +235,12 @@ The following works for all text-editors that recognize tags files.
 
 Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
-The setup above generates tags for all Haskell functions defined within our
-local codebase. To tag those from compilation dependencies as well, install
-[codex](https://github.com/aloiscochard/codex) via `stack install codex` (and
-see the codex docs for how to use, including a vim-specific setting). Otherwise,
+The setup above works for functions defined within our local codebase. To add
+tags for all of the dependencies too, use tag.sh, in dev-tools. See it's section
+in dev-tools/FILES-EXPLAINED.md for more info.
+Otherwise,
 [Stackage](https://www.stackage.org/lts-5/hoogle) will have documentation on
 almost all of our dependencies.
-
-To also tag functions from Haskell script dependencies, see
-[definition-lookup-aid/README.md]. (Note that scripts are not compiled, thus
-their above exclusion.)
-If you happen to have any struggles with Codex, unpack.sh should be a working
-alternative, provided it's maintained.
 
 ### Atom tag usage and updating
 
@@ -323,5 +292,3 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
 
 NB: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.
-
-[definition-lookup-aid/README.md]: definition-lookup-aid/README.md
