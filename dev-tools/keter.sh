@@ -4,7 +4,7 @@ set -e
 
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
-# See ./FILES-EXPLAINED for more info.
+# See ./FILES-EXPLAINED.md for more info.
 #
 
 #
@@ -63,11 +63,11 @@ main () {
     # behavior of using whatever key is on my system. :|
     # See https://tree.taiga.io/project/snowdrift/issue/401
     rm -f config/client_session_key.aes
-    tar czf ${opt_appname}.keter ${contents[@]}
+    tar czf "$opt_appname".keter ${contents[@]}
     if ${opt_deploy}
     then
         hdr "Deploying"
-        scp ${opt_appname}.keter `sd-main-dns`:/opt/keter/incoming
+        scp "$opt_appname".keter `sd-main-dns`:/opt/keter/incoming
     else
         hdr "Not deploying, as requested"
     fi
