@@ -4,6 +4,7 @@ set -e
 
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
+# See ./FILES-EXPLAINED for more info.
 #
 
 #
@@ -30,27 +31,27 @@ contents=(
 )
 
 hdr () {
-    echo -e "\n-- $@"
+    echo -e "\n-- " "$@"
 }
 
 main () {
-    if $opt_build
+    if ${opt_build}
     then
         hdr "Building"
         if [ -z "$install_path" ]; then
             >&2 echo "Hold up, \$install_path should be specified!"
             exit 1
         fi
-        rm -rf ${install_path}
-        mkdir -p ${install_path}
+        rm -rf "$install_path"
+        mkdir -p "$install_path"
         stack --work-dir .stack-work-deploy clean
         # Have to do dependencies without --pedantic, since stack still
         # rebuilds extra-deps specified as git repos after a clean. :(
         # Refer to https://github.com/commercialhaskell/stack/issues/1295
         stack --work-dir .stack-work-deploy build --dependencies-only
-        stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
+        stack --work-dir .stack-work-deploy --local-bin-path "$install_path" install --flag Snowdrift:-dev --pedantic
         hdr "Packing executables"
-        find ${install_path} -type f -executable | xargs upx
+        find "$install_path" -type f -executable | xargs upx
     else
         hdr "Not building, as requested"
     fi
@@ -63,7 +64,7 @@ main () {
     # See https://tree.taiga.io/project/snowdrift/issue/401
     rm -f config/client_session_key.aes
     tar czf ${opt_appname}.keter ${contents[@]}
-    if $opt_deploy
+    if ${opt_deploy}
     then
         hdr "Deploying"
         scp ${opt_appname}.keter `sd-main-dns`:/opt/keter/incoming
