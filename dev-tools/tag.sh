@@ -68,7 +68,7 @@ stack list-dependencies --test --bench --separator "-"\
 
 ################################################################################
 #                                                                              #
-#                STEP THEE: Get the remaining packages needed.                 #
+#               STEP THREE: Get the remaining packages needed.                 #
 #                                                                              #
 ################################################################################
 

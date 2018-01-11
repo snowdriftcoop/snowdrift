@@ -40,10 +40,10 @@ code).
 Our sdb tool has several functions for database management.
 
 **All commands below should be run from your snowdrift project directory.**  
-NB: If you need to run multiple commands that begin with "stack exec", you
-can save yourself keystrokes by entering a shell with "stack exec bash". From
-there, "stack exec" is effectively assumed, shortening "stack exec
-sdb [command]" to just "sdb [command]".
+NB: If you need to run multiple commands that begin with `stack exec`, you
+can save yourself keystrokes by entering a shell with `stack exec bash`. From
+there, `stack exec` is effectively assumed, shortening `stack exec
+sdb [command]` to just `sdb [command]`.
 
 ### Resetting or updating your development database
 

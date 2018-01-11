@@ -202,8 +202,7 @@ more on building Snowdrift than maximizing their Vim expertise.
 
 ## Setting up tags to jump to function definitions
 *(For a beginner's explanation of what tags are and what they have to do with
-definition lookup, please see the tags.sh section in
-dev-tools/FILES-EXPLAINED.md.)*
+definition lookup, please see the tags.sh section in [FILES-EXPLAINED.md].)*
 
 The following works for all text-editors that recognize tags files.
 
@@ -237,8 +236,7 @@ Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 The setup above works for functions defined within our local codebase. To add
 tags for all of the dependencies too, use tag.sh, in dev-tools. See it's section
-in dev-tools/FILES-EXPLAINED.md for more info.
-Otherwise,
+in [FILES-EXPLAINED.md] for more info. Otherwise,
 [Stackage](https://www.stackage.org/lts-5/hoogle) will have documentation on
 almost all of our dependencies.
 
@@ -292,3 +290,5 @@ To auto-update tags in Vim whenever a Haskell file gets written, use fast-tags:
 
 NB: so that we don't generate extra tags files in internal directories, make
 sure to only open vim from the main snowdrift project directory from now on.
+
+[FILES-EXPLAINED.md]: dev-tools/FILES-EXPLAINED.md
