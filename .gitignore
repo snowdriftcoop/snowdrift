@@ -31,19 +31,5 @@ tags
 .dist-buildwrapper/
 .shake
 
-# You can unpack project dependencies into the below directory with:
-# /definition-lookup-aid/unpack.sh.
-# The directory is made automatically if it does not exist.
-# Its purpose is to enable definition lookup of Haskell terms defined in
-# dependencies. See /definition-lookup-aid/README.md for usage instructions.
-# NB: I originally had the directory hidden (proceeded with a dot), but Hasktags
-# ignores hidden directories.
-/definition-lookup-aid/unpacked-for-tagging
-
-# The script unpack.sh does create a trivial .stack-work directory: ultimately,
-# it only contains a couple cache files. Let's git-ignore it:
-/definition-lookup-aid/.stack-work
-
-# In maintaining unpack.sh, it's recommended to produce an unpack.log. No need
-# to "git" that:
-/definition-lookup-aid/unpack.log
+# Directory for unpacking dependencies for definition lookup:
+dev-tools/unpacked-for-tagging

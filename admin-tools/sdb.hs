@@ -1,9 +1,7 @@
-#!/usr/bin/env stack
--- stack --install-ghc runghc --package turtle --package shake -- -rtsopts -with-rtsopts=-I0 -O0
-
 {-# LANGUAGE OverloadedStrings #-}
 
--- | sdb.hs - a standalone script to manage a local development postgres cluster.
+--  sdb: Stands for "_S_nowdrift _d_ata_b_ase [command]". (This file is sdb.hs.)
+--  Scroll down to "usageText" for more info.
 
 -- Code notes:
 --
@@ -35,24 +33,34 @@ dbnames :: Databases
 dbnames = DBS "snowdrift" "snowdrift_test"
 
 usageText :: Line -> Shell ()
-usageText this = mapM_ err
-    [ this <> ": a wrapper to set up environment variables and the"
-    , "dev/test databases for hacking on the Snowdrift.coop website."
+usageText this = mapM_ err  -- "this" is the program name.
+    [ this <> ": provides basic control over the Snowdrift database server,"
+    , "such as starting and stopping."
     , ""
-    , "Rather than using this config script directly, use build.sh."
+    , "Please see BUILD.md and \"build.sh help\": sometimes you need to run"
+    , "build.sh instead of \"" <> this <> " start\". That doc will tell you\
+     \ when."
     , ""
     , "Usage:"
     , ""
-    , "    " <> this <> " ACTION [ARGS]"
+    , "    " <> this <> " ACTION"
     , ""
     , "Where ACTION may be one of:"
     , ""
     , "    clean             \"rm -rf\" the whole cluster"
+    , "                             Note: this also terminates the server"
+    , "                             process."
+    , ""
     , "    help              print this text"
     , ""
     , "    env               print export commands for PGHOST and PGDATA"
     , "                             e.g. 'source <(" <> this <> " env)'"
+    , ""
     , "    start             start the cluster"
+    , "                             Note: this automatically sets up environment"
+    , "                             variables and the dev/test databases for"
+    , "                             hacking on the Snowdrift.coop website."
+    , ""
     , "    stop              stop  the cluster"
     ]
 

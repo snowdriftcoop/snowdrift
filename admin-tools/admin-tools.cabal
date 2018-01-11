@@ -1,0 +1,50 @@
+name:                admin-tools
+version:             0.1.0.0
+
+synopsis:            Admin tools for managing a Snowdrift database server
+
+description:         Currently, this package only includes the sdb program,
+                     whose name stands for "_S_nowdrift _d_ata_b_ase [command]".
+                     It's used to control the database server with very basic
+                     commands such as "start" and "stop", as well as print where
+                     certain files are.
+
+homepage:            https://snowdrift.coop
+license:             AGPL-3
+license-file:        ../LICENSE.md
+author:              Snowdrift.coop
+maintainer:          dev@lists.snowdrift.coop
+
+-- The "Database" (singular) catagory is for working with databases in Haskell
+-- code. The "Databases" (plural) catagory is for what we have here: programs
+-- that interact with databases. Thus, the first is mostly comprised of
+-- libraries, whereas the second only has programs, at time of writing.
+category:            Databases
+build-type:          Simple
+
+
+extra-source-files:  DATABASE-MANAGEMENT.md
+cabal-version:       >=1.22
+
+
+executable sdb
+  main-is:             sdb.hs
+
+  -- Other library packages from which modules are imported.
+  build-depends:
+    base >= 4.7 && < 5
+    -- The below 4 packages are required by sdb.hs.
+
+    -- Turtle requires "text" to be less than 1.3.
+    , text < 1.3
+
+    -- sdb.hs does not give a version constraint on shake.
+    , shake
+
+    -- Likewise, it does not give one on turtle, either.
+    , turtle
+
+    -- Turtle imposes the version constraints seen below on system-filepath:
+    , system-filepath >=0.3.1 && <0.5
+
+  default-language:    Haskell2010

@@ -8,15 +8,12 @@ packages:
   # the package. For example, the Snowdrift package is actually defined in the
   # website subdirectory.
   # Also, there is no package encompassing the entire project. There is no need
-  # for such an umbrella because all compiled Haskell code is in one of the
-  # below subdirectories.
-  # NB: sdb.hs is a Haskell code file, but it is never compiled: it is a script.
-  # The Haskell dependencies discoverable from this stack.yaml are strictly for
-  # compilation, so sdb.hs's dependencies are not discoverable from here. See
-  # "/definition-lookup-aid/README.md" for more on Haskell script dependencies.
+  # for such an umbrella because all Haskell code is in one of the below
+  # subdirectories.
   - website
   - crowdmatch
   - run-persist
+  - admin-tools
   # This is patched to use UTCTime instead of Localtime (needs to get moved
   # upstream: see https://git.snowdrift.coop/sd/snowdrift/issues/8)
   - location:
