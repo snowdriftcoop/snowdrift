@@ -423,8 +423,7 @@ possibilities.
 ### Dependencies
 
 If you introduce a Haskell package dependency, please add it to the appropriate
-Cabal file, apart from what is specified in stack.yaml. This is for
-compatibility with our definition lookup system.
+Cabal file. This is for compatibility with our definition lookup system.
 
 And if you introduce a Haskell dependency that is from an online git repo and
 not Hackage, please add the appropriate code to Step Three of
