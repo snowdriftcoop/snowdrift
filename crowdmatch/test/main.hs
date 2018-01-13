@@ -49,6 +49,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
 import Web.Stripe.Balance (BalanceTransaction(..))
 import Web.Stripe.Charge (Charge(..))
+import Web.Stripe.Client (StripeConfig(..))
 import Web.Stripe.Customer (Customer(..), CustomerId(..), TokenId(..), customerId)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -77,24 +78,26 @@ instance Arbitrary TokenId where
 
 newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
 
+testConfig = error "StripeConfig used in unit tests" :: StripeConfig
+
 -- | Use this instead of actually talking to Stripe during tests. Uses an MVar
 -- to maintain stripe's internal state.
-dummyStripe
-    :: MonadIO m => MVar StripeState -> StripeI a -> m (Either b a)
-dummyStripe state = \case
-    CreateCustomerI _tok ->
-        pure (Right Customer { customerId = CustomerId "dummy" })
-    UpdateCustomerI _tok cust ->
-        pure (Right Customer { customerId = cust })
-    DeleteCustomerI _ ->
-        pure (Right ())
-    ChargeCustomerI _ c -> do
-        liftIO
-            (modifyMVar_ state
-                (\StripeState {..} ->
-                    pure StripeState { lastCharge = Just c, .. }))
-        pure (Right Charge{ chargeBalanceTransaction = Nothing })
-    BalanceTransactionI _ -> pure (Right BalanceTransaction{})
+--dummyStripe
+--    :: MonadIO m => MVar StripeState -> StripeI a -> m (Either b a)
+--dummyStripe state = \case
+--    CreateCustomerI _tok ->
+--        pure (Right Customer { customerId = CustomerId "dummy" })
+--    UpdateCustomerI _tok cust ->
+--        pure (Right Customer { customerId = cust })
+--    DeleteCustomerI _ ->
+--        pure (Right ())
+--    ChargeCustomerI _ c -> do
+--        liftIO
+--            (modifyMVar_ state
+--                (\StripeState {..} ->
+--                    pure StripeState { lastCharge = Just c, .. }))
+--        pure (Right Charge{ chargeBalanceTransaction = Nothing })
+--    BalanceTransactionI _ -> pure (Right BalanceTransaction{})
 
 type Runner = SqlRunner IO IO
 
@@ -127,12 +130,12 @@ genHistory runner = do
             , (2, storePledge' x)
             , (1, delPledge' x)
             ])
-    dummyStripe' a = do
-        v <- liftIO newEmptyMVar
-        dummyStripe v a
+    --testConfig a = do
+    --    v <- liftIO newEmptyMVar
+    --    dummyStripe v a
     storeToken' x =
-        void . runner . storePaymentToken dummyStripe' x <$> arbitrary
-    delToken' = pure . void . runner . deletePaymentToken dummyStripe'
+        void . runner . storePaymentToken testConfig x <$> arbitrary
+    delToken' = pure . void . runner . deletePaymentToken testConfig
     storePledge' = pure . runner . storePledge
     delPledge' = pure . runner . deletePledge
 
@@ -214,25 +217,25 @@ unitTests runner = describe "unit tests" $ do
     let payTok = PaymentToken (CustomerId "dummy")
         cardTok = TokenId "pumpkin"
         aelfred = HarnessUser 1
-        dummyStripe' a = do
-            v <- liftIO (newMVar (StripeState Nothing))
-            dummyStripe v a
+        --testConfig a = do
+        --    v <- liftIO (newMVar (StripeState Nothing))
+        --    dummyStripe v a
     describe "stored token" $ do
         it "is retrievable" $ do
             pat <- runner $ do
-                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                _ <- storePaymentToken testConfig aelfred cardTok
                 fetchPatron aelfred
             patronPaymentToken pat `shouldBe` Just payTok
         it "disappears" $ do
             pat <- runner $ do
-                _ <- storePaymentToken dummyStripe' aelfred cardTok
-                _ <- deletePaymentToken dummyStripe' aelfred
+                _ <- storePaymentToken testConfig aelfred cardTok
+                _ <- deletePaymentToken testConfig aelfred
                 fetchPatron aelfred
             patronPaymentToken pat `shouldBe` Nothing
         it "has history recorded" $ do
             ls <- runner $ do
-                _ <- storePaymentToken dummyStripe' aelfred cardTok
-                _ <- deletePaymentToken dummyStripe' aelfred
+                _ <- storePaymentToken testConfig aelfred cardTok
+                _ <- deletePaymentToken testConfig aelfred
                 map entityVal <$> selectList [] []
             length ls `shouldBe` 2
             Model.paymentTokenHistoryAction (head ls) `shouldBe` Create
@@ -286,13 +289,13 @@ unitTests runner = describe "unit tests" $ do
                 `shouldBe` DonationUnits 4
     specify "stored pledge is retrievable" $ do
         pat <- runner $ do
-            _ <- storePaymentToken dummyStripe' aelfred cardTok
+            _ <- storePaymentToken testConfig aelfred cardTok
             storePledge aelfred
             fetchPatron aelfred
         patronPledgeSince pat `shouldNotBe` Nothing
     specify "deleted pledge is retrievable" $ do
         pat <- runner $ do
-            _ <- storePaymentToken dummyStripe' aelfred cardTok
+            _ <- storePaymentToken testConfig aelfred cardTok
             storePledge aelfred
             deletePledge aelfred
             fetchPatron aelfred
@@ -300,7 +303,7 @@ unitTests runner = describe "unit tests" $ do
     describe "crowd size" $ do
         it "gets bumped by pledging" $ do
             p <- runner $ do
-                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                _ <- storePaymentToken testConfig aelfred cardTok
                 storePledge aelfred
                 fetchProject
             projectCrowd p `shouldBe` 1
@@ -312,17 +315,17 @@ unitTests runner = describe "unit tests" $ do
             projectCrowd p `shouldBe` 0
         it "shrinks with removal of payment token" $ do
             p1 <- runner $ do
-                _ <- storePaymentToken dummyStripe' aelfred cardTok
+                _ <- storePaymentToken testConfig aelfred cardTok
                 storePledge aelfred
                 projectCrowd <$> fetchProject
             p1 `shouldBe` 1
             p2 <- runner $ do
-                _ <- deletePaymentToken dummyStripe' aelfred
+                _ <- deletePaymentToken testConfig aelfred
                 projectCrowd <$> fetchProject
             p2 `shouldBe` 0
     specify "10 pledges = 1 cent" $ do
         let mkPledge i = do
-                _ <- storePaymentToken dummyStripe' (HarnessUser i) cardTok
+                _ <- storePaymentToken testConfig (HarnessUser i) cardTok
                 storePledge (HarnessUser i)
         val <- runner $ do
             mapM_ mkPledge [1..10]
@@ -330,7 +333,7 @@ unitTests runner = describe "unit tests" $ do
         val `shouldBe` centsToUnits (Cents 1)
     specify "1000 pledges = $1000 monthly income" $ do
         let mkPledge i = do
-                _ <- storePaymentToken dummyStripe' (HarnessUser i) cardTok
+                _ <- storePaymentToken testConfig (HarnessUser i) cardTok
                 storePledge (HarnessUser i)
         val <- runner $ do
             mapM_ mkPledge [1..1000]
@@ -338,7 +341,7 @@ unitTests runner = describe "unit tests" $ do
         val `shouldBe` Cents (100 * 1000)
     describe "crowdmatch event" $ do
         let mkPatron i =
-                void (storePaymentToken dummyStripe' (HarnessUser i) cardTok)
+                void (storePaymentToken testConfig (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
                 storePledge (HarnessUser i)
@@ -377,19 +380,19 @@ unitTests runner = describe "unit tests" $ do
         it "creates history" $ do
             hs :: [Entity Model.DonationHistory] <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 50000) now)
-                makePayments dummyStripe'
+                makePayments testConfig
                 selectList [] []
             length hs `shouldBe` 1
         it "zeroes donations" $ do
             p <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe'
+                makePayments testConfig
                 fetchPatron (HarnessUser 1)
             patronDonationPayable p `shouldBe` DonationUnits 0
         it "accounts for fees" $ do
             h :: Model.DonationHistory <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe'
+                makePayments testConfig
                 (entityVal . head) <$> selectList [] []
             -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
             -- adding enough to pay the project the true donation amount)
@@ -397,7 +400,7 @@ unitTests runner = describe "unit tests" $ do
         it "adds to the project what it takes from the patron" $ do
             p <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe'
+                makePayments testConfig
                 fetchProject
             projectDonationsReceived p `shouldBe` 5000
 
