@@ -66,7 +66,7 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
-            stripeRes <- runDB $ storePaymentToken (runStripe conf) uid token
+            stripeRes <- runDB $ storePaymentToken conf uid token
             case stripeRes of
                 Left e -> stripeError e
                 Right _ -> do
@@ -80,7 +80,7 @@ deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
     conf <- stripeConf
     Entity uid User {..} <- requireAuth
-    stripeDeletionHandler =<< runDB (deletePaymentToken (runStripe conf) uid)
+    stripeDeletionHandler =<< runDB (deletePaymentToken conf uid)
     redirect DashboardR
   where
     stripeDeletionHandler =
