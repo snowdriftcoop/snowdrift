@@ -67,7 +67,7 @@ import Data.Time (UTCTime, getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
 import System.IO
-import Web.Stripe (stripe, (-&-), StripeConfig, Expandable(..), StripeError)
+import Web.Stripe ((-&-), StripeConfig, Expandable(..), StripeError)
 import Web.Stripe.Balance
 import Web.Stripe.Charge
 import Web.Stripe.Customer
@@ -76,6 +76,7 @@ import Web.Stripe.Customer
         , deleteCustomer)
 
 import Crowdmatch.Model hiding (Patron(..))
+import Crowdmatch.Stripe (stripe)
 import qualified Crowdmatch.Model as Model
 import qualified Crowdmatch.Skeleton as Skeleton
 

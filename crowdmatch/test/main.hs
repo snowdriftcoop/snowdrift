@@ -78,7 +78,7 @@ instance Arbitrary TokenId where
 
 newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
 
-testConfig = error "StripeConfig used in unit tests" :: StripeConfig
+testConfig = StripeConfig { secretKey = "test" }
 
 -- | Use this instead of actually talking to Stripe during tests. Uses an MVar
 -- to maintain stripe's internal state.
