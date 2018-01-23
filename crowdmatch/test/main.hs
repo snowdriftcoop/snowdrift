@@ -49,7 +49,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
 import Web.Stripe.Balance (BalanceTransaction(..))
 import Web.Stripe.Charge (Charge(..))
-import Web.Stripe.Client (StripeConfig(..))
+import Web.Stripe.Client (StripeConfig(..), StripeKey(..))
 import Web.Stripe.Customer (Customer(..), CustomerId(..), TokenId(..), customerId)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
@@ -78,7 +78,8 @@ instance Arbitrary TokenId where
 
 newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
 
-testConfig = StripeConfig { secretKey = "test" }
+testConfig :: StripeConfig
+testConfig = StripeConfig $ StripeKey $ B.pack "test"
 
 -- | Use this instead of actually talking to Stripe during tests. Uses an MVar
 -- to maintain stripe's internal state.
