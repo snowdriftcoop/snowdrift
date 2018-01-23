@@ -39,7 +39,7 @@ main () {
     then
         hdr "Building"
         if [ -z "$install_path" ]; then
-            >&2 echo "Hold up, \$install_path should be specified!"
+            >&2 echo "Hold up, \"\$install_path\" should be specified!"
             exit 1
         fi
         rm -rf "$install_path"
@@ -67,6 +67,9 @@ main () {
     if ${opt_deploy}
     then
         hdr "Deploying"
+
+        # Note: "sd-main-dns" is "effectively an executable secret", therefore
+        # it is not in the main Snowdrift repo.
         scp "$opt_appname".keter `sd-main-dns`:/opt/keter/incoming
     else
         hdr "Not deploying, as requested"

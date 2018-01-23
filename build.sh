@@ -26,7 +26,7 @@ read -d '' usage <<EOF
 EOF
 
 run_devel () {
-    cd `dirname "$0"`/website
+    cd "`dirname "$0"`/website"
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
         exec stack exec yesod devel
@@ -36,8 +36,8 @@ run_devel () {
 }
 
 dbenv () {
-    stack exec sdb start
-    source <(stack exec sdb env)
+    ./admin-tools/sdb.sh start
+    source <(./admin-tools/sdb.sh env)
 }
 
 main () {

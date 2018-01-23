@@ -25,7 +25,7 @@
 # Applying dirname to "$0" takes off the last part (the script file name and
 # preceding slash) to obtain just the path to the directory that contains this
 # script.
-scriptDir=`dirname "$0"`
+scriptDir="`dirname "$0"`"
 
 # Now we make a directory to unpack the dependencies into, using mkdir.
 # We place that directory in the same directory that contains this script.
@@ -62,7 +62,7 @@ cd "$scriptDir"/unpacked-for-tagging
 # We have Michael Sloan to thank for this "Bash hack".
 # See https://github.com/commercialhaskell/stack/issues/1843 .
 stack list-dependencies --test --bench --separator "-"\
-    | while read pkg; do stack unpack $pkg; done
+    | while read pkg; do stack unpack "$pkg"; done
 
 
 

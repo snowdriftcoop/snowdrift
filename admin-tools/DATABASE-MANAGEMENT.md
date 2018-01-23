@@ -39,11 +39,10 @@ code).
 
 Our sdb tool has several functions for database management.
 
-**All commands below should be run from your snowdrift project directory.**  
-NB: If you need to run multiple commands that begin with `stack exec`, you
-can save yourself keystrokes by entering a shell with `stack exec bash`. From
-there, `stack exec` is effectively assumed, shortening `stack exec
-sdb [command]` to just `sdb [command]`.
+**The below assumes you have added the `admin-tools` subdirectory to your shell's
+`PATH` variable.** You may also want to add `dev-tools`. Make sure you have
+nothing overriding `sdb.sh` by running `type sdb.sh`. Verify that the path is
+what you expect. 
 
 ### Resetting or updating your development database
 
@@ -51,12 +50,12 @@ To remove any changes and reset your database to the devDB default
 (such as when others have provided a new update you want to try
 or to start clean before making changes you plan to commit) run:
 
-    stack exec sdb clean
+    sdb.sh clean
 
 ### Sharing updates to the devDB database
 
 If you make specific improvements or additions to your database that you think
-will make for a better start for other contributors, use the `stack exec sdb env`
+will make for a better start for other contributors, use the `sdb.sh env`
 command to get the code needed.
 
 *TODO: add instructions for how to use those commands for those unfamiliar*
@@ -68,6 +67,10 @@ Then, the new devDB.sql file may be committed and shared like other changes.
 
 ### More database operations
 
-To see all the commands sdb supports, run:
+To see all the commands sdb.sh supports, run:
 
-    stack exec sdb help
+    sdb.sh help
+
+### Other sdb.sh info
+
+The script is well-commented. If you desire, it should be pretty easy to change where the database directory goes. The directory is `.postgres-work`.

@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
---  sdb: Stands for "_S_nowdrift _d_ata_b_ase [command]". (This file is sdb.hs.)
+--  | sdb: Stands for "_S_nowdrift _d_ata_b_ase [command]".
+-- (This file is sdb.hs.)
 --  Scroll down to "usageText" for more info.
 
 -- Code notes:
@@ -25,25 +26,29 @@ import qualified System.IO as H
 import qualified Turtle
 
 pgWorkDir :: FilePath
-pgWorkDir = ".postgres-work"
-
+pgWorkDir = ".postgres-work"  -- This is where we put the database files.
+                              -- At time of writing, we place this directory
+                              -- right in the project root.
 data Databases = DBS { dbsMain :: Text, dbsTest :: Text }
 
 dbnames :: Databases
 dbnames = DBS "snowdrift" "snowdrift_test"
 
+-- "this" is the name of the binary executable file, which, at time of writing,
+-- is "sdb". However, the user is expected to always launch the binary through
+-- a wrapper script: "sdb.sh", at time of writing. See the "where" clause below.
 usageText :: Line -> Shell ()
-usageText this = mapM_ err  -- "this" is the program name.
-    [ this <> ": provides basic control over the Snowdrift database server,"
+usageText this = mapM_ err
+    [ scriptName <> ": provides basic control over the Snowdrift database server,"
     , "such as starting and stopping."
     , ""
     , "Please see BUILD.md and \"build.sh help\": sometimes you need to run"
-    , "build.sh instead of \"" <> this <> " start\". That doc will tell you\
+    , "build.sh instead of \"" <> scriptName <> " start\". That doc will tell you\
      \ when."
     , ""
     , "Usage:"
     , ""
-    , "    " <> this <> " ACTION"
+    , "    " <> scriptName <> " ACTION"
     , ""
     , "Where ACTION may be one of:"
     , ""
@@ -54,23 +59,32 @@ usageText this = mapM_ err  -- "this" is the program name.
     , "    help              print this text"
     , ""
     , "    env               print export commands for PGHOST and PGDATA"
-    , "                             e.g. 'source <(" <> this <> " env)'"
+    , "                             e.g. 'source <(" <> scriptName <> " env)'"
     , ""
     , "    start             start the cluster"
     , "                             Note: this automatically sets up environment"
     , "                             variables and the dev/test databases for"
     , "                             hacking on the Snowdrift.coop website."
     , ""
-    , "    stop              stop  the cluster"
+    , "    stop              stop the cluster"
     ]
+    where scriptName = this <> ".sh"
 
 dbRunning, dbCluster :: H.FilePath
 dbRunning = ".postgres-work/data/postmaster.pid"
 dbCluster = ".postgres-work/data/postgresql.conf"
 
-main :: IO ()
-main = sh $ do
-    (dbdir, pghost, pgdata) <- initEnv
+-- | This is the main part of the program.
+-- It used to be the entire program (main). But now, in main, we do an error
+-- trap, and, if sucessful, pass mainPart its parameter.
+-- See the comments in main.
+mainPart :: Text -> IO ()
+-- dbParent stands for "database parent directory". This is where we
+-- place .postgres-work, the database directory.
+-- Read the comments in admin-tools/sdb.sh for more info.
+mainPart dbParent = sh $ do
+
+    (pghost, pgdata) <- initEnv dbParent -- Just keep passing dbParent.
 
     -- An escape hatch before getting down to shake
     args <- liftIO getArgs
@@ -80,14 +94,21 @@ main = sh $ do
             printExport "PGDATA" (toText_ pgdata)
             printExport "PGDATABASE" (dbsMain dbnames)
         ("pg_ctl":as') -> procs "pg_ctl" (map T.pack as') empty
-        _ -> liftIO (shakeit dbdir pghost pgdata)
+        _ -> liftIO (shakeit pghost pgdata)
   where
     printExport name val =
+
+    -- Note the single quote added after the equals sign, and another added at
+    -- the end:
         echo (mconcat ["export ", name, "='", unsafeTextToLine (escapeQuotes val), "'"])
+
+    -- In addition to wrapping the path string in quotes (above), we're escaping
+    -- any pre-existing single "quotes" in the path string, such as what may be
+    -- used as apostrophes, e.g. "/Bob's Recipies/Eggs O'Brien.pdf"
     escapeQuotes = T.concatMap (\c -> if c == '\'' then "'\\''" else T.singleton c)
 
-shakeit :: FilePath -> FilePath -> FilePath -> IO ()
-shakeit dbdir pghost pgdata = shakeArgs shakeOptions $ do
+shakeit :: FilePath -> FilePath -> IO ()
+shakeit pghost pgdata = shakeArgs shakeOptions $ do
     want ["help"]
 
     -- Very basic
@@ -163,22 +184,40 @@ initCluster pghost pgdata = do
         return (opt <> " = " <> value)
 
 -- | Create and export some env variables
-initEnv :: Shell (FilePath, FilePath, FilePath)
-initEnv = do
-    dbdir <- getProjectRoot
+initEnv :: Text -> Shell (FilePath, FilePath)
+initEnv dbParent = do  -- See comments above and in mainPart.
     Just path <- Turtle.need "PATH"
     pgPath <- lineToText <$> inshell "pg_config --bindir" ""
-
-    let pghost = dbdir </> pgWorkDir </> "sockets"
-        pgdata = dbdir </> pgWorkDir </> "data"
+    let pghost = dbParent </> pgWorkDir </> "sockets"
+        pgdata = dbParent </> pgWorkDir </> "data"
     export "PGHOST" (toText_ pghost)
     export "PGDATA" (toText_ pgdata)
     export "PGDATABASE" (dbsMain dbnames)
     export "PATH" (format (s%":"%s) path pgPath)
-    return (dbdir, pghost, pgdata)
-  where
-    getProjectRoot =
-        realpath =<< (directory . P.decodeString <$> liftIO getProgName)
+    return (pghost, pgdata)
+
+main :: IO ()
+main = do
+    -- Turtle.need gets us a "maybe Text" value: it holds "Just" the character
+    -- string from the envirnmental variable "dbParent", if it exists.
+    -- If it does not, Turtle.need gives a "Nothing".
+    maybeDbParent <- Turtle.need "dbParent"
+
+    -- If we got the envirnmental variable, we pass it to mainPart.
+    case maybeDbParent of Just dbParent -> mainPart dbParent
+
+                          -- If not, we print an error to stderr and terminate.
+                          Nothing -> noDbParentError
+
+-- | Prints error message for if dbParent is not set. See comments in main.
+noDbParentError :: IO ()
+noDbParentError = H.hPutStrLn H.stderr
+    "The sdb binary has been executed with no value given for the\n\
+    \environmental variable, \"dbParent\", which tells where to put/look for\n\
+    \the database directory. The variable is usually set by running sdb.sh,\n\
+    \which also launches the sdb binary. At time of writing, sdb.sh comes in\n\
+    \the admin-tools package.\n\
+    \The dbParent variable has to be set for sdb to work."
 
 -- ##
 -- ## Helper functions/additions to underlying libs

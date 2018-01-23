@@ -23,7 +23,7 @@ category:            Databases
 build-type:          Simple
 
 
-extra-source-files:  DATABASE-MANAGEMENT.md
+extra-source-files:  DATABASE-MANAGEMENT.md, sdb.sh, sdb-fallback.sh
 cabal-version:       >=1.22
 
 

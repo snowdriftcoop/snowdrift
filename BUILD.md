@@ -144,8 +144,13 @@ To stop the site, type `quit` in the terminal, then press Enter.
 
 ## Troubleshooting
 
-If `./build.sh` commands fail in any way, try running `stack exec sdb clean` and
-then try building again.
+If `./build.sh` commands fail in any way, try running `sdb.sh clean` and
+then try building again. The latter assumes that `[project-root]/admin-tools` is
+in your shell's `PATH` variable.
+
+If `sdb.sh clean` fails because the underlying sdb binary has not been built
+yet, try `sdb-fallback.sh clean`. This builds the binary in its local
+subdirectory and runs it. 
 
 ## Using the local site
 

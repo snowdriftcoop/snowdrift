@@ -23,7 +23,14 @@ TAGS
 tags
 *.tags
 
+# Deployment bundles for Keter:
 *.keter
+
+# Directory for unpacking dependencies for definition lookup:
+dev-tools/unpacked-for-tagging
+
+# Fallback sdb binary made on-the-fly:
+admin-tools/sdb-fallback
 
 # Intellij IDEA:
 .idea
@@ -32,6 +39,3 @@ tags
 # EclipseFP:
 .dist-buildwrapper/
 .shake
-
-# Directory for unpacking dependencies for definition lookup:
-dev-tools/unpacked-for-tagging
