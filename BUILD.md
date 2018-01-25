@@ -146,11 +146,12 @@ To stop the site, type `quit` in the terminal, then press Enter.
 
 If `./build.sh` commands fail in any way, try running `sdb.sh clean` and
 then try building again. The latter assumes that `[project-root]/admin-tools` is
-in your shell's `PATH` variable.
+in your shell's `PATH` variable. You can verify you're running the correct thing
+with `type sdb.sh`.
 
 If `sdb.sh clean` fails because the underlying sdb binary has not been built
 yet, try `sdb-fallback.sh clean`. This builds the binary in its local
-subdirectory and runs it. 
+subdirectory and runs it.
 
 ## Using the local site
 

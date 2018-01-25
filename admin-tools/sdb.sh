@@ -19,13 +19,17 @@
 # transitions simpler. (As opposed to "stack path | grep project-root", which
 # would obviously be Stack-dependent.)
 #
-# Recall that dirname takes off the last part of a path string, while the
-# double dot is a link to the parent directory. At time of writing, the path to
-# this script is: "[project root]/admin-tools/sdb.sh". Dirname takes off the
-# "/sdb.sh", double dot takes us to the project root.
+# Recall that dirname takes off the last part of a path string. At time of
+# writing, the path to this script is: "[project root]/admin-tools/sdb.sh".
+# The first dirname takes off the "/sdb.sh" and the second takes off the
+# "/admin-tools", getting us to the project root.
 #
 # Back-ticks plop a returned string into a bigger command.
-projectRoot="`dirname "$0"`/.."
+# In case this script is launched with a relative path, readlink will convert
+# that into an absolute one for us, which seems necessary for some reason.
+absoluteScriptPath="`readlink -f "$0"`"
+intermediate="`dirname "$absoluteScriptPath"`"
+projectRoot="`dirname "$intermediate"`"
 
 # Now that we have the project's root directory, we can place .postgres-work
 # relative to it. For the time being, we'll just put it right at the root.

@@ -78,10 +78,10 @@ dbCluster = ".postgres-work/data/postgresql.conf"
 -- It used to be the entire program (main). But now, in main, we do an error
 -- trap, and, if sucessful, pass mainPart its parameter.
 -- See the comments in main.
-mainPart :: Text -> IO ()
+mainPart :: FilePath -> IO ()
 -- dbParent stands for "database parent directory". This is where we
 -- place .postgres-work, the database directory.
--- Read the comments in admin-tools/sdb.sh for more info.
+-- Read the comments in ./sdb.sh for more info.
 mainPart dbParent = sh $ do
 
     (pghost, pgdata) <- initEnv dbParent -- Just keep passing dbParent.
@@ -138,6 +138,24 @@ initCluster pghost pgdata = do
     mktree pgdata
 
     step "Initializing cluster..."
+
+    {-
+       NB: "--nosync" and "--auth=peer" must be bundled together and passed to
+       initdb. "initdb" is an argument to pg_ctl, telling the latter to pass
+       parameters on to the initdb program. If the two options are not bundled,
+       initdb gets passed the first, and pg_ctl tries to consume the second for
+       itself...which it can't.
+       The bundling is acheived by placing the two in the same Haskell string
+       below, unlike the other args, which are given as thier own strings in the
+       list.
+       Strangely, if you insert actual quotes into the command string below to
+       specify to pg_ctl that the two are bundled, initdb will literally think
+       that the two are one arg and crash. This is unlike how the string is
+       parsed at the commandline, where the quotes are not only acceptable, but
+       necessary. The procs function is somehow conveying that the two are
+       bundled without any quotes specified in the actual command string spelled
+       out below.
+    -}
     hush $ procs "pg_ctl" ["initdb", "-o", "--nosync --auth=peer", "-D", pgdata'] empty
 
     step "Updating cluster configuration file..."
@@ -184,7 +202,7 @@ initCluster pghost pgdata = do
         return (opt <> " = " <> value)
 
 -- | Create and export some env variables
-initEnv :: Text -> Shell (FilePath, FilePath)
+initEnv :: FilePath -> Shell (FilePath, FilePath)
 initEnv dbParent = do  -- See comments above and in mainPart.
     Just path <- Turtle.need "PATH"
     pgPath <- lineToText <$> inshell "pg_config --bindir" ""
@@ -204,7 +222,9 @@ main = do
     maybeDbParent <- Turtle.need "dbParent"
 
     -- If we got the envirnmental variable, we pass it to mainPart.
-    case maybeDbParent of Just dbParent -> mainPart dbParent
+    -- The fromText converts our value from the "Text" datatype to the
+    -- "FilePath" datatype.
+    case maybeDbParent of Just dbParent -> mainPart (fromText dbParent)
 
                           -- If not, we print an error to stderr and terminate.
                           Nothing -> noDbParentError

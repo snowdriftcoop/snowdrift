@@ -9,7 +9,7 @@ projectRoot="$dirOfScript"\..
 cd "$projectRoot"
 
 # Build binary locally:
-stack exec ghc "$dirOfScript"/sdb.hs "$dirOfScript"/sdb-fallback
+stack exec ghc "$dirOfScript"/sdb.hs "$dirOfScript"/.sdb-fallback
 
 # Set it's dbParent environmental variable and run it:
-dbParent="$projectRoot" "$dirOfScript"/sdb-fallback "@"
+dbParent="$projectRoot" "$dirOfScript"/.sdb-fallback "@"
