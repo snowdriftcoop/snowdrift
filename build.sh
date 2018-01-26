@@ -48,16 +48,53 @@ main () {
         shift
     fi
 
+    # Make sure the current directory is where this script is, and is given
+    # in absolute form.
+    #
+    # "$0" is the path to this script, as the kernel gave it: it could be
+    # absolute, or it could be relative.
+    # Dirname takes the "/build.sh" off the end, giving us the path of the
+    # script's containing directory.
+    scriptDirAsGiven="`dirname "$0"`"
+    #
+    # Now we use `readlink -f` to ensure the path is absolute.
+    cd "`readlink -f "$scriptDirAsGiven"`"
+
     # Configure local Stripe keys for shell, devel, and test.
-    [ -e .stripe_keys ] && source .stripe_keys
+    #
+    # (Recall the current directory is where the script is, due to the "cd"
+    # above.)
+    # If the .stripe_keys file exists in the current directory, then ...
+    if [ -e .stripe_keys ]; then
+
+        # ... execute it. Note from BUILD.md that .stripe_keys really is written
+        # in Bash (export commands). It exports your keys as environment
+        # variables visible to child processes. So be careful what you launch.
+        source .stripe_keys;
+
+    # Otherwise, print a friendly reminder:
+    else
+        echo
+        echo "Friendly reminder (not an error): there is no \".stripe_keys\" file"
+        echo "in the project root. You may wish to consult BUILD.md about that."
+        echo
+    fi
 
     # De-mystification: Recall from stack.yaml that we have 4 packages to compile:
     # Snowdrift (in the website subdir), crowdmatch, run-persist and admin-tools.
-    # The below explicitly compiles the Snowdrift and admin-tools packages.
+    # The next line explicitly compiles the Snowdrift package.
     # This causes a chain-reaction: Snowdrift has crowdmatch built, because the
     # latter is a direct dependency of the former. Then, crowdmatch causes
-    # run-persist to be built for the same reason.
-    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test admin-tools &&
+    # run-persist to be built for the same reason. You may run `stack dot` for
+    # a visualizaion of this. Just be sure to run it from within the project.
+    # See the next comment for the remaining package.
+    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test &&
+
+    # At time of writing, `stack build` takes strictly zero or one arguments and
+    # does not give an error if you give more than one. It just does the first.
+    # Thus it is important to do this with multiple lines.
+    stack build admin-tools &&
+
     dbenv &&
     case "$CMD" in
         devel)
