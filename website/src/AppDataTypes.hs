@@ -27,12 +27,6 @@ data App = App
     , appLogger      :: Logger
     , appGitRev      :: GitRev
     , appAuth        :: AuthSite
-      -- | The function for doing stripe API calls. Swapped out for a mock
-      -- thing in tests.
-    , appStripe      :: forall a. (Typeable (StripeReturn a), FromJSON (StripeReturn a))
-                     => StripeConfig
-                     -> StripeRequest a
-                     -> IO (Either StripeError (StripeReturn a))
     }
 
 -- This function generates the route types, and also generates the
