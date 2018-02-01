@@ -5,8 +5,8 @@
 
 > Collaboratively creating software presents many challenges, not the least of
 which is agreeing on what software is actually being created. This page is a
-record of what agreements have been made. It is a **living document**. The rest
-of this section will describe its format and contents: namely, user stories.
+record of what agreements have been made and implemented. It is a **living document**.
+The rest of this section will describe its format and contents: namely, user stories.
 
 > We try to focus our discussion on individual features by motivating them with
 user stories. By using the format **" As a ____ , I want ____ so that ____ "**, we can
