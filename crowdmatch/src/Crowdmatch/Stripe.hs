@@ -10,16 +10,27 @@ where
 import Data.Aeson.Types
 import Data.Time.Calendar
 import Data.Time.Clock
-import Web.Stripe hiding (stripe)
-import Web.Stripe.Balance (GetBalanceTransaction)
-import Web.Stripe.Charge (CreateCharge)
+import Web.Stripe hiding   (stripe)
+import Web.Stripe.Balance  ( GetBalanceTransaction
+                           , BalanceTransaction (..)
+                           , Currency (..)
+                           , TransactionId (..)
+                           , TransactionType (..)
+                           )
+import Web.Stripe.Charge   ( CreateCharge
+                           , Amount (..)
+                           , Charge (..)
+                           , ChargeId (..)
+                           )
 import Web.Stripe.Customer ( Customer (..)
                            , CreateCustomer
                            , UpdateCustomer
                            , DeleteCustomer
                            , CustomerId (..)
                            , MetaData (..)
-                           , StripeList (..))
+                           , StripeDeleteResult (..)
+                           , StripeList (..)
+                           )
 
 import qualified Data.Text as T
 import qualified Web.Stripe as S (stripe)
@@ -51,7 +62,7 @@ stripe c s
     | otherwise                       = S.stripe c s
 
 dummyCustomer :: Customer
-dummyCustomer = Customer
+dummyCustomer  = Customer
     T.empty
     (UTCTime (fromGregorian 2018 1 1) (secondsToDiffTime 0))
     (CustomerId "dummy")
@@ -67,17 +78,65 @@ dummyCustomer = Customer
     Nothing
     (MetaData [])
 
+dummyDelete :: StripeDeleteResult
+dummyDelete  = StripeDeleteResult True Nothing
+
+dummyCharge :: Charge
+dummyCharge  = Charge
+                    (ChargeId T.empty)
+                    T.empty
+                    (UTCTime (fromGregorian 2018 1 1) (secondsToDiffTime 0))
+                    False
+                    False
+                    (Amount 0)
+                    USD
+                    False
+                    Nothing
+                    False
+                    (StripeList [] T.empty T.empty Nothing False)
+                    Nothing
+                    Nothing
+                    Nothing
+                    0
+                    Nothing
+                    Nothing
+                    Nothing
+                    Nothing
+                    (MetaData [])
+                    Nothing
+                    Nothing
+                    Nothing
+
+dummyBalanceTransaction :: BalanceTransaction
+dummyBalanceTransaction  = BalanceTransaction
+                                (TransactionId T.empty)
+                                T.empty
+                                0
+                                USD
+                                0
+                                ChargeTxn
+                                (UTCTime (fromGregorian 2018 1 1) 
+                                         (secondsToDiffTime 0))
+                                (UTCTime (fromGregorian 2018 1 1)
+                                         (secondsToDiffTime 0))
+                                T.empty
+                                0
+                                []
+                                (Id $ ChargeId T.empty)
+                                Nothing
+                                
+
 instance StripeDummy CreateCustomer where
-    stripeDummy _ = return $ dummyCustomer
+    stripeDummy _ = return dummyCustomer
 
 instance StripeDummy UpdateCustomer where
-    stripeDummy _ = return $ dummyCustomer
+    stripeDummy _ = return dummyCustomer
 
 instance StripeDummy DeleteCustomer where
-    stripeDummy _ = undefined
+    stripeDummy _ = return dummyDelete
 
 instance StripeDummy CreateCharge where
-    stripeDummy _ = undefined
+    stripeDummy _ = return dummyCharge
 
 instance StripeDummy GetBalanceTransaction where
-    stripeDummy _ = undefined
+    stripeDummy _ = return dummyBalanceTransaction
