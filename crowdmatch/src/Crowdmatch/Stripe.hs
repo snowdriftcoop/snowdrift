@@ -35,8 +35,6 @@ import Web.Stripe.Customer ( Customer (..)
 import qualified Data.Text as T
 import qualified Web.Stripe as S (stripe)
 
--- newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Show)
-
 -- | A typeclass for Stripe requests (such as 'CreateCustomer') which can be
 -- answered with dummy data without any HTTP requests to Stripe itself. We're
 -- allowing the dummy data generator access the request and do IO actions, but

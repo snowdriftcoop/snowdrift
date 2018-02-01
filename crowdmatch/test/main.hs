@@ -81,25 +81,6 @@ newtype StripeState = StripeState { lastCharge :: Maybe Cents } deriving (Eq, Sh
 testConfig :: StripeConfig
 testConfig = StripeConfig $ StripeKey $ B.pack "test"
 
--- | Use this instead of actually talking to Stripe during tests. Uses an MVar
--- to maintain stripe's internal state.
---dummyStripe
---    :: MonadIO m => MVar StripeState -> StripeI a -> m (Either b a)
---dummyStripe state = \case
---    CreateCustomerI _tok ->
---        pure (Right Customer { customerId = CustomerId "dummy" })
---    UpdateCustomerI _tok cust ->
---        pure (Right Customer { customerId = cust })
---    DeleteCustomerI _ ->
---        pure (Right ())
---    ChargeCustomerI _ c -> do
---        liftIO
---            (modifyMVar_ state
---                (\StripeState {..} ->
---                    pure StripeState { lastCharge = Just c, .. }))
---        pure (Right Charge{ chargeBalanceTransaction = Nothing })
---    BalanceTransactionI _ -> pure (Right BalanceTransaction{})
-
 type Runner = SqlRunner IO IO
 
 -- | A QuickCheck property that uses database actions
@@ -131,9 +112,6 @@ genHistory runner = do
             , (2, storePledge' x)
             , (1, delPledge' x)
             ])
-    --testConfig a = do
-    --    v <- liftIO newEmptyMVar
-    --    dummyStripe v a
     storeToken' x =
         void . runner . storePaymentToken testConfig x <$> arbitrary
     delToken' = pure . void . runner . deletePaymentToken testConfig
