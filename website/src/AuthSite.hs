@@ -329,9 +329,6 @@ postLoginR = do
     runAuthResult master = maybe
         (do
             render <- getUrlRenderParams
-            alertDanger ([hamlet|
-                Sorry, the email and passphrase combination you entered was
-                not recognized.|] render)
             -- the alert below is temporarily hardcoded for the
             -- Snowdrift.coop situation and should be removed for general
             -- use and after some time has gone by with this alert live.
@@ -346,6 +343,9 @@ postLoginR = do
                 <p>
                     If you need help, or have feedback, please
                     <a href="/contact">contact&nbsp;us</a>.|] render)
+            alertDanger ([hamlet|
+                Sorry, the email and passphrase combination you entered was
+                not recognized.|] render)
             redirect (master LoginR))
         (\u -> do
             priviligedLogin u
