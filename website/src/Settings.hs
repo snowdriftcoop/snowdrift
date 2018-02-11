@@ -92,7 +92,7 @@ instance FromJSON AppSettings where
 --
 -- https://github.com/yesodweb/yesod/wiki/Overriding-widgetFile
 widgetFileSettings :: WidgetFileSettings
-widgetFileSettings = wfsSass devel []
+widgetFileSettings = wfsSass devel [ "templates" ]
   where
     devel = True -- Temporary fix: always use development mode
 

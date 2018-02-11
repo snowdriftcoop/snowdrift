@@ -1,3 +1,5 @@
+@import colors
+
 .merchandise
     .background
         height: 10rem
@@ -5,15 +7,15 @@
         position: absolute
         top: 6rem
         left: 0
-        background: %{BrightBlue}
-        background: linear-gradient(%{BrightBlue} 10%, #daf5fd 30%,#f0fbfe 100%)
+        background: $bright-blue
+        background: linear-gradient($bright-blue 10%, #daf5fd 30%,#f0fbfe 100%)
         z-index: -1
     h1
         padding: 3rem 0 3rem
         float: left
     h6
         font-weight: 600
-        color: %{BrightBlueText}
+        color: $bright-blue-text
         font-size: 1.3rem
     .sticker
         background: #F1FCFE
@@ -27,6 +29,6 @@
             transform: translateY(-50%)
     a
         img
-            border-bottom: 0.5rem solid %{Green}
+            border-bottom: 0.5rem solid $green
         &:hover img
-            border-bottom: 0.5rem solid %{GreenShade}
+            border-bottom: 0.5rem solid $green-shade

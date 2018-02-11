@@ -1,9 +1,11 @@
+@import colors
+
 nav
     display: block
     float: left
     width: 100%
-    background: %{White}
-    border-bottom: 0.3rem solid %{BrightBlue}
+    background: $white
+    border-bottom: 0.3rem solid $bright-blue
     ul
         li
             float: left
@@ -12,9 +14,9 @@ nav
             a
                 display: block
                 padding: 3.9rem 0rem 0.3rem
-                background: %{White}
+                background: $white
                 font-weight: 600
-                color: %{Green}
+                color: $green
                 font-size: 1.2rem
                 white-space: nowrap
                 text-align: center
@@ -63,27 +65,27 @@ nav
                 height: 2rem
                 width: 2rem
                 border-radius: 2rem
-                background: %{DarkBlue}
-                color: %{White}
+                background: $dark-blue
+                color: $white
                 font-family: "League Spartan"
                 font-size: 1.5rem
                 padding: 0.4rem 0.3rem 0.2rem
-                text-shadow: 0.2rem 0.2rem 0 %{DarkBlue}
+                text-shadow: 0.2rem 0.2rem 0 $dark-blue
                 z-index: 300
                 &:hover
                     padding: 0.6rem 0.5rem 0.3rem
                     top: 1.5rem
                     left: -2.7rem
-                    background: %{DarkBlue}
-                    color: %{White}
-                    text-shadow: 0.2rem 0.2rem 0 %{DarkBlue}
+                    background: $dark-blue
+                    color: $white
+                    text-shadow: 0.2rem 0.2rem 0 $dark-blue
             .ddown
                 display: block
                 position: relative
                 .ddown-toggle
                     padding: 1.5rem
                     display: inline-block
-                    background: %{White}
+                    background: $white
                     &:after
                         content: " ▼"
                         font-size: 70%
@@ -101,7 +103,7 @@ nav
                     &:active ul
                         display: block
                     li
-                        background: %{White}
+                        background: $white
                         width: 100%
                         list-style: none
                         height: auto
@@ -110,9 +112,9 @@ nav
                             text-align: left
                             display: block
                             padding: 0.5rem 1.5rem
-                            background: %{White}
+                            background: $white
                             font-weight: 400
-                            border-left: 0 solid %{White}
+                            border-left: 0 solid $white
                             span
                                 font-size: 1.4rem
                                 letter-spacing: -0.1rem
@@ -129,9 +131,9 @@ nav
                     display: block
                     outline: none
         li a:hover, a.active
-                color: %{DarkBlue}
-                background: %{BrightBlue}
-                text-shadow: 0.2rem 0.1rem 0 %{White}
+                color: $dark-blue
+                background: $bright-blue
+                text-shadow: 0.2rem 0.1rem 0 $white
                 border-color: transparent
         li.search
             z-index: 40
@@ -144,7 +146,7 @@ nav
                     font-size: 2rem
                     font-family: "Nunito", sans-serif
                     font-weight: 600
-                    color: %{Green}
+                    color: $green
                     background: rgba(78,191,122,0.12)
                     width: 12rem
                     border: none
@@ -154,15 +156,15 @@ nav
                     transition: all 0.12s ease-out 0s
                     padding: 0 0 0 1rem
                     &::-webkit-input-placeholder
-                        color: %{Green}
+                        color: $green
                     &:focus::-webkit-input-placeholder
                         color:transparent
                     &::-moz-placeholder
-                       color: %{Green}
+                       color: $green
                     &:focus::-moz-placeholder
                         color:transparent
                     &:-ms-input-placeholder
-                       color: %{Green}
+                       color: $green
                     &:focus:-ms-input-placeholder
                         color:transparent
                 button
@@ -171,7 +173,7 @@ nav
                     bottom: 0
                     margin: 0
                     width: 4rem
-                    background: url(@{StaticR img_icon_lookingglass_white_png}) 1rem center no-repeat %{Green}
+                    background: url(@{StaticR img_icon_lookingglass_white_png}) 1rem center no-repeat $green
                     background-size: 1.7rem
                     color: transparent
                     outline: none
@@ -181,7 +183,7 @@ nav
                     border-bottom-left-radius: 0
                     cursor: pointer
                     &:hover
-                        background-color: %{GreenShade}
+                        background-color: $green-shade
     ul.right
         float: left
         position: absolute

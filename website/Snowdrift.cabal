@@ -39,7 +39,6 @@ library
         AuthSite
         Avatar
         Application
-        Css
         Discourse
         Email
         Foundation
