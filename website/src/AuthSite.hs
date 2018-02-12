@@ -265,11 +265,11 @@ checkDestroyToken (AuthToken t) = runMaybeT $ do
     Entity pid ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
     _ <- lift (delete pid)
     now <- liftIO getCurrentTime
-    if addUTCTime twoHours provisionalUserCreationTime > now
+    if addUTCTime timeout provisionalUserCreationTime > now
         then just (VerifiedUser provisionalUserEmail provisionalUserDigest)
         else nothing
   where
-    twoHours = 2 * 60 * 60
+    timeout = 2 * 60 * 60 -- Two hours
 
 -- | Generate a provisional user
 provisional :: Credentials -> Verification -> IO ProvisionalUser
