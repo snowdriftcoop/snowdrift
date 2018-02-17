@@ -14,7 +14,7 @@ packages:
     extra-dep: true
   - location:
      git: https://notabug.org/fr33domlover/shakespeare-sass.git
-     commit: 70dc41d6df75e77d94125ad8a8613868d8d76b03
+     commit: e25b7f6699096e0ffa619dc71a8ef028940e5bb9
     extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
