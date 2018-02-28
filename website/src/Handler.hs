@@ -32,11 +32,6 @@ getPrivacyR = $(widget "page/privacy" "Privacy")
 getTermsR :: Handler Html
 getTermsR = $(widget "page/terms" "Terms of Use")
 
-getSearchR :: Handler Html
-getSearchR = do
-    q <- lookupGetParam "q"
-    $(widget "page/search" "Search")
-
 getProjectsR :: Handler Html
 getProjectsR = $(widget "page/projects" "Projects")
 

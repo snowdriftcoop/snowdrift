@@ -11,7 +11,6 @@
 /how-it-works HowItWorksR GET
 /privacy PrivacyR GET
 /terms TermsR GET
-/search SearchR GET
 /projects ProjectsR GET
 /about AboutR GET
 /trademarks TrademarksR GET
