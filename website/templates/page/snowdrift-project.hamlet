@@ -1,15 +1,17 @@
 <h1>Project: Snowdrift.coop
 
 <p>
-  This very website, Snowdrift.coop, is supported by its own crowdmatching
-  mechanism!
+  Support development of Snowdrift.coop itself! We don't take a cut from other
+  projects, we rely on the same crowdmatching donations as everyone else.
 
 <h2>Crowdmatching
-<p>
-  Snowdrift currently has a crowd of #{projectCrowd project} patrons.
-  The current value of a pledge is #{projectPledgeValue project}, and the
-  project's monthly income is #{projectMonthlyIncome project}.
-  Of course, these numbers will change as the number of patrons changes.
+<ul>
+  <li>
+    Current crowd size: #{projectCrowd project} patrons
+  <li>
+    Current value of one pledge: #{projectPledgeValue project}
+  <li>
+    Current total of all pledges: #{projectMonthlyIncome project}
 
 <h2>Pledge
 $maybe _ <- muid
@@ -38,7 +40,7 @@ $nothing
     <li>
       <a href="https://blog.snowdrift.coop">Blog
     <li>
-      <a href="https://git.snowdrift.coop/groups/sd/activity">
+      <a href="https://git.snowdrift.coop/groups/sd/-/activity">
         Code and other activity at git.snowdrift.coop
     <li>
       Follow us on GNU Social via
@@ -46,21 +48,19 @@ $nothing
         quitter.se/snowdriftcoop
 <.plans>
   <h2>Plans
-  <p>
-    We are currently working on improved explanations, videos, and web design to
-    express the details and importance of our crowdmatching system and the value
-    of public goods. We have much work to do finalizing a professional-quality
-    user interface for the process not only of pledging but for projects signing
-    up for the platform. We also have legal and structural work to do in
-    building out the full co-op governance.
-  <p>
-    For more details on what your donations support, see the
-    <a href="https://wiki.snowdrift.coop/planning">planning section of our wiki.
+  <ul>
+    <li>
+      For an overview, see the
+      <a href="https://wiki.snowdrift.coop/planning">
+        planning section of our wiki
+    <li>
+      Specific tasks we're working on are tracked at
+      <a href="https://git.snowdrift.coop/groups/sd/-/issues">
+        git.snowdrift.coop issues
 <.transparency>
-  <h2>Transparency report
+  <h2>Financial transparency report
   <p>
-    Although we hope to add a more standardized report eventually, we maintain a
-    wiki page with an
+    Until we design a standard report, we publish an 
     <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
-    so patrons can understand how we have used funds in the past and where any
-    outside income comes from.
+    on our wiki so that patrons can understand how we have used funds in the
+    past and where any outside income comes from.
