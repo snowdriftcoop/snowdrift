@@ -3,10 +3,47 @@
 <div .section .group>
   <div .col .span_12_of_12>
     <p>
-      The following items are available to those who
+      The following gifts are available to those who
       <a href=@{DonateR}>donate
       to our launch development outside of crowdmatching (or who put in
       substantial time <a href="https://wiki.snowdrift.coop/community/how-to-help">volunteering</a>).
+<div .section .group>
+  <div .col .span_12_of_12>
+    <h2 #stickers>Stickers
+<div .section .group>
+  <div .col .span_4_of_12>
+    <p>
+      Our durable stickers will hold up when used outdoors, on any laptop lid
+      or anywhere else you want to put them.
+  <div .col .span_8_of_12>
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_png}
+            alt="logo sticker">
+        <h6>»logo« 1.42" x 1.5"
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_logo_long_png}
+            alt="long logo sticker">
+        <h6>»logo long«  4.61" x 1"
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_handshake_png}
+            alt="shaking hands sticker">
+        <h6>»handshake« 2.5" x 2.06"
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_shovel_png}
+            alt="shovel sticker">
+        <h6>»shovel« 2.5" x 1.77"
+    <div .section .group>
+      <div .col .span_6_of_12>
+        <.sticker>
+          <img src=@{StaticR img_merchandise_sticker_hexagon_png}
+            alt="hexagon sticker">
+        <h6>»hexagon« 1.73" x 2"
 <div .section .group>
   <div .col .span_12_of_12>
     <h2 #t-shirts>T-Shirts
@@ -60,40 +97,3 @@
           <img src=@{StaticR img_merchandise_t_shirt_mens_warm_small_jpg}
             alt="t-shirt: men's warm gray">
         <h6>warm gray / men's / XS, S, M, L, XL, 2XL, 3XL, 4XL
-<div .section .group>
-  <div .col .span_12_of_12>
-    <h2 #stickers>Stickers
-<div .section .group>
-  <div .col .span_4_of_12>
-    <p>
-      Our durable stickers will hold up when used outdoors, on any laptop lid
-      or anywhere else you want to put them.
-  <div .col .span_8_of_12>
-    <div .section .group>
-      <div .col .span_6_of_12>
-        <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_logo_png}
-            alt="logo sticker">
-        <h6>»logo« 1.42" x 1.5"
-      <div .col .span_6_of_12>
-        <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_logo_long_png}
-            alt="long logo sticker">
-        <h6>»logo long«  4.61" x 1"
-    <div .section .group>
-      <div .col .span_6_of_12>
-        <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_handshake_png}
-            alt="shaking hands sticker">
-        <h6>»handshake« 2.5" x 2.06"
-      <div .col .span_6_of_12>
-        <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_shovel_png}
-            alt="shovel sticker">
-        <h6>»shovel« 2.5" x 1.77"
-    <div .section .group>
-      <div .col .span_6_of_12>
-        <.sticker>
-          <img src=@{StaticR img_merchandise_sticker_hexagon_png}
-            alt="hexagon sticker">
-        <h6>»hexagon« 1.73" x 2"
