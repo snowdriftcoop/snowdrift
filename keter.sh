@@ -47,8 +47,17 @@ main () {
         # Have to do dependencies without --pedantic, since stack still
         # rebuilds extra-deps specified as git repos after a clean. :(
         # Refer to https://github.com/commercialhaskell/stack/issues/1295
-        stack --work-dir .stack-work-deploy build --dependencies-only
-        stack --work-dir .stack-work-deploy --local-bin-path $install_path install --flag Snowdrift:-dev --pedantic
+        stack \
+            --work-dir .stack-work-deploy \
+            build \
+            --dependencies-only \
+            --install-ghc
+        stack \
+            --work-dir .stack-work-deploy \
+            --local-bin-path $install_path \
+            install \
+            --flag Snowdrift:-dev \
+            --pedantic
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
     else
