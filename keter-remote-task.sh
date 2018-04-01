@@ -37,6 +37,6 @@ main () {
     git reset --hard ${BUILDREV}
     log "Building deployment bundle"
     DEPLOY=false ./keter.sh
-    mv website/${APPNAME}.keter ../..
+    mv ${APPNAME}.keter ../..
 }
 main $@

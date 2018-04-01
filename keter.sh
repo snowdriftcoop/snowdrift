@@ -60,18 +60,17 @@ main () {
             --pedantic
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
+        hdr "Tarballing"
+        rm -rf website/static/tmp/*
+        # This forces regeneration of the client session key, which will reset
+        # everybody's sessions. This is a bug, but it's better than the current
+        # behavior of using whatever key is on my system. :|
+        # See https://tree.taiga.io/project/snowdrift/issue/401
+        rm -f website/config/client_session_key.aes
+        tar czf ${opt_appname}.keter -C website ${contents[@]}
     else
         hdr "Not building, as requested"
     fi
-    hdr "Tarballing"
-    cd website
-    rm -rf static/tmp/*
-    # This forces regeneration of the client session key, which will reset
-    # everybody's sessions. This is a bug, but it's better than the current
-    # behavior of using whatever key is on my system. :|
-    # See https://tree.taiga.io/project/snowdrift/issue/401
-    rm -f config/client_session_key.aes
-    tar czf ${opt_appname}.keter ${contents[@]}
     if $opt_deploy
     then
         hdr "Deploying"
