@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+#
+#  *Heads up:* sdb will be replaced with a Makefile.
+#  It may even replace this script.
+#
+
 read -d '' usage <<EOF
 .
 .  build.sh CMD [OPTIONS]
