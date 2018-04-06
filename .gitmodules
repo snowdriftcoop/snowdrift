@@ -1,3 +1,0 @@
-[submodule "publications"]
-	path = publications
-	url = git@git.snowdrift.coop:sd/publications.git
