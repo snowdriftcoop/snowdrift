@@ -32,4 +32,5 @@ tags
 .shake
 
 # For tagging deps that Stack can get, but Codex cannot:
-dev-tools/downloaded
+dev-tools/linked-for-non-Cabal-tagging
+dev-tools/dummy.cabal

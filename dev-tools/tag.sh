@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# Summary:
-#
-#   1. Find some places and `cd`.
-#
-#   2. Prep things for Codex so that it generates all* the tags we could want.
-#      *Except it does not tag unique deps of sdb. That problem will go away
-#       once we replace sdb with a Makefile.
-#
-#   3. Run Codex to get our tags!
-
-
 ################################################################################
 #                                                                              #
 #                      Step One: Find Some Places and `cd`                     #
@@ -44,10 +33,13 @@ stack build --dry-run
 
 # Codex does not explore hidden directories. We make a link to get around that:
 # (It's ok to force this (-f): we won't delete anything important.)
-ln -sf "$projRoot"/.stack-work/downloaded .
+ln -sf -T "$projRoot"/.stack-work/downloaded ./linked-for-non-Cabal-tagging
 
-# Make sure it has a dummy.cabal file, to get Codex to tag it:
-touch ./downloaded/dummy.cabal
+# | Make sure we have a dummy.cabal file, to get Codex to tag non-Cabal deps.
+# Note we're actually placing the dummy file alongside the link, as opposed to
+# inside the linked directory. This is to not tamper with Stack's stuff. Codex's
+# crawling feature will see the dummy file and dive into the link.
+touch ./dummy.cabal
 
 
 ################################################################################
@@ -59,9 +51,13 @@ touch ./downloaded/dummy.cabal
 # Move into the project root:
 cd "$projRoot"
 
+# Make sure a sufficient version of Codex is installed (we need pull req #76):
+# (We specified a sufficient version in stack.yaml.)
+stack build codex
+
 # | Set a flag that tells Codex to search sub-directories for Cabal packages.
 # Otherwise, it'd assume that the current directory is its target package.
 export CODEX_DISABLE_WORKSPACE=true
 
 # Make those tags:
-codex update
+stack exec -- codex update

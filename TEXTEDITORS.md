@@ -205,26 +205,14 @@ more on building Snowdrift than maximizing their Vim expertise.
 
 *NB:* [Stackage](https://www.stackage.org/lts-5/hoogle) will have documentation
 on almost all of our dependencies, i.e., code that is not in the Snowdrift repo,
-but is used by the repo.
+but is used by the repo. Thus you may only want the ability to jump to
+definitions made in the repo, using online Stackage doc for the rest.
 
-This raises a question. Suppose you encounter entity `foo` in Snowdrift Haskell
-code. (It could be a function, other value or a data type.) Do you want the
-ability to jump to `foo`'s definition, no matter what? Or would you only be
-interested if `foo` is defined in Snowdrift code? The latter is possible if you
-are content searching both in your text editor and in your web browser, using
-online Stackage doc. The former may give a more integrated experience: usually
-the comments in Hackage source are the doc you'd get online at Stackage, anyhow.
-And you get the data type of `foo` in both places, too.
-
-If you go for the first option, and you try to look up an entity from a
-dependency, you will not jump anywhere.
-
-*NB:* neither is a one-click solution, you have to choose from a list of
-matches, like a web search. So it helps to note the modules something may be
-coming from to narrow it down. Knowing the data type also helps.
+Alternatively, you may enable lookup ability for all Haskell terms used in the
+repo to hopefully stay in your text editor more, switching to a web browser
+less.
 
 ### If you only want to jump to definitions *in our repo*:
-
 
 The following works for all text-editors that recognize tags files.
 
@@ -258,22 +246,7 @@ Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
 ### If you want to jump to the def of *anything\** used in our Haskell code:
 
-Simply run `dev-tools/tag.sh`, provided a sufficiently up-to-date version of
-Codex is installed, a program that the script uses.
-
-Hopefully, by the time you read this, a simple `stack install codex` installs a
-sufficient version of Codex. But, if after running that command,
-`codex --version` only says `0.5.1.2`, you'll need to compile Codex from source:
-the script depends on a feature of Codex added by [pull request #76](https://github.com/aloiscochard/codex/pull/76).
-
-To compile Codex from source:
-* Download [the zip](https://github.com/aloiscochard/codex/archive/master.zip).
-* Extract it.
-* Run `stack install codex` from that directory.
-  * It's interesting how it's the same command. Just different context.
-
-Please note that the manually compiled Codex
-[may still say that it's version `0.5.1.2`](https://github.com/aloiscochard/codex/issues/80).
+Simply run `dev-tools/tag.sh`.
 
 \***NB:** At time of writing, sdb.hs is the one thing we cannot fully tag with the
 above method, since its deps are specified in an unusual way. This problem will
