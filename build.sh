@@ -2,7 +2,7 @@
 
 #
 #  *Heads up:* sdb will be replaced with a Makefile.
-#  It may even replace this script.
+#  So please expect future changes here accordingly.
 #
 
 read -d '' usage <<EOF
