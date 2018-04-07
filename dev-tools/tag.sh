@@ -1,8 +1,13 @@
 #!/bin/bash
 
 # Summary:
+#
 #   1. Find some places and `cd`.
-#   2. Prep things for Codex so that it generates *all* the tags we could want.
+#
+#   2. Prep things for Codex so that it generates all* the tags we could want.
+#      *Except it does not tag unique deps of sdb. That problem will go away
+#       once we replace sdb with a Makefile.
+#
 #   3. Run Codex to get our tags!
 
 
