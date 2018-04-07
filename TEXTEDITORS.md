@@ -252,8 +252,8 @@ Simply run `dev-tools/tag.sh`.
 above method, since its deps are specified in an unusual way. This problem will
 go away once we replace sdb with a Makefile.
 
-You may wish to visit [Codex's homepage](https://github.com/aloiscochard/codex)
-to see the usage doc, which includes a vim-specific setting.
+The tagging script uses Codex. You may wish to visit [Codex's homepage](https://github.com/aloiscochard/codex)
+to see its usage doc, which includes a vim-specific setting.
 
 ### Atom tag usage and updating
 
