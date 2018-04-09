@@ -425,24 +425,6 @@ JavaScript. If contributors want to work with either of those, we would happily
 accept that. [Yesod JavaScript Options] explains further about those or other
 possibilities.
 
-### Dependencies
-
-If you introduce a Hackage package dependency, please add it to the appropriate
-Cabal file. This is to ensure compilation and for compatibility with our
-definition lookup system.
-
-And if you introduce a Haskell dependency that is from an online Git repo and
-not Hackage, please add the relevant code to stack.yaml, using existing code
-in the file to see how.
-
-
-Please do not use any other means of specifying package dependencies to the
-computer. Such tactics put a hole in our definition lookup system. For example, please do *not* specify dependencies with a special comment to Stack on line two of an \*.hs file. ***TODO***: replace sdb.hs with a Makefile. Not only will that be simpler, sdb is currently incompatible with our definition lookup system.
-
-And if you make helper modules that have their own dependencies, please organize
-the list of `build-depends` in the Cabal file with comments saying which
-modules use which dependencies, or at least what a given dependency is for.
-
 ## Learning resources and helpful tools
 
 For deeper understanding of various elements in our development,
