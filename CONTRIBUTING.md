@@ -100,18 +100,23 @@ your account name followed by "/Snowdrift"
 
 ##### Adding your fork as a remote
 
+*Key to note*: you clone the main Snowdrift repo to your computer as described
+in the BUILD guide. To this local clone, you then add a link, called a "remote",
+that points to your fork: more on this later. Note that you do *not* clone your
+fork.
+
 At the top of the main page, below the header, you'll see a box with an address.
 By default, the SSH option is selected, and we recommend SSH ideally. However,
 [SSH setup] is kind of tricky, especially for those new to SSH. To stick with
-the easier option for now, click "HTTPS" and use that address which will look
+the easier option for now, click "HTTPS" and use that address, which will look
 like: "https://git.snowdrift.coop/YOURNAME/snowdrift.git"
 
 Where `YOURNAME` is your git.snowdrift.coop username.
 
 Copy that address to your clipboard.
 
-In your snowdrift directory, paste the address into your terminal as part of the
-following command:
+In your snowdrift directory, where you cloned the main repo, paste the address
+into your terminal as part of the following command:
 
     git remote add my-snow https://git.snowdrift.coop/YOURNAME/snowdrift.git
 

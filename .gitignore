@@ -30,3 +30,7 @@ tags
 # EclipseFP:
 .dist-buildwrapper/
 .shake
+
+# For tagging deps that Stack can get, but Codex cannot:
+dev-tools/linked-for-non-Cabal-tagging
+dev-tools/dummy.cabal
