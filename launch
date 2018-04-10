@@ -29,7 +29,10 @@ help:
 	\n\
 	    launch test-first   Like "launch", but runs Stack tests first.\n\
 	\n\
-	    launch help         Prints this help text."
+	    launch help         Prints this help text.\n\
+	\n\
+	Please note you must install some dependencies before you may do any\n\
+	of the above. Please see BUILD.md for details."
 
 
 ######    Documented commands above, implementation-only rules below.    #######
@@ -41,7 +44,7 @@ test:
 
 .PHONY: launchCluster
 launchCluster:
-	@$(projRoot)/admin-tools/sdb start
+	@$(projRoot)/admin-tools/sdc start
 
 .PHONY: buildDeps
 buildDeps:
