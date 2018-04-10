@@ -1,0 +1,13 @@
+ # Un-comment to enable the Nix shell. Alternatively, you may pass
+ # "SHELL=nix-shell" from command-line.
+ # We can use it to ensure certain programs are installed and visible: Nix has
+ # its own package manager.
+ # SHELL := nix-shell
+ 
+ # If we're using the Nix shell, it will ensure the packages listed below are
+ # installed and visible. The "--run" flag is because we're only running things
+ # with the shell, we're not personally interacting with the shell.
+ packages := "postgresql"
+ ifeq "$(SHELL)" "nix-shell"
+	.SHELLFLAGS := --packages $(packages) --run
+ endif

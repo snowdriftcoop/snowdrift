@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+include $(shell stack path --project-root)/admin-tools/config
+
+include $(projRoot)/admin-tools/help-redirect
+
+.PHONY: sdsh
+sdsh:
+	@$(projRoot)/launch
+#   Recall that if SHELL is set to "nix-shell", Nix will run stack, which will
+#   run Bash.
+	@stack exec -- bash

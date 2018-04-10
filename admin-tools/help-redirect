@@ -1,0 +1,3 @@
+.PHONY: help
+help:
+    @echo "Please see admin-tools/README.md."

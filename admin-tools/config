@@ -1,0 +1,26 @@
+# This is technically a Makefile.
+# Other Makefiles "include" the below.
+
+projRoot := $(shell stack path --project-root)
+
+# Executable assurance, please see doc in dir:
+include $(projRoot)/admin-tools/nix
+
+clusterDir ?= $(projRoot)/.postgres-work
+
+mainDb ?= snowdrift
+testDb ?= snowdrift_test
+defaultDb ?= $(mainDb)
+
+
+#
+# Environment variables
+#
+
+# Ensures that Postgres executables are in the path, provided they're installed:
+export PATH := $(shell pg_config --bindir):$(PATH)
+
+# Needed by Yesod. Makes Postgres commands simpler, too:
+export PGHOST := $(clusterDir)
+export PGDATA := $(clusterDir)
+export PGDATABASE := $(defaultDb)
