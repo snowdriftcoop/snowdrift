@@ -7,8 +7,8 @@ any efforts to add such support. See below for partial setup instructions.
 
 ## Install System Dependencies
 
-[Git], [PostgreSQL], and [Stack] are the only dependencies needed at the system
-level. Stack takes care of finding or installing the correct GHC version. Some
+[Git], [PostgreSQL], [Stack] and [Make] are the only dependencies needed at the
+system level. Stack takes care of finding or installing the correct GHC version. Some
 systems need a few additional libraries to support the core dependencies.
 
 **Follow the details for your system, then skip to the "Get the Snowdrift Code"
@@ -16,19 +16,19 @@ section.**
 
 ### Debian, Ubuntu, and any related derivatives
 
-Install Git and PostgreSQL with needed libraries:
+Install Git, PostgreSQL and Make with needed libraries:
 
     sudo apt-get update
-    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev
+    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev make
 
 Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
 
 ### CentOS/RHEL and Fedora
 
-* Install Git and needed libraries:
+* Install Git, needed libraries and Make:
 
-        sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
+        sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel make
 
     For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
 may also need the `libstdc++-static` package.
@@ -50,9 +50,9 @@ may also need the `libstdc++-static` package.
 
 ### Arch Linux
 
-Install Git, PostgreSQL, and Stack by running this command as `root`:
+Install Git, PostgreSQL, Stack and Make by running this command as `root`:
 
-    pacman -S git postgresql stack
+    pacman -S git postgresql stack make
 
 Arch also requires installation of the ncurses5-compat-libs package, found in
 the AUR.  If you are unsure how to install from the AUR, please refer to the
@@ -97,12 +97,13 @@ With brew, install the core dependencies:
     brew install git
     brew install postgres
     brew install haskell-stack
+    brew install make
 
 ### Windows
 
 *Status:* We welcome testing but do not officially support Windows. In the past,
-we have had only partial success running on Windows. We know that the sdb.hs
-tool won't work on Windows because it uses UNIX sockets. We welcome any patches,
+we have had only partial success running on Windows. We know that the sdc tool
+won't work on Windows because it uses UNIX sockets. We welcome any patches,
 feedback, or Postgres-on-Windows help to get an alternative working. Steps used
 in past testing:
 
@@ -115,6 +116,10 @@ Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
 Follow the instructions to [install Stack for Windows].
+
+*TODO:* We're yet to test Make on Windows. For the time being, you'll have to
+research yourself how to install it on Windows. Please let us know what you did
+if you get something working.
 
 ## Get the Snowdrift code
 
@@ -131,11 +136,11 @@ Change to the new snowdrift directory:
 
     cd snowdrift
 
-## Run the tests
+## Run the tests, build the project and launch the site
 
-Run the tests to fetch and build all Haskell dependencies:
+Do all three with a single command:
 
-    ./build.sh test
+    launch test-first
 
 This will take a while!
 
@@ -143,17 +148,22 @@ This will take a while!
 
 Run the site in development mode via:
 
-    ./build.sh
+    launch
 
-This will automatically rebuild and rerun the site whenever it detects
-changes to the code.
+The command builds anything that has been deleted or changed before launching.
 
 To stop the site, type `quit` in the terminal, then press Enter.
 
+Currently, the above command is our usual means of launching the site.
+
 ## Troubleshooting
 
-If `./build.sh` commands fail in any way, try running `./sdb.hs clean` and then
-try building again.
+Add the absolute path to the `dev-tools` sub-directory to your `PATH`
+environment variable, such as by editing your `~/.bash_profile` and then
+restarting your shell.
+
+If `launch` commands fail in any way, try running `sdc clean` and then try
+building again.
 
 ## Using the local site
 
@@ -194,12 +204,12 @@ mail to.
 
 3. Click the "API" link to obtain your publishable and secret test keys.
 
-4. In the top-level directory of the snowdrift project (where we have build.sh),
+4. In the top-level directory of the snowdrift project (where we have `launch`),
    create a new text file named `.stripe_keys` and add your keys as environment
    variables:
 >>>
-export STRIPE_PUBLISHABLE_KEY=your_stripe_pub_key  
-export STRIPE_SECRET_KEY=your_stripe_sec_key
+export STRIPE_PUBLISHABLE_KEY := your_stripe_pub_key  
+export STRIPE_SECRET_KEY := your_stripe_sec_key
 >>>
 
 5. Build your snowdrift development site and log in.
@@ -245,6 +255,7 @@ about technical development.
 [haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
 [install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
+[Make]: https://www.gnu.org/software/make/manual/html_node/index.html
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack
