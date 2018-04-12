@@ -159,8 +159,8 @@ Currently, the above command is our usual means of launching the site.
 ## Troubleshooting
 
 Add the absolute path to the `dev-tools` sub-directory to your `PATH`
-environment variable, such as by editing your `~/.bash_profile` and then
-restarting your shell.
+environment variable, such as by editing your `~/.bash_profile`, and then
+restart your shell.
 
 If `launch` commands fail in any way, try running `sdc clean` and then try
 building again.
@@ -204,13 +204,12 @@ mail to.
 
 3. Click the "API" link to obtain your publishable and secret test keys.
 
-4. In the top-level directory of the snowdrift project (where we have `launch`),
-   create a new text file named `.stripe_keys` and add your keys as environment
-   variables:
->>>
+4. In the `admin-tools` directory of the snowdrift project, create a new text
+file named `.stripe_keys` and add your keys as environment variables:
+```makefile
 export STRIPE_PUBLISHABLE_KEY := your_stripe_pub_key  
 export STRIPE_SECRET_KEY := your_stripe_sec_key
->>>
+```
 
 5. Build your snowdrift development site and log in.
 

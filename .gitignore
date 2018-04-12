@@ -1,7 +1,7 @@
 dist/
 website/static/tmp/
 client_session_key.aes
-.stripe_keys
+admin-tools/.stripe_keys
 .postgres-work
 .stack-work
 .shakespeare-sass
@@ -30,3 +30,6 @@ tags
 # EclipseFP:
 .dist-buildwrapper/
 .shake
+
+# Used for Make, since it cannot include files with spaces in their paths:
+dev-tools/projRoot

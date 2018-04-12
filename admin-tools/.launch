@@ -1,0 +1,49 @@
+include config
+
+# Include the Stripe keys, if the file exists:
+ifneq "$(wildcard .stripe_keys)" ""
+    include .stripe_keys
+endif
+
+.PHONY: launch
+# Note: the only two things that could ever need to be built are the deps and
+# the Yesod part. The latter is built below.
+launch: buildDeps launchCluster
+ifneq "$(SHELL)" "nix-shell"
+	cd website; stack build yesod-bin && stack exec -- yesod devel
+else
+	cd website; yesod devel
+endif
+
+.PHONY: test-first
+test-first: test launch
+
+.PHONY: help
+help:
+	@echo "\
+	Usage:\n\
+	\n\
+	    launch              Launches the website, building if need be.\n\
+	\n\
+	    launch test-first   Like "launch", but runs Stack tests first.\n\
+	\n\
+	    launch help         Prints this help text.\n\
+	\n\
+	Please note you must install some dependencies before you may do any\n\
+	of the above. Please see BUILD.md for details."
+
+
+######    Documented commands above, implementation-only rules below.    #######
+
+
+.PHONY: test
+test:
+	@../dev-tools/test
+
+.PHONY: launchCluster
+launchCluster:
+	@.sdc start
+
+.PHONY: buildDeps
+buildDeps:
+	stack build --flag Snowdrift:library-only --only-dependencies

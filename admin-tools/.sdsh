@@ -1,0 +1,10 @@
+include config
+
+include help-redirect
+
+.PHONY: sdsh
+sdsh:
+	@../launch
+#   Recall that if SHELL is set to "nix-shell", Nix will run stack, which will
+#   run Bash.
+	@stack exec -- bash

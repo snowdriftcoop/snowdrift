@@ -1,12 +1,10 @@
 # This is technically a Makefile.
 # Other Makefiles "include" the below.
 
-projRoot := $(shell stack path --project-root)
-
 # Executable assurance, please see doc in dir:
-include $(projRoot)/admin-tools/nix
+include nix
 
-clusterDir ?= $(projRoot)/.postgres-work
+clusterDir ?= ../.postgres-work
 
 mainDb ?= snowdrift
 testDb ?= snowdrift_test

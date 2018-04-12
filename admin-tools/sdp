@@ -1,14 +1,5 @@
-#!/usr/bin/make -f
+#!/usr/bin/env bash
 
-include $(shell stack path --project-root)/admin-tools/config
+cd "`dirname "$0"`"
 
-include $(projRoot)/admin-tools/help-redirect
-
-db ?= $(defaultDb)
-
-args ?= ""
-
-.PHONY: sdp
-sdp:
-	@$(projRoot)/launch
-	@stack exec -- psql -d $(db) $(args)
+make -f .sdp "$@"

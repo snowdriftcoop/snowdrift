@@ -1,0 +1,12 @@
+include config
+
+include help-redirect
+
+db ?= $(defaultDb)
+
+args ?= ""
+
+.PHONY: sdp
+sdp:
+	@../launch
+	@stack exec -- psql -d $(db) $(args)

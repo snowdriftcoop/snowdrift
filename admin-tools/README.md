@@ -2,14 +2,9 @@
 
 ### Execution Notes
 
-* The executable Makefiles below must be ran from within the project directory
-("snowdrift" or deeper). Otherwise, the `stack path --project-root` command will
-mislead them with its default answer, and they will not be able to find the
-config file.
-
-* We highly recommend adding the absolute path to `dev-tools` to your `PATH`
-variable, such as by editing `~/.bash_profile`. That way, you may simply run
-`foo [command]` instead of `dev-tools/foo [command]`.
+* We highly recommend adding the absolute path to `admin-tools` to your `PATH`
+variable, such as by editing `~/.bash_profile`. This way, you may simply run
+`foo [command]` instead of `admin-tools/foo [command]`.
 
 ### Editing Notes
 
@@ -62,7 +57,42 @@ The above tools and `launch` use the `config` file in this directory to:
 * Set environment variables needed by Yesod
 * Set the name and location of the cluster directory
 * Add to the `PATH` variable
-* Know the project root path
 * Give abstract names to database names, like "mainDb" for "snowdrift"
 * Set the defaultDb
 * Optionally use the Nix package manager. Please see EXECUTABLE-ASSURANCE.md.
+
+## "Dot" things
+
+Recall that our executable Makefiles all use `config`. Them all sharing this
+file is much better than them each having an identical prelude that does what
+"including" `config` does.
+
+But this gives us a challenge: how do we specify the path to `config` in order
+to `include` it? What if this path has spaces in it? How do we escape spaces
+in a Makefile? Well, actually, we don't.
+
+Instead, we use "dot" things:
+
+* in `admin-tools`, we have a `.foo` file for every executable `foo` and
+* define `clusterDir` as `../postgres-work` (at time of writing) in `config`.
+
+In Make, unlike Bash, one cannot simply escape a file path by wrapping it in
+single quotes. Make gives us two options here:
+
+1. Use an ugly string manipulation command to escape characters according to
+Make's special character rules (note we must do this programmatically because
+we cannot anticipate where on your drive you will place your `snowdrift`
+repository clone), or
+
+2. `cd` to where our stuff is and use relative directories.
+
+I don't want that ugly code in every executable Makefile, which is what it would
+take to include `config` if we took option one. So I went with option two. This
+requires an intermediate launcher script to `cd` to the location of itself,
+which then launches the Makefile, which is in the same directory: `admin-tools`.
+The launcher is `foo` and the Makefile is `.foo`. This way, you don't even have
+to `cd` into `admin-tools`: the launcher script does that for you based off its
+own location.
+
+As far as `../postgres-work`, `..` is a special directory with no special
+characters in its name. It is a kernel-facilitated link to the parent directory.
