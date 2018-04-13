@@ -27,6 +27,6 @@ build:
 test:
     stage: test
     script:
-        - ./launch test
+        - ./launch test-first
         # Stop the database, so gitlab-runner knows the whole job is done.
         - ./admin-tools/sdc clean
