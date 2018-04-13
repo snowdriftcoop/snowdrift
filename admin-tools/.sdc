@@ -1,4 +1,9 @@
+# If ".sdc" is being called from ".launch", which it usually is, we will have
+# already included "config" back in ".launch". "clusterDir" is only defined
+# in "config", so that's how we'll tell whether we need to do the inclusion.
+ifndef clusterDir
 include config
+endif
 
 # This file is created when the cluster gets initialized.
 waitForThis := $(clusterDir)/PG_VERSION
