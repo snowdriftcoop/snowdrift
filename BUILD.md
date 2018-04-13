@@ -140,7 +140,7 @@ Change to the new snowdrift directory:
 
 Do all three with a single command:
 
-    launch test-first
+    ./launch test-first
 
 This will take a while!
 
@@ -148,7 +148,7 @@ This will take a while!
 
 Run the site in development mode via:
 
-    launch
+    ./launch
 
 The command builds anything that has been deleted or changed before launching.
 

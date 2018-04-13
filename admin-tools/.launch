@@ -10,9 +10,9 @@ endif
 # the Yesod part. The latter is built below.
 launch: buildDeps launchCluster
 ifneq "$(SHELL)" "nix-shell"
-	cd website; stack build yesod-bin && stack exec -- yesod devel
+	cd ../website && stack build yesod-bin && stack exec -- yesod devel
 else
-	cd website; yesod devel
+	cd ../website && yesod devel
 endif
 
 .PHONY: test-first
@@ -42,7 +42,7 @@ test:
 
 .PHONY: launchCluster
 launchCluster:
-	@.sdc start
+	@make -f .sdc start
 
 .PHONY: buildDeps
 buildDeps:

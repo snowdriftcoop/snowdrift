@@ -2,4 +2,4 @@
 
 cd "`dirname "$0"`"/admin-tools
 
-.launch "$@"
+make -f .launch "$@"

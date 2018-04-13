@@ -11,7 +11,8 @@ variable, such as by editing `~/.bash_profile`. This way, you may simply run
 * When editing the scripts, please be aware that all recipe lines *must* begin
 with a **real tab character**. So you may wish to use a text editor other than
 your main development environment if the latter is already set up to use spaces
-for tabs.
+for tabs, unless you know it while recognize the file is tab-indented and act
+accordingly.
 
 ## Tools
 
@@ -73,8 +74,9 @@ in a Makefile? Well, actually, we don't.
 
 Instead, we use "dot" things:
 
-* in `admin-tools`, we have a `.foo` file for every executable `foo` and
-* define `clusterDir` as `../postgres-work` (at time of writing) in `config`.
+* in `admin-tools`, we have a `.foo` file for every executable `foo`,
+* define `clusterDir` as `../postgres-work` (at time of writing) in `config` and
+* use a hidden Bash script, `.pgStart`.
 
 In Make, unlike Bash, one cannot simply escape a file path by wrapping it in
 single quotes. Make gives us two options here:
@@ -96,3 +98,15 @@ own location.
 
 As far as `../postgres-work`, `..` is a special directory with no special
 characters in its name. It is a kernel-facilitated link to the parent directory.
+
+However, `pg_ctl` requires its socket directory parameter to be given as an
+absolute path, as least when the `-w` option is present, which it is for us.
+
+This is all handled in `.pgStart`, which is only ran by `.sdc`. The former is a
+Bash script. Critically, in Bash, we can easily escape any special characters
+that appear in the absolute path. I believe this is impossible to do in Make
+because it offers no quoting mechanism for escaping, nor does it allow you to
+escape a backslash. And note: if one were to attempt this in Make, it'd have to
+be done differently for what shell Make is set to use. This must be considered
+because we give the option of either the default shell or the Nix shell. They
+have different ways of escaping file paths.

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# This script is only ran by ".sdc". PWD is already "admin-tools".
+
+# ".sdc" passes "$(clusterDir)" to this script as "$1". Recall the former from
+# "config".
+
+# "pg_ctl" requires it's socket directory to be given as an absolute path:
+prepedSocketDir="`realpath "$1"`"
+
+# Some flags used below are documented under the "postgres" command, and
+# not directly under "pg_ctl", which inherits from "postgres".
+# Those flags let us avoid having a config file. In particular, we use "-k" to
+# place the lock file within the project dir. By default, Postgres would try to
+# put it somewhere we might not have permission to.
+pg_ctl start -w -o "-F -h '' -k "$prepedSocketDir"" -l "$prepedSocketDir"/log

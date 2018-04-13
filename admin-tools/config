@@ -4,7 +4,10 @@
 # Executable assurance, please see doc in dir:
 include nix
 
+# The absolute version may introduce special chars that we can't escape in Make.
+# So we limit the use of the second one to environment variables only.
 clusterDir ?= ../.postgres-work
+absClusterDir := $(shell realpath $(clusterDir))
 
 mainDb ?= snowdrift
 testDb ?= snowdrift_test
@@ -19,6 +22,6 @@ defaultDb ?= $(mainDb)
 export PATH := $(shell pg_config --bindir):$(PATH)
 
 # Needed by Yesod. Makes Postgres commands simpler, too:
-export PGHOST := $(clusterDir)
-export PGDATA := $(clusterDir)
+export PGHOST := $(absClusterDir)
+export PGDATA := $(absClusterDir)
 export PGDATABASE := $(defaultDb)
