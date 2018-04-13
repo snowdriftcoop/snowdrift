@@ -11,7 +11,7 @@ variable, such as by editing `~/.bash_profile`. This way, you may simply run
 * When editing the scripts, please be aware that all recipe lines *must* begin
 with a **real tab character**. So you may wish to use a text editor other than
 your main development environment if the latter is already set up to use spaces
-for tabs, unless you know it while recognize the file is tab-indented and act
+for tabs, unless you know it will recognize the file is tab-indented and act
 accordingly.
 
 ## Tools

@@ -41,9 +41,9 @@ Our sdc tool has several functions for database management.
 
 **All commands below should be run from your snowdrift project directory.**
 
-*Add the absolute path to the `dev-tools` sub-directory to your `PATH`
-environment variable, such as by editing your `~/.bash_profile` and then
-restarting your shell.*
+*Add the absolute path to the `admin-tools` sub-directory to your `PATH`
+environment variable, such as by editing your `~/.bash_profile`, and then
+restart your shell.*
 
 ### Resetting or updating your development database
 

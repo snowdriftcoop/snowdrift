@@ -5,7 +5,8 @@
 # ".sdc" passes "$(clusterDir)" to this script as "$1". Recall the former from
 # "config".
 
-# "pg_ctl" requires it's socket directory to be given as an absolute path:
+# "pg_ctl" requires its socket directory to be given as an absolute path, at
+# least in our context:
 prepedSocketDir="`realpath "$1"`"
 
 # Some flags used below are documented under the "postgres" command, and
