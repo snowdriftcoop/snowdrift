@@ -158,7 +158,7 @@ Currently, the above command is our usual means of launching the site.
 
 ## Troubleshooting
 
-Add the absolute path to the `dev-tools` sub-directory to your `PATH`
+Add the absolute path to the `admin-tools` sub-directory to your `PATH`
 environment variable, such as by editing your `~/.bash_profile`, and then
 restart your shell.
 

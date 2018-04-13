@@ -30,6 +30,3 @@ tags
 # EclipseFP:
 .dist-buildwrapper/
 .shake
-
-# Used for Make, since it cannot include files with spaces in their paths:
-dev-tools/projRoot
