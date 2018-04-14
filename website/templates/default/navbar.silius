@@ -247,7 +247,7 @@ nav
                     padding: 1.7rem 2.6rem 1.3rem
                 .ddown .ddown-toggle.user
                     padding-right: 6.5rem
-                    background: url(%{avatar}) right center no-repeat
+                    background: url(@{StaticR img_default_avatar_png}) right center no-repeat
                     background-size: 6rem
             li.search
                 form:hover input

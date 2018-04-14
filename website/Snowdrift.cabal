@@ -37,7 +37,6 @@ library
         Alerts
         AppDataTypes
         AuthSite
-        Avatar
         Application
         Discourse
         Email
@@ -87,7 +86,6 @@ library
         , http-client
         , http-types
         , lens
-        , libravatar
         , memory
         , mime-mail
         , monad-logger           >= 0.3     && < 0.4
