@@ -9,7 +9,6 @@ import Database.Persist.Sql (fromSqlKey)
 
 import qualified Web.Hashids as Hashids
 
-import Avatar
 import Discourse
 
 -- Repurpose the discourse secret as the hashids salt
@@ -49,7 +48,6 @@ getDiscourseR = do
     secret <- getsYesod $ appDiscourseSsoSecret . appSettings
     -- Perform authentication and fetch user info
     Entity uid u <- requireAuth
-    avatar <- getUserAvatar (StaticR img_default_avatar_png) (Just u)
     let uinfo = UserInfo
             { ssoEmail     = u ^. userEmail
             , ssoId        = discourseUser secret uid
@@ -57,7 +55,7 @@ getDiscourseR = do
             , ssoUsername  = Nothing
             -- TODO no better option right now...
             , ssoFullName  = Nothing
-            , ssoAvatarUrl = Just avatar
+            , ssoAvatarUrl = Nothing
             -- TODO could link to Snowdrift user page
             , ssoBio       = Nothing
             }

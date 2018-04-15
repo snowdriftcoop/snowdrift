@@ -24,7 +24,6 @@ packages:
     extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
-  - libravatar-0.4
   - hsass-0.5.0
   # Stripe is absent from lts-9
   - stripe-core-2.2.3

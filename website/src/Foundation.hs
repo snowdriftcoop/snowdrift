@@ -13,7 +13,6 @@ import qualified Data.Text as T
 import qualified Yesod.Core.Unsafe as Unsafe
 
 import AppDataTypes
-import Avatar
 import Email
 import Network.Mail.Mime
 import qualified TestHooks
@@ -185,8 +184,6 @@ navbarLayout :: Text -> Widget -> Handler Html
 navbarLayout pageName widget = do
     msgs <- getMessages
     maybeUser  <- maybeAuth
-    avatar <- getUserAvatar (StaticR img_default_avatar_png)
-                            (fmap entityVal maybeUser)
 
     active <- maybe (const False) (==) <$> getCurrentRoute
     howItWorksActive <- do
