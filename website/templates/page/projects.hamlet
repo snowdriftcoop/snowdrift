@@ -1,1 +1,36 @@
-<h1>Projects
+<h1 .header .m--tilt>
+  Projects
+
+<.section>
+  <p .intro>
+    As soon as possible, more projects will be listed here that you can support
+    via Snowdrift.coop. After all, that's the whole point of Snowdrift.coop!
+    For now, pledging to support Snowdrift.coop itself is a great way for you
+    to help us get to that point.
+
+  <.list-gradient>
+  <ol .projects-list>
+    <li .item>
+      <.project .m--live>
+        <a .link href=@{SnowdriftProjectR}>
+          <img .logo src=@{StaticR img_projects_snowdrift_logo_png}>
+          <.title>
+            Snowdrift.coop
+          <.desc>
+            Crowdmatching for public goods
+    <li .item>
+      <.project .m--coming>
+        <.desc>
+          … more coming soon
+    <li .item>
+      <.project .m--coming>
+        <.desc>
+          … no really, this is not just about us
+
+  $if not loggedIn
+    <.signup>
+      <.me>
+      <a .button href=@{AuthR LoginR}>
+        Sign Up
+      <a .more-info>
+        how it works

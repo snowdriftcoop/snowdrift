@@ -1,0 +1,202 @@
+@import ../main/main
+
+
+/* Intro text */
+.intro
+    +text--body
+    color: $dark-blue
+
+
+/* List of projects */
+.projects-list
+    list-style: outside decimal
+
+    .item
+        +text--body
+        color: $text-blue
+
+
+/* Project info: div wrap for a box with padding and background color */
+.project
+    .link
+        text-decoration: none
+
+    &.m--live, &.m--coming
+        background: transparentize($bright-blue, 0.77)
+
+    &.m--live .title
+        +text--headline
+        font-weight: 800
+        color: $dark-blue
+
+    &.m--live .desc
+        color: $dark-blue
+
+    &.m--coming .desc
+        color: $text-blue
+        font-style: italic
+
+
+/* Signup links */
+.signup
+    .me
+        +image($me-signup, 100% 17.4rem, center/contain)
+
+    .button
+        +button--big($white, $green, $green-shade)
+
+    .more-info
+        +text--link
+
+
+///------------------------------------------------------------------------///
+//  Common layout                                                           //
+///------------------------------------------------------------------------///
+
+/// Fade-out effect for projects list
+=list-gradient
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), $white 70%)
+    width: 22%
+    +pad($grid--s, height 10)
+    +pad($grid--s, mgn 2 0)
+    position: absolute
+    right: 0
+    z-index: 5
+
+
+/* Projects list */
+.projects-list
+    +vr($grid--s, mgn 2 0)
+
+    .item
+        /* Add space between numbering and project.projects-list item,
+            and vertically between items */
+        +pad($grid--s, pad 0 0 0.1 0.5)
+
+
+/* Project info: div wrap for a box with padding and background color */
+.project
+    .link
+        /* Shift the project list item contents up 1.5rem to center align
+            vertically with the item number */
+        position: relative
+        +pad($grid--s, top -0.5)
+
+    .logo
+        +pad($grid--s, width 1)
+        +pad($grid--s, height 1)
+        display: inline
+        vertical-align: text-bottom
+
+    &.m--live
+        /* Offset the list item background to center align
+            the list item contents vertically with the projects list
+            number */
+        +pad($grid--s, height 3)
+        +pad($grid--s, pad 1 0 0 0.6)
+
+    &.m--live .title
+        display: inline
+        vertical-align: middle
+
+    &.m--live .desc
+        +pad($grid--s, mgn 0 0 0 0.3)
+
+    &.m--coming
+        +pad($grid--s, pad 1 0 1 0.5)
+
+
+/* Signup links */
+.signup
+    +pad($grid--s, mgn 2 auto 5)
+    text-align: center
+
+    .me
+        +pad($grid--s, mgn 0 auto 1)
+
+    .button
+        +pad($grid--s, mgn 0 auto 0.5)
+
+
+///------------------------------------------------------------------------///
+//  Extra small                                                             //
+///------------------------------------------------------------------------///
+
++respond("xs")
+    .section
+        +span($grid--s, 4 max-pct both)
+
+
+    .projects-list
+        +pad($grid--s, pad 0 0 0 1)
+        /* Hide text that extend beyond the projects list */
+        overflow: hidden
+
+    .list-gradient
+        +list-gradient
+
+
+    .project
+        &.m--live .title
+            /* Further scale down project title */
+            font-size: 2.1rem
+
+        .desc
+            /* Display description on one line for fade-out */
+            white-space: nowrap
+
+
+    /* Scale down signup button */
+    .signup .button
+        +button--medium($white, $green, $green-shade)
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
++respond("s")
+    .section
+        +span($grid--s, 4 max-pct auto)
+
+    .intro
+        +span($grid--s, 4 max-pct auto)
+
+    .list-gradient
+        +list-gradient
+
+    .projects-list
+        +span($grid--s, 4 max-pct auto)
+        +vr($grid--s, mgn 2)
+        +pad($grid--s, pad 0 0 0 0.9)
+        overflow: hidden
+
+    .project .desc
+        /* Display description on one line for fade-out */
+        white-space: nowrap
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    .section
+        +span($grid--m, 8 row auto)
+
+
+    .intro
+        +span($grid--m, 6 max auto)
+
+
+    .projects-list
+        +span($grid--m, 7 max)
+        +pad($grid--m, mgn 2 0 2 2)
+
+        .item
+            +pad($grid--m, mgn 0 0 0 0.5)
+
+
+    .signup
+        +span($grid--m, 4 max auto)
+        +vr($grid--m, mgn 3 5)

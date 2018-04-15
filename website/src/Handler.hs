@@ -33,7 +33,11 @@ getTermsR :: Handler Html
 getTermsR = $(widget "page/terms" "Terms of Use")
 
 getProjectsR :: Handler Html
-getProjectsR = $(widget "page/projects" "Projects")
+getProjectsR = do
+    loggedIn <- isJust <$> maybeAuth
+    defaultLayoutNew $ do
+        setTitle "Projects"
+        $(widgetFile "page/projects")
 
 getTrademarksR :: Handler Html
 getTrademarksR = $(widget "page/trademarks" "Trademarks")
