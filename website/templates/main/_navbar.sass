@@ -1,0 +1,289 @@
+/// _navbar
+//
+// Description: styles for the navbar partial.
+//
+///
+
+
+///------------------------------------------------------------------------///
+//  Common                                                                  //
+///------------------------------------------------------------------------///
+
+$navbar-menu--fg: $white
+$navbar-menu--bg: #09628e
+$navbar--shadow: transparentize($navbar-menu--bg, 0.6)
+
+
+.navbar
+    background: $white
+    color: $dark-blue
+    box-shadow: 0 0 1.5rem 0.1rem $navbar--shadow
+    width: 100%
+    +pad($grid--s, height 2)
+    position: absolute
+    z-index: 10
+
+.navbar .logo
+    +image($navbar-logo, 3.8rem 4rem, center/contain)
+    margin: auto
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
+/// Navbar item widths
+$navbar-l1-item: 50%
+$navbar-l2-item: 50%
+$navbar-l3-item: 100%
+
+
+/// Level 2+ menu item
+=navbar-menu__item
+    color: $navbar-menu--fg
+    font: 700 2.1rem/1 Nunito
+    text-align: center
+    text-decoration: none
+    text-shadow: 0.3rem 0.3rem $dark-blue
+    border-bottom: 0.1rem solid transparentize($bright-blue, 0.8)
+    width: $navbar-l2-item
+    +pad($grid--s, height 2)
+    padding: 1.8rem 0
+
+/// Level 2+ menu item drop shadow
+=navbar-menu__item--shadow
+    box-shadow: 0 0.6rem 0.6rem 0.1rem $navbar--shadow
+
+
+=navbar-l3
+    display: none
+    width: $navbar-l3-item
+    flex-wrap: wrap
+
+    &-label, .item
+        +navbar-menu__item
+
+    /* Arrow below the label */
+    &-toggle:checked + &-label .arrow
+        +image($navbar-menu-arrow, 2.3rem 1.2rem, center/contain)
+        content: " "
+        margin: auto
+        position: relative
+        top: 1.8rem
+
+    /* Set toggle over the label */
+    &-toggle
+        +pad($grid--s, height 2)
+        position: absolute
+        opacity: 0
+
+    /* Display menu items when toggle input is checked */
+    &-toggle:checked + &-label + &
+        display: flex
+
+    .item
+        background: transparentize($white, 0.85)
+        border-bottom: 0.1rem solid $navbar-menu--bg
+        flex: 1 1 $navbar-l3-item
+
+    .m--active
+        background: transparentize($white, 0.7)
+        border-bottom: 0.2 solid $navbar-menu--bg
+
+
+=navbar--s
+    /* Level 1 menu */
+    .navbar
+        display: flex
+        align-items: center
+
+    .navbar .link.m--logo
+        flex: 1 1 $navbar-l1-item
+
+
+    /* Level 2 menu */
+    .nav-menu
+        list-style: none
+        background: $navbar-menu--bg
+        display: none
+        width: 100%
+        margin: 0
+        position: absolute
+        +pad($grid--s, top 2)
+        left: 0
+        flex-wrap: wrap
+
+        /* Menu icon, menu toggled */
+    .nav-menu-toggle:checked + .nav-menu-label:before
+        +image($navbar-menu-close, 1.3rem 1.3rem, center/contain)
+        top: -0.2rem
+
+    /* Checkbox input element used as menu toggle.  It is positioned over
+        the menu label with 0 opacity to receive checked input to trigger
+        menu display, while keeping label text visible. */
+    .nav-menu-toggle
+        width: $navbar-l2-item
+        +pad($grid--s, height 2)
+        position: absolute
+        top: 0
+        left: $navbar-l2-item
+        opacity: 0
+
+    /* Show level 2 menu when menu toggle is checked */
+    .nav-menu-toggle:checked + .nav-menu-label + .nav-menu
+        display: flex
+
+    /* Menu toggle label */
+    .nav-menu-label
+        font: 700 2.1rem Nunito
+        color: $dark-blue
+        text-align: center
+        text-decoration: none
+        margin: auto
+        flex: 1 1 $navbar-l2-item
+
+    /* Menu label icon */
+    .nav-menu-label:before
+        +image($navbar-menu-open, 1.7rem 1.5rem, center/contain)
+        content: " "
+        margin: 0 0.6rem 0 0
+        display: inline-block
+
+    /* Menu items in two columns */
+    .nav-menu .item
+        +navbar-menu__item
+        flex: 1 1 $navbar-l2-item
+
+        /* Left column of items has right edge border */
+        &.m--left
+            border-right: 0.1rem solid transparentize($bright-blue, 0.8)
+
+        /* Last menu item has drop shadow and different width */
+        &.m--last
+            +navbar-menu__item
+            +navbar-menu__item--shadow
+            flex: 1 1 100%
+
+        /* Server-side hook for active link state */
+        &.m--active
+            background: transparentize($white, 0.7)
+
+
+    /* Level 3 menus */
+    .nav-about
+        +navbar-l3
+
+        /* Toggle is the same size as other level 2 items */
+        &-toggle
+            width: $navbar-l2-item
+            +pad($grid--s, top 2)
+            left: $navbar-l2-item
+
+    .nav-user
+        +navbar-l3
+
+        /* Username label */
+        &-label
+            +navbar-menu__item--shadow
+            width: $navbar-l3-item
+
+        /* User icon next to label */
+        &-label:before
+            +image($navbar-menu-user, 1.3rem 1.4rem, center/contain)
+            content: " "
+            position: relative
+            margin: 0 0.6rem 0 0
+            display: inline-block
+
+        /* Set absolute toggle position in relation to the bottom
+            of the navbar menu. */
+        &-toggle
+            width: $navbar-l3-item
+            bottom: 0
+            left: 0
+
+        /* When toggle is triggered, re-position it further up the revealed
+            menu so it stays over the label. The offset is (navbar menu item
+            height) * (no. of user item rows). In multiples of the vertical
+            rhythm value, this would be 2 * 4 = 8. */
+        &-toggle:checked
+            +pad($grid--s, height 8)
+
+        /* When toggle is triggered, remove drop shadow from the label, as it
+            is no longer the last item on the navbar menu. */
+        &-toggle:checked + &-label
+            box-shadow: unset
+
+        .item.m--last
+            +navbar-menu__item--shadow
+
+
+/* xs and s share the same layout */
++respond("xs")
+    +navbar--s
+
+
++respond("s")
+    +navbar--s
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    /* Menu link appearance */
+    .navbar .item,
+    .nav-about-label,
+    .nav-user-label
+        font: 700 2.1rem/1 Nunito
+        color: $green-shade
+        text-decoration: none
+        cursor: pointer
+        &:hover
+            color: $dark-blue
+
+
++respond("m")
+    /* Center flex items */
+    .navbar
+        +box(center center)
+
+    /* Float to the right */
+    .navbar .link.m--logo
+        +pad($grid--m, width 3)
+        +pad($grid--m, pad 0 1 0 0)
+        margin-left: auto
+
+    /* Float to the left */
+    .nav-menu
+        +pad($grid--m, width 22)
+        display: flex
+        margin: auto auto auto 0
+
+    /* Hide unused menu toggles */
+    .nav-menu-toggle,
+    .nav-menu-label
+        display: none
+
+    /* Menu links and about menu label */
+    .navbar .item,
+    .nav-about-label,
+        +pad($grid--m, pad 0 1 0 0)
+
+    /* Sign in link and user menu label */
+    .navbar .m--last,
+    .nav-user-label
+        +pad($grid--m, pad 0 0.5 0 0)
+
+    /* Fill remaining space until the last item */
+    .nav-about-label
+        flex: 1
+
+    /* [FIXME] Temporarily hide elements pending confirmed design */
+    .nav-about,
+    .nav-about-toggle,
+    .navbar .arrow,
+    .nav-user,
+    .nav-user-toggle
+        display: none

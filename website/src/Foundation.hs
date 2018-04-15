@@ -214,3 +214,17 @@ navbarLayout pageName widget = do
     classes = T.unwords
             . List.tail
             . T.splitOn "/"
+
+defaultLayoutNew :: Widget -> Handler Html
+defaultLayoutNew widget = do
+    maybeUser <- maybeAuth
+    let navbar :: Widget
+        navbar = $(widgetFile "main/navbar")
+
+    -- This should catch only main.hamlet, because _main.sass is already
+    -- @import-ed in page SASS and we don't need to load it here
+    pc <- widgetToPageContent $(widgetFile "main/main")
+    withUrlRenderer $(hamletFile "templates/main/main-wrapper.hamlet")
+  where
+    footer :: Widget
+    footer = $(widgetFile "main/footer")

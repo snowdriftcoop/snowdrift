@@ -1,0 +1,11 @@
+^{navbar}
+
+$# Begin page body
+<main>
+  $# Begin alerts
+  <div .alerts>
+  $# End alerts
+  ^{widget}
+$# End page body
+
+^{footer}

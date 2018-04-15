@@ -1,0 +1,107 @@
+/// main.sass
+//
+// Description: the template wrapper used by most pages.
+//
+///
+
+
+///------------------------------------------------------------------------///
+//  Imports: base                                                           //
+///------------------------------------------------------------------------///
+
+/// - base: Design Guide elements
+    - mikuro: grid mixins
+@import base
+@import mikuro
+
+
+///------------------------------------------------------------------------///
+//  Grid settings and media queries                                         //
+///------------------------------------------------------------------------///
+
+/// Grid settings
+$grid--s: (container: 39rem, cols: 4, gutter: 3rem, v-rhythm: 3rem)
+$grid--m: (container: 75rem, cols: 8, gutter: 3rem, v-rhythm: 3rem)
+
+
+/// Convert container width from number to string for media queries
+$view--s: num-string(map-get($grid--s, "container"), "px")
+$view--s-1: num-string((map-get($grid--s, "container") - 0.1), "px")
+
+$view--m: num-string(map-get($grid--m, "container"), "px")
+$view--m-1: num-string((map-get($grid--m, "container") - 0.1), "px")
+
+/// Media query mixin
+=respond($view)
+    @if $view == "xs"
+        @media (max-width: #{$view--s-1})
+            @content
+    @else if $view == "s"
+        @media (min-width: #{$view--s}) and (max-width: #{$view--m-1})
+            @content
+    @else if $view == "m"
+        @media (min-width: #{$view--m})
+            @content
+
+
+///------------------------------------------------------------------------///
+//  Init @font-face and global selectors                                    //
+///------------------------------------------------------------------------///
+
+/* @font-face */
++nunito--300        // text--body
++nunito--300i
++nunito--400        // text--link
++nunito--400i
++nunito--700        // text--headline, text--title
++nunito--700i
++nunito--800        // button--*
+
+
+/* Global selector: zero-margin/padding border-box preset */
++star--border-box
+
+
+/* Font scaling */
++respond("xs")
+    /* html: 1rem = 8px */
+    +html--8px
+
++respond("s")
+    /* html: 1rem = 10px */
+    +html--10px
+
++respond("m")
+    +html--10px
+
+
+///------------------------------------------------------------------------///
+//  Preset modifiers                                                        //
+///------------------------------------------------------------------------///
+
+/* Links nesting div elements to inherit the correct height */
+.m--div
+    display: block
+
+
+///------------------------------------------------------------------------///
+//  Imports: partials                                                       //
+///------------------------------------------------------------------------///
+
+@import _navbar
+@import _content
+@import _footer
+
+
+///------------------------------------------------------------------------///
+//  Development mode                                                        //
+///------------------------------------------------------------------------///
+
+/// Skip this section for production.
+
+/// Grid overlay settings
+$dev--s: (grid: $grid--s, show: equal)
+$dev--m: (grid: $grid--m, show: equal)
+
++show-grid($dev--s)
++show-grid($dev--m)

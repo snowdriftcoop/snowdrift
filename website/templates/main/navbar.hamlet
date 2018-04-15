@@ -1,0 +1,47 @@
+<nav .navbar>
+  <a .link .m--div .m--logo href="https://snowdrift.coop">
+    <div .logo>
+  $# Begin L2 menu
+  <input .nav-menu-toggle type="checkbox">
+  <div .nav-menu-label>
+    Menu
+  <div .nav-menu>
+    <a .item .m--left href=@{WelcomeR}>
+      Home
+    <a .item href=@{HowItWorksR}>
+      How it works
+    <a .item .m--left href=@{ProjectsR}>
+      Projects
+    $# Begin L3 about menu
+    <input .nav-about-toggle name="navbar-menu" type="radio">
+    <div .nav-about-label>
+      About
+      <div .arrow>
+    <div .nav-about>
+      <a .item href="">
+        Team
+      <a .item href=@{ContactR}>
+        Contact
+      <a .item href="https://community.snowdrift.coop">
+        Community
+    $# End L3 about menu
+    $maybe Entity _ _ <- maybeUser
+      $# Begin L3 user menu
+      <input .nav-user-toggle name="navbar-menu" type="radio">
+      <div .nav-user-label>
+        Jane Doe
+        <div .arrow>
+      <div .nav-user>
+        <a .item href="">
+          Now
+        <a .item href="">
+          History
+        <a .item href="">
+          Settings
+        <a .item .m--last href=@{AuthR LogoutR}>
+          Sign out
+      $# End L3 user menu
+    $nothing
+      <a .item .m--last href=@{AuthR LoginR}>
+        Sign in
+  $# End L2 menu

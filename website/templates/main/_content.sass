@@ -1,0 +1,28 @@
+/// _content
+//
+// Description: set up common page elements accompanying the template.
+//
+///
+
+
+.header.m--tilt
+    +bg($header-bg-flbk, center bottom/cover no-repeat)
+    +text--title
+    color: $dark-blue
+    text-align: center
+    margin: 0 0 3rem 0
+
+
++respond("xs")
+    .header.m--tilt
+        padding: 10.5rem 0 6rem
+
+
++respond("s")
+    .header.m--tilt
+        padding: 10.5rem 0 6rem
+
+
++respond("m")
+    .header.m--tilt
+        padding: 15rem 0 9rem

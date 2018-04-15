@@ -1,0 +1,288 @@
+/// _base
+//
+// Description:
+// - Implement Design Guide specifications as applicable
+// - Provide helper/shorthand mixins
+// - Provide attribute sets for reuse
+//
+// Contents:
+// - Colors
+// - Typography
+// - Helper mixins
+// - Pattern mixins
+///
+
+/// Bootstrap paths and variables
+@import env
+
+
+///------------------------------------------------------------------------///
+//  Colors                                                                  //
+///------------------------------------------------------------------------///
+
+/// Palette
+    Design Guide colors
+$dark-blue:     #13628e
+$bright-blue:   #c5f1fd
+$text-blue:     #47cfec
+$gold:          #f9ff68
+$white:         #ffffff
+$green:         #4ebf7a
+$green-shade:   #44a76b
+$red:           #d66a6a
+
+/// Alerts
+    Text and background colors
+$alert__fg--success: darken($green, 10%)
+$alert__bg--success: lighten($green, 35%)
+$alert__fg--info:    darken($text-blue, 15%)
+$alert__bg--info:    lighten($bright-blue, 5%)
+$alert__fg--warning: darken($gold, 35%)
+$alert__fg--warning: lighten($gold, 15%)
+$alert__fg--danger:  darken($red, 15%)
+$alert__bg--danger:  lighten($red, 20%)
+
+/// Typography
+    Text in various contexts
+$link--normal:       $green-shade   // link, normal
+$link--hover:        #378756        // link, hover (unconfirmed)
+$link--visited:      $green-shade   // link, visited (unknown)
+
+
+///------------------------------------------------------------------------///
+//  Typography                                                              //
+///------------------------------------------------------------------------///
+
+/// Set font attributes
+    Parameters: family, style, weight, font path
+=font-init($family, $weight, $style, $woff2, $woff)
+    @font-face
+        font-family: $family
+        font-weight: $weight
+        font-style: $style
+        font-display: auto
+        src: url($woff2) format("woff2"), url($woff) format("woff")
+
+/// Font-face presets
+    Presets are called as needed. Subsites may use all or a few presets.
+// Light
+=nunito--300
+    +font-init("Nunito", 300, normal, $nunito-300, $nunito-300-woff)
+=nunito--300i
+    +font-init("Nunito", 300, italic, $nunito-300i, $nunito-300i-woff)
+
+// Regular
+=nunito--400
+    +font-init("Nunito", 400, normal, $nunito-400, $nunito-400-woff)
+=nunito--400i
+    +font-init("Nunito", 400, italic, $nunito-400i, $nunito-400i-woff)
+
+// SemiBold
+=nunito--600
+    +font-init("Nunito", 600, normal, $nunito-600, $nunito-600-woff)
+=nunito--600i
+    +font-init("Nunito", 600, italic, $nunito-600i, $nunito-600i-woff)
+
+// Bold
+=nunito--700
+    +font-init("Nunito", 700, normal, $nunito-700, $nunito-700-woff)
+=nunito--700i
+    +font-init("Nunito", 700, italic, $nunito-700, $nunito-700i-woff)
+
+// ExtraBold
+=nunito--800
+    +font-init("Nunito", 800, normal, $nunito-800, $nunito-800-woff)
+=nunito--800i
+    +font-init("Nunito", 800, italic, $nunito-800i, $nunito-800i-woff)
+
+
+/// Text sizes from the Design Guide v. 2017-06-23
+    Based on html font size at 62.5% of 16px browser font size
+=text--title
+    font: 700 3.7rem/1 Nunito, sans-serif
+
+=text--headline
+    font: 700 2.9rem/3rem Nunito, sans-serif
+
+=text--body
+    font: 300 2.1rem/3rem Nunito, sans-serif
+
+=text--link
+    font: 400 2.1rem/3rem Nunito, sans-serif
+    color: $link--normal
+    text-decoration: none
+    cursor: pointer
+    transition: all 0.15s ease-in 0s
+    &:hover, &:active, &:focus
+        color: $link--hover
+    &:visited
+        color: $link--visited
+
+=text--small
+    font: 400 1.7rem/3rem Nunito, sans-serif
+
+=text--smallest
+    font: 600 1.3rem/3rem Nunito, sans-serif
+
+
+///------------------------------------------------------------------------///
+//  Helper mixins                                                           //
+///------------------------------------------------------------------------///
+
+/// Global border-box preset
+    Clear all elements of margin and padding. A non-zero default is
+    inapplicable to most cases and interferes with layout calculations.
+    Border-box helps contain margin/padding changes to the specified
+    element.
+=star--border-box
+    *
+        margin: 0
+        padding: 0
+        box-sizing: border-box
+
+
+/// html font-size preset
+    Set font size to 62.5% of 16px browser default, i.e. 1rem = 10px.
+=html--10px
+    html
+        font-size: 62.5%
+
+=html--8px
+    html
+        font-size: 50%
+
+
+/// Insert background attribute
+    Parameters: image path, background position/size
+    Passing "center" for $args will output a centered, no-repeat preset.
+=bg($img, $args)
+    @if $args == "center"
+        background: url($img) center center no-repeat
+    @else
+        background: url($img) + " #{$args}"
+
+/// Like =bg, but for non-repeating images with size attributes.
+    Parameters: image path, width height, bg position/bg size
+    e.g. +image($project-logo, 19.2rem 13.2rem, center/contain)
+=image($img, $size, $args)
+    background: url($img) + " #{$args} no-repeat"
+    width: nth($size, 1)
+    height: nth($size, 2)
+
+
+/// Hide elements visually
+=hidden
+    width: 1px
+    height: 1px
+    position: absolute
+    overflow: hidden
+    clip: rect(0 0 0 0)
+    margin: -1px
+    padding: 0
+    border: 0
+
+
+/// Insert sprite background image
+    Parameters: image, background position x y, size width height
+    e.g. +sprite("/path/to/sprites.svg", 0 0, 3.8rem 4rem)
+=sprite($file, $bgpos, $size)
+    background: url($file) no-repeat $bgpos
+    width: nth($size, 1)
+    height: nth($size, 2)
+
+
+///------------------------------------------------------------------------///
+//  Pattern mixins                                                          //
+///------------------------------------------------------------------------///
+
+/// Set button styles
+    Parameters: text color, bg gradient color 1, bg gradient color 2
+    These are to be used on <a> tag to create a button appearance.
+
+/// +button--base() only provides base styling for making buttons of different
+    sizes, and needs a few more attributes to make a complete button. See the
+    other button-- mixins like +button--sml for examples.
+
+/// The buttons should also be used with a min-width attribute in normal and
+    :hover state, for a button resize effect on hover. min-width is not set
+    here, as the value depends on the length of the link text and the parent
+    element width. Example:
+
+/// .link--example
+        +button--sml($white, $green, $green-shade)
+        min-width: 21rem
+        &:hover
+            min-width: 18rem
+
+=button--base($tc, $bc1, $bc2)
+    $text-shadow1: 0.1rem 0.1rem 0 transparentize($dark-blue, 0.6)
+    $text-shadow2: 0rem 0rem 1rem transparentize($white, 0.5)
+    font-weight: 800
+    line-height: 1
+    font-family: Nunito, sans-serif
+    text-align: center
+    text-decoration: none
+    text-shadow: 0.2rem 0.2rem 0 darken($bc2, 5%)
+    color: $tc
+    background-color: $bc2
+    background-image: linear-gradient($bc1, $bc2)
+    cursor: pointer
+    display: table
+    position: relative
+    width: auto
+    border: 0
+    border-radius: 0.6rem/3rem
+    box-shadow: 0.3rem 0.3rem 0.3rem 0.3rem transparentize($dark-blue, 0.9)
+    transition: all 0.12s ease-out
+    &:hover
+        color: $tc
+        text-shadow: $text-shadow1, $text-shadow2
+
+=button--big($tc, $bc1, $bc2)
+    +button--base($tc, $bc1, $bc2)
+    font-size: 2.1rem
+    padding: 0.9rem 12rem 1.2rem
+    &:hover
+        padding: 0.9rem 6rem 1.2rem
+
+=button--medium($tc, $bc1, $bc2)
+    +button--base($tc, $bc1, $bc2)
+    font-size: 2.1rem
+    padding: 0.9rem 6rem 1.2rem
+    &:hover
+        padding: 0.9rem 3rem 1.2rem
+
+=button--small($tc, $bc1, $bc2)
+    +button--base($tc, $bc1, $bc2)
+    font-size: 1.7rem
+    padding: 0.6rem 3rem 0.9rem
+    &:hover
+        padding: 0.6rem 1.5rem 0.9rem
+
+
+/// Add a tilted baseline effect to a header
+    Parameters: element width (vw), element height (rem),
+    vertical shift (rem), skew amount (deg)
+=header-tilt($width, $height, $vshift, $skew)
+    position: relative
+    clear: both
+    margin: 0
+    z-index: -1
+    &:after
+        content: " "
+        position: absolute
+        width: $width
+        height: $height
+        bottom: $vshift
+        transform: skewY($skew)
+        z-index: -1
+
+
+/// Set horizontal rule line to tilt upward ltr
+=hr-tilt
+    height: 0.15rem
+    margin: 3rem 0
+    transform: skewY(-3deg)
+    background: $bright-blue none repeat scroll 0 0
+    border: 0
+    border-radius: 0.3rem
