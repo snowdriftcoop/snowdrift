@@ -1,0 +1,142 @@
+@import ../main/main
+
+
+/* Image caption box */
+.intro-caption
+    background: #f3f8fa
+    border-radius: 0.3rem
+
+/* Caption box arrows */
+.section .arrow
+    +image($caption-arrow, 6rem 3rem, center/contain)
+    content: " "
+
+    &.m--2-2
+        transform: scaleY(-1)
+
+/* Caption intro text */
+.intro
+    +text--body
+    color: $dark-blue
+
+    &.m--1-2
+        border-bottom: 0.3rem solid $white
+
+
+/* Signup links */
+.signup
+    text-align: center
+
+    .button
+        +button--big($white, $green, $green-shade)
+
+    .more-info
+        +text--link
+
+
+///------------------------------------------------------------------------///
+//  Common layout                                                           //
+///------------------------------------------------------------------------///
+
+/* Box with image captions */
+.intro-caption
+    +pad($grid--m, max-width 18)
+
+/* Top and bottom arrows on intro caption box */
+.section .arrow
+    &.m--1-2
+        +pad($grid--m, mgn 0.5 auto 0)
+
+    &.m--2-2
+        +pad($grid--m, mgn 0 auto 2)
+
+/* Image caption intro text */
+.intro
+    +pad($grid--m, pad 1)
+
+/* Intro images */
+.img.m--intro1
+    +pad($grid--m, max-width 22)
+
+.img.m--intro2
+    +pad($grid--m, max-width 20)
+
+
+/* Signup links */
+.signup
+    +span($grid--m, 4 max auto)
+    +pad($grid--m, mgn 3 auto 4)
+
+    /* When user is logged in, set smaller top margin for only
+        the info link showing */
+    &.m--logged-in
+        +pad($grid--m, mgn 1 auto 4)
+
+    .button
+        +pad($grid--s, mgn 0 auto 0.5)
+
+
+///------------------------------------------------------------------------///
+//  Extra-small                                                             //
+///------------------------------------------------------------------------///
+
++respond("xs")
+    .section
+        +span($grid--s, 4 max-pct both)
+
+
+    .intro-caption
+        margin: auto
+
+    .img.m--intro1,
+    .img.m--intro2
+        width: 100%
+
+
+    .signup .button
+        +button--medium($white, $green, $green-shade)
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
++respond("s")
+    .section
+        +span($grid--s, 4 max-pct auto)
+
+
+    .intro-caption
+        margin: auto
+
+    .img.m--intro1,
+    .img.m--intro2
+        width: 100%
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    .section
+        +span($grid--m, 8 row auto)
+
+    /* Intro images and caption box: offset start position */
+    .img.m--intro1,
+    .img.m--intro2
+        +pad($grid--m, left 3)
+        position: relative
+
+    .intro-caption
+        +pad($grid--m, left 4)
+        position: relative
+
+    /* Shift arrow position 0.5 gutter off center */
+    .section .arrow
+        +pad($grid--m, left 0.5)
+        position: relative
+
+    /* Intro text: more left/right padding */
+    .intro
+        +pad($grid--m, pad 1 2.9 1 2)

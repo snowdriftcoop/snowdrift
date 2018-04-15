@@ -24,7 +24,11 @@ getWelcomeR :: Handler Html
 getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
 
 getHowItWorksR :: Handler Html
-getHowItWorksR = $(widget "page/how-it-works" "How it Works")
+getHowItWorksR = do
+    loggedIn <- isJust <$> maybeAuth
+    defaultLayoutNew $ do
+        setTitle "How it Works"
+        $(widgetFile "page/how-it-works")
 
 getPrivacyR :: Handler Html
 getPrivacyR = $(widget "page/privacy" "Privacy")
