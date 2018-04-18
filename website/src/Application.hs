@@ -16,7 +16,8 @@ module Application
 import Import
 
 import Control.Monad.Logger (liftLoc, runLoggingT)
-import Crowdmatch (crowdmatchManualMigrations, migrateCrowdmatch)
+import Crowdmatch
+        (crowdmatchManualMigrations, migrateCrowdmatch, stripeProduction)
 import Database.Persist.Postgresql
         (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlPool)
 import Database.Persist.Sql (runMigrationSilent)
@@ -60,11 +61,11 @@ makeFoundation appSettings = do
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
 
-    let appStripe :: (Typeable (StripeReturn a), FromJSON (StripeReturn a))
-                  => StripeConfig
-                  -> StripeRequest a
-                  -> IO (Either StripeError (StripeReturn a))
-        appStripe = stripe
+    let conf = StripeConfig $ appStripeSecretKey appSettings
+        appStripeActions =
+            if runningDevelopment
+                then stripeProduction conf
+                else stripeProduction conf
 
     let appAuth = AuthSite
     -- We need a log function to create a connection pool. We need a connection

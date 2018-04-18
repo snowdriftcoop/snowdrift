@@ -1,7 +1,7 @@
 module Handler.Util
         ( snowdriftTitle
         , snowdriftDashTitle
-        , snowstripe
+        , stripeActions
         -- * DELETE handling
         , deleteFromPost
         , handleDelete
@@ -22,12 +22,8 @@ snowdriftTitle t = setTitle $
 snowdriftDashTitle :: MonadWidget m => Text -> Text -> m ()
 snowdriftDashTitle x y = snowdriftTitle $ x `mappend` " — " `mappend` y
 
-snowstripe :: StripeI a -> Handler (Either StripeError a)
-snowstripe req = do
-    conf <- fmap
-        (StripeConfig . appStripeSecretKey . appSettings)
-        getYesod
-    liftIO (runStripe conf req)
+stripeActions :: Handler StripeActions
+stripeActions = getsYesod appStripeActions
 
 -- | The form element that can be inserted to handle a delete.
 deleteFromPost
