@@ -53,20 +53,15 @@ deletePaymentInfoForm :: Form ()
 deletePaymentInfoForm =
     identifyForm delFormId (renderDivsNoLabels deleteFromPost)
 
-stripeConf :: Handler StripeConfig
-stripeConf = fmap
-    (StripeConfig . appStripeSecretKey . appSettings)
-    getYesod
-
 postPaymentInfoR :: Handler Html
 postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
     Entity uid User{..} <- requireAuth
-    conf <- stripeConf
+    stripe <- stripeActions
     ((formResult, _), _) <-
         runFormPost (identifyForm modFormId (paymentForm ""))
     case formResult of
         FormSuccess token -> do
-            stripeRes <- runDB $ storePaymentToken (runStripe conf) uid token
+            stripeRes <- runDB $ storePaymentToken stripe uid token
             case stripeRes of
                 Left e -> stripeError e
                 Right _ -> do
@@ -78,9 +73,9 @@ postPaymentInfoR = handleDelete delFormId deletePaymentInfoR $ do
 
 deletePaymentInfoR :: Handler Html
 deletePaymentInfoR = do
-    conf <- stripeConf
+    stripe <- stripeActions
     Entity uid User {..} <- requireAuth
-    stripeDeletionHandler =<< runDB (deletePaymentToken (runStripe conf) uid)
+    stripeDeletionHandler =<< runDB (deletePaymentToken stripe uid)
     redirect DashboardR
   where
     stripeDeletionHandler =

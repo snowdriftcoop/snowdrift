@@ -14,25 +14,22 @@ import Web.Stripe
 import Yesod.Core.Types (Logger)
 import Yesod.GitRev
 
+import Crowdmatch (StripeActions)
+
 import AuthSite
 import Settings
 
 -- | The God-object available to every Handler. This is the site's
 -- foundation ("yesod").
 data App = App
-    { appSettings    :: AppSettings
-    , appStatic      :: Static -- ^ Settings for static file serving.
-    , appConnPool    :: ConnectionPool -- ^ Database connection pool.
-    , appHttpManager :: Manager
-    , appLogger      :: Logger
-    , appGitRev      :: GitRev
-    , appAuth        :: AuthSite
-      -- | The function for doing stripe API calls. Swapped out for a mock
-      -- thing in tests.
-    , appStripe      :: forall a. (Typeable (StripeReturn a), FromJSON (StripeReturn a))
-                     => StripeConfig
-                     -> StripeRequest a
-                     -> IO (Either StripeError (StripeReturn a))
+    { appSettings      :: AppSettings
+    , appStatic        :: Static -- ^ Settings for static file serving.
+    , appConnPool      :: ConnectionPool -- ^ Database connection pool.
+    , appHttpManager   :: Manager
+    , appLogger        :: Logger
+    , appGitRev        :: GitRev
+    , appAuth          :: AuthSite
+    , appStripeActions :: StripeActions
     }
 
 -- This function generates the route types, and also generates the

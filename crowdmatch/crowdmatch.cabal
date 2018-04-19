@@ -23,6 +23,7 @@ library
         Crowdmatch.Model
         Crowdmatch.ModelDataTypes
         Crowdmatch.Skeleton
+        Crowdmatch.Stripe
     -- other-modules:
     -- other-extensions:
     hs-source-dirs: src
