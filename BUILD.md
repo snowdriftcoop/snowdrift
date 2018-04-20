@@ -101,10 +101,11 @@ With brew, install the core dependencies:
 ### Windows
 
 *Status:* We welcome testing but do not officially support Windows. In the past,
-we have had only partial success running on Windows. We know that the sdb.hs
-tool won't work on Windows because it uses UNIX sockets. We welcome any patches,
-feedback, or Postgres-on-Windows help to get an alternative working. Steps used
-in past testing:
+we have had only partial success running on Windows. We know that the `.sdc`
+Makefile won't work on Windows because it uses UNIX sockets. And therefore,
+`build.sh` won't either: it uses `.sdc`. We welcome any patches, feedback, or
+Postgres-on-Windows help to get an alternative working. Steps used in past
+testing:
 
 Install [Git] per instructions on the website.
 
@@ -152,8 +153,8 @@ To stop the site, type `quit` in the terminal, then press Enter.
 
 ## Troubleshooting
 
-If `./build.sh` commands fail in any way, try running `./sdb.hs clean` and then
-try building again.
+If `./build.sh` commands fail in any way, try running `./build.sh clean` and
+then try building again.
 
 ## Using the local site
 

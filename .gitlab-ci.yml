@@ -29,4 +29,4 @@ test:
     script:
         - ./build.sh test
         # Stop the database, so gitlab-runner knows the whole job is done.
-        - ./sdb.hs clean
+        - ./build.sh clean

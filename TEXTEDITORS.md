@@ -244,13 +244,9 @@ The following works for all text-editors that recognize tags files.
 
 Now, you can quickly jump to tags with whatever mechanism your text editor uses.
 
-### If you want to jump to the def of *anything\** used in our Haskell code:
+### If you want to jump to the def of *anything* used in our Haskell code:
 
 Simply run `dev-tools/tag.sh`.
-
-\***NB:** At time of writing, sdb.hs is the one thing we cannot fully tag with the
-above method, since its deps are specified in an unusual way. This problem will
-go away once we replace sdb with a Makefile.
 
 The tagging script uses Codex. You may wish to visit [Codex's homepage](https://github.com/aloiscochard/codex)
 to see its usage doc, which includes a vim-specific setting.
