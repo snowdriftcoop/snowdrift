@@ -1,37 +1,54 @@
 #!/usr/bin/env bash
 
-#
-#  *Heads up:* sdb will be replaced with a Makefile.
-#  So please expect future changes here accordingly.
-#
+projRoot="`dirname "$0"`" # Proj. root figured out from this script's location.
+export PGDATA="$projRoot"/.postgres-work
+export PGHOST="$PGDATA"
+export PGDATABASE="snowdrift"
+makeCmdBase=(make -f "$projRoot"/.sdc)
+if [ -z "$IN_NIX_SHELL" ]; then
+    makeCmd=makeCmdBase # If we are not to use the Nix shell, don't add its arg.
+else
+    makeCmd=makeCmdBase+=('SHELL=nix-shell') # But if we are, append it.
+fi
 
 read -d '' usage <<EOF
 .
 .  build.sh CMD [OPTIONS]
 .
 
-  Used to do standard Haskell/yesod things like run tests and run the
+  Used to do standard Haskell/Yesod things like run tests and run the
   devel site.
 
-  It uses the shake build system to make sure a dev/test database is
-  running.
+  It uses a Makefile to ensure the dev/test database is running.
 
   CMD can be:
 
-      devel
-      test
+      devel  -- Assumed if no CMD is given. Launches development site.
+      test   -- Runs Stack tests. Does not launch site.
+
+      start
+      stop
+      clean
+
       psql
       shell
+
+  'clean' stops the PostgreSQL backend program (server) and "rm -rf"s the
+  cluster data files.
 
   'test' and 'psql' both accept any additional options native to those
   commands.
 
-  'shell' is an advanced command, which sets up the Postgres and stack
+  'shell' is an advanced command, which sets up the Postgres and Stack
   environments and spawns a new shell.
+
+  'start' is usually ran indirectly through 'devel' or 'test'. It only starts
+  the PostgreSQL server, not the website. Similarly, 'stop' simply stops the
+  PostgreSQL server.
 EOF
 
 run_devel () {
-    cd "`dirname "$0"`"/website
+    cd "$projRoot"/website
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
         exec stack exec yesod devel
@@ -40,9 +57,8 @@ run_devel () {
     fi
 }
 
-dbenv () {
-    ./sdb.hs start &&
-    source <(./sdb.hs env)
+start_cluster () {
+    ${makeCmd[*]} start
 }
 
 build_deps_and_install_ghc () {
@@ -70,20 +86,29 @@ main () {
     case $CMD in
         devel)
             build_deps_and_install_ghc &&
-            dbenv &&
+            start_cluster &&
             run_devel
             ;;
         test)
             build_deps_and_install_ghc &&
-            dbenv &&
+            start_cluster &&
             exec stack test --flag Snowdrift:library-only --fast "$@"
             ;;
+        start)
+            start_cluster
+            ;;
+        stop
+            ${makeCmd[*]} stop
+            ;;
+        clean
+            ${makeCmd[*]} clean
+            ;;
         psql)
-            dbenv &&
+            start_cluster &&
             exec psql "$@"
             ;;
         shell)
-            dbenv &&
+            start_cluster &&
             exec stack exec bash
             ;;
         *)
