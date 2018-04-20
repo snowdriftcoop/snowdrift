@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
-projRoot="`dirname "$0"`" # Proj. root figured out from this script's location.
+#  Figure out project root from this script's location and make it absolute:
+projRoot=$(realpath "`dirname "$0"`")
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
 export PGDATABASE="snowdrift"
 makeCmdBase=(make -f "$projRoot"/.sdc)
 if [ -z "$IN_NIX_SHELL" ]; then
-    makeCmd=makeCmdBase # If we are not to use the Nix shell, don't add its arg.
+    makeCmd="${makeCmdBase[*]}" # If we are not to use the Nix shell, don't add its arg.
 else
-    makeCmd=makeCmdBase+=('SHELL=nix-shell') # But if we are, append it.
+    makeCmd="${makeCmdBase[*]}"+=('SHELL=nix-shell') # But if we are, append it.
 fi
 
 read -d '' usage <<EOF
@@ -97,10 +98,10 @@ main () {
         start)
             start_cluster
             ;;
-        stop
+        stop)
             ${makeCmd[*]} stop
             ;;
-        clean
+        clean)
             ${makeCmd[*]} clean
             ;;
         psql)
