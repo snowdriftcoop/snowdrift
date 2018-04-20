@@ -31,7 +31,7 @@ read -d '' usage <<EOF
 EOF
 
 run_devel () {
-    cd `dirname $0`/website
+    cd "`dirname "$0"`"/website
     if [ -z "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
         exec stack exec yesod devel
@@ -60,7 +60,7 @@ main () {
     if [ -z "$1" ]; then
         CMD=devel
     else
-        CMD=$1
+        CMD="$1"
         shift
     fi
 
@@ -76,11 +76,11 @@ main () {
         test)
             build_deps_and_install_ghc &&
             dbenv &&
-            exec stack test --flag Snowdrift:library-only --fast $@
+            exec stack test --flag Snowdrift:library-only --fast "$@"
             ;;
         psql)
             dbenv &&
-            exec psql $@
+            exec psql "$@"
             ;;
         shell)
             dbenv &&
@@ -92,4 +92,4 @@ main () {
     esac
 }
 
-main $@
+main "$@"
