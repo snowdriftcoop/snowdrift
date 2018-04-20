@@ -10,6 +10,9 @@ testDb := snowdrift_test
 # This file is created after the cluster is initialized:
 waitForThis := $(PGDATA)/PG_VERSION
 
+# *NB:* There seems to be a bug in Postgres that does not care what you put
+# for the database: if the cluster's running, it's accepting and you get a
+# successful exit status.
 # `pg_isready -d foo` tells us whether database foo is ready to accept a
 # connection. Below, "-q" is for "quiet": we only look at the program's exit
 # status, so we don't want any stdout/stderr here. Note the below is not a
@@ -30,12 +33,8 @@ pgStart := pg_ctl start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 .PHONY: start
 start: service
 	## Ensuring our databases exist...
-#	If the main Snowdrift database is ready, don't create it.
-#	If it is not ready, we assume this is because it does not exist.
-#	So if it's the latter, we create it. Otherwise, skip the creating.
-	@$(dbIsReady) $(mainDb) || createdb $(mainDb)
-#	And same for the test database:
-	@$(dbIsReady) $(testDb) || createdb $(testDb)
+	createdb $(mainDb)
+	createdb $(testDb)
 
 .PHONY: stop
 stop:
@@ -62,9 +61,6 @@ service: $(waitForThis)
 #	in which case we run the start command:
 	@$(dbIsReady) postgres || $(pgStart)
 
-$(waitForThis): $(PGDATA)
+$(waitForThis):
 	## Initializing cluster...
 	@pg_ctl initdb
-
-$(PGDATA):
-	@mkdir $(PGDATA)
