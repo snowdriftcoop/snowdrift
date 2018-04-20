@@ -10,9 +10,9 @@ testDb := snowdrift_test
 # This file is created after the cluster is initialized:
 waitForThis := $(PGDATA)/PG_VERSION
 
-# *NB:* There seems to be a bug in Postgres that does not care what you put
-# for the database: if the cluster's running, it's accepting and you get a
-# successful exit status.
+# *NB:* There seems to be a bug in Postgres 9.5 that does not care if the given
+# database exists: if the cluster's running, it's accepting and you get a
+# successful exit status, regardless of whether the specified database exists.
 # `pg_isready -d foo` tells us whether database foo is ready to accept a
 # connection. Below, "-q" is for "quiet": we only look at the program's exit
 # status, so we don't want any stdout/stderr here. Note the below is not a
