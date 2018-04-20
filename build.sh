@@ -2,14 +2,22 @@
 
 #  Figure out project root from this script's location and make it absolute:
 projRoot=$(realpath "`dirname "$0"`")
+
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
 export PGDATABASE="snowdrift"
-makeCmdBase=(make -f "$projRoot"/.sdc)
-if [ -z "$IN_NIX_SHELL" ]; then
-    makeCmd="${makeCmdBase[*]}" # If we are not to use the Nix shell, don't add its arg.
+pgClusterNoun=(make -f "$projRoot"/.sdc) # We'll build a sentence from this.
+
+# If we have been told to use the Nix shell, and we are not already in it, then
+# we must instruct Make to use it. But if we were not told to use the Nix shell,
+# or if we are already in it, we have no Nix-y things to address. Note that Make
+# itself would be running in a Nix environment as a child of this script if this
+# script is already in a Nix environment.
+if [ "$USE_NIX_SHELL" ] && ! [ "$IN_NIX_SHELL" ]; then
+    # Just needs a verb:
+    pgClusterSubject=${pgClusterNoun[*]}+=('SHELL=nix-shell')
 else
-    makeCmd="${makeCmdBase[*]}"+=('SHELL=nix-shell') # But if we are, append it.
+    pgClusterSubject=${pgClusterNoun[*]} # Ditto.
 fi
 
 read -d '' usage <<EOF
@@ -50,7 +58,7 @@ EOF
 
 run_devel () {
     cd "$projRoot"/website
-    if [ -z "$IN_NIX_SHELL" ]; then
+    if ! [ "$IN_NIX_SHELL" ]; then
         stack build yesod-bin &&
         exec stack exec yesod devel
     else
@@ -59,7 +67,7 @@ run_devel () {
 }
 
 start_cluster () {
-    ${makeCmd[*]} start
+    ${pgClusterSubject[*]} start # subject + verb = sentence
 }
 
 build_deps_and_install_ghc () {
@@ -81,7 +89,7 @@ main () {
         shift
     fi
 
-    # Configure local Stripe keys for shell, devel, and test.
+    # Configure local Stripe keys for devel, test and shell.
     [ -e .stripe_keys ] && source .stripe_keys
 
     case $CMD in
@@ -99,10 +107,10 @@ main () {
             start_cluster
             ;;
         stop)
-            ${makeCmd[*]} stop
+            ${pgClusterSubject[*]} stop
             ;;
         clean)
-            ${makeCmd[*]} clean
+            ${pgClusterSubject[*]} clean
             ;;
         psql)
             start_cluster &&
