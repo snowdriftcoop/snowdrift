@@ -7,28 +7,28 @@ any efforts to add such support. See below for partial setup instructions.
 
 ## Install System Dependencies
 
-[Git], [PostgreSQL], and [Stack] are the only dependencies needed at the system
-level. Stack takes care of finding or installing the correct GHC version. Some
-systems need a few additional libraries to support the core dependencies.
+[Git], [PostgreSQL], [Stack] and [Make] are the only dependencies needed at the
+system level. Stack takes care of finding or installing the correct GHC version.
+Some systems need a few additional libraries to support the core dependencies.
 
 **Follow the details for your system, then skip to the "Get the Snowdrift Code"
 section.**
 
 ### Debian, Ubuntu, and any related derivatives
 
-Install Git and PostgreSQL with needed libraries:
+Install Git, PostgreSQL and Make with needed libraries:
 
     sudo apt-get update
-    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev
+    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev make
 
 Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
 
 ### CentOS/RHEL and Fedora
 
-* Install Git and needed libraries:
+* Install Git, needed libraries and Make:
 
-        sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel
+        sudo dnf install git gcc-c++ gmp-devel ncurses-devel openssl-devel zlib-devel make
 
     For CentOS and Fedora <=22, replace the `dnf` commands with `yum`. Fedora <=23
 may also need the `libstdc++-static` package.
@@ -50,9 +50,9 @@ may also need the `libstdc++-static` package.
 
 ### Arch Linux
 
-Install Git, PostgreSQL, and Stack by running this command as `root`:
+Install Git, PostgreSQL, Stack and Make by running this command as `root`:
 
-    pacman -S git postgresql stack
+    pacman -S git postgresql stack make
 
 Arch also requires installation of the ncurses5-compat-libs package, found in
 the AUR.  If you are unsure how to install from the AUR, please refer to the
@@ -97,6 +97,7 @@ With brew, install the core dependencies:
     brew install git
     brew install postgres
     brew install haskell-stack
+    brew install make
 
 ### Windows
 
@@ -116,6 +117,10 @@ Add the PostgreSQL bin directory to the path
 `C:\Program Files (x86)\PostgreSQL\9.4\bin`
 
 Follow the instructions to [install Stack for Windows].
+
+*TODO:* We're yet to test Make on Windows. For the time being, you'll have to
+research yourself how to install it on Windows. Please let us know what you did
+if you get something working.
 
 ## Get the Snowdrift code
 
@@ -146,10 +151,11 @@ Run the site in development mode via:
 
     ./build.sh
 
-This will automatically rebuild and rerun the site whenever it detects
-changes to the code.
+The command builds anything that has been deleted or changed before launching.
 
 To stop the site, type `quit` in the terminal, then press Enter.
+
+Currently, the above command is our usual means of launching the site.
 
 ## Troubleshooting
 
@@ -246,6 +252,7 @@ about technical development.
 [haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
 [install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
+[Make]: https://www.gnu.org/software/make/manual/html_node/index.html
 [PostgreSQL]: http://www.postgresql.org/download/
 [README]: README.md
 [Stack]: https://github.com/commercialhaskell/stack#the-haskell-tool-stack

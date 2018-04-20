@@ -53,7 +53,7 @@ or to start clean before making changes you plan to commit) run:
 
 If you make specific improvements or additions to your database that you think
 will make for a better start for other contributors...*TODO: add instructions
-for how to use those commands for those unfamiliar*
+for those unfamiliar*
 
 Test that the export worked by running the reset command above and verifying in
 the running site that everything works as expected.
