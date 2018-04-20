@@ -35,7 +35,7 @@ direction before committing everything, you will need to both reset your
 database and remove the unwanted migration files (as well as reset the relevant
 code).
 
-## Database management with `build.sh`
+## Database management with build.sh
 
 `build.sh` has several functions for database management.
 
