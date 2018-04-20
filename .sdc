@@ -33,8 +33,9 @@ pgStart := pg_ctl start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 .PHONY: start
 start: service
 	## Ensuring our databases exist...
-	createdb $(mainDb)
-	createdb $(testDb)
+#   Using Make's "-" prefix to keep going even if either db already exists.
+	@-createdb $(mainDb)
+	@-createdb $(testDb)
 
 .PHONY: stop
 stop:
@@ -63,4 +64,5 @@ service: $(waitForThis)
 
 $(waitForThis):
 	## Initializing cluster...
-	@pg_ctl initdb
+#Using Make's "-" prefix to keep going even if cluster has already been init'ed.
+	@-pg_ctl initdb
