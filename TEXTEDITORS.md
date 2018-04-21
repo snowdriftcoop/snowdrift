@@ -4,41 +4,34 @@ This guide covers our recommended options for FLO (Free/Libre/Open) text-editors
 and IDE development tools for hacking on Snowdrift (NB: most of this applies
 equally to any Yesod-based project).
 
+**NB:** notice the section about jumping to definitions. It's down a ways.
+
 ## Text editor packages and settings
 
 ### Atom
 
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
-good for beginners and advanced alike.
+good for beginners and advanced alike.  
+To configure it for Haskell development, we recommend following
+[this](https://atom-haskell.github.io/). Before reading, note:
+* Chapter II covers Atom package installation. You may wish to skip there and
+just get those things installed and then read other portions on an as-needed
+basis.
+* Note `stack build ghc-mod` [as explained](https://atom-haskell.github.io/core-packages/haskell-ghc-mod/#maintain-a-separate-ghc-mod-installation-for-each-stack-resolver).
+* At time of writing, we are using `brittany` for the beautifier.
+* Provided we have `stack.yaml` right, you should be able to ignore any blurb
+boxes about specific versions of GHC / lts.
+* The `atom-haskell` package installed `hasklig`. I uninstalled this, because
+I did not like the way it altered everything's font.
 
 #### Atom settings
 
 Some general settings:
 
-* In the main Atom settings, leave soft tabs checked and set 4-space tabs
-* Packages/Tree View: consider "Hide Ignored Names" and "Hide VCS Ignored Files"
+* In the main Atom settings, leave soft tabs checked and set 4-space tabs.
+* Packages/Tree View: consider "Hide Ignored Names" and "Hide VCS Ignored Files".
 
-#### Atom packages
-
-We recommend at least the Atom packages:
-* [language-shakespeare](https://atom.io/packages/language-shakespeare)
-    * in the language-shakespeare package settings, change the hamlet tab-length
-      to 2, leave others at 4
-* [language-haskell](https://atom.io/packages/language-haskell)
-
-
-The [ide-haskell](https://atom.io/packages/ide-haskell) package offers further
-development tools including error-checking, linting, and type information. To
-install ide-haskell for Atom:
-
-* *Note: after many changes to snowdrift build process and file structure,
-    ghc-mod may or may not work, testing is needed.*
-* Run `stack build ghc-mod hlint stylish-haskell`
-* Install the relevant Atom packages:
-  `apm install language-haskell haskell-ghc-mod ide-haskell autocomplete-haskell ide-haskell-cabal`
-* Make sure to check "Stack sandbox" in the haskell-ghc-mod settings
-
-Other useful Atom packages to consider:
+#### Atom packages to consider
 
 * Various Git-related tools:
     * [tree-view-git-status](https://atom.io/packages/tree-view-git-status)
