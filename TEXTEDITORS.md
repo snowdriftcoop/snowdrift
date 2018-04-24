@@ -13,16 +13,17 @@ equally to any Yesod-based project).
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
 good for beginners and advanced alike.  
 To configure it for Haskell development, we recommend following
-[this](https://atom-haskell.github.io/). Before reading, note:
+[the official Atom-Haskell documentation](https://atom-haskell.github.io/). Before reading, note:
+
+* At time of writing, we are using `brittany` as the beautifier.  
+* Provided we have `stack.yaml` right, you should be able to ignore any blurb
+boxes about specific versions of GHC / lts.
 * Chapter II covers Atom package installation. You may wish to skip there and
 just get those things installed and then read other portions on an as-needed
 basis.
-* Note `stack build ghc-mod` [as explained](https://atom-haskell.github.io/core-packages/haskell-ghc-mod/#maintain-a-separate-ghc-mod-installation-for-each-stack-resolver).
-* At time of writing, we are using `brittany` for the beautifier.
-* Provided we have `stack.yaml` right, you should be able to ignore any blurb
-boxes about specific versions of GHC / lts.
-* The `atom-haskell` package installed `hasklig`. I uninstalled this, because
-I did not like the way it altered everything's font.
+* ghc-mod [must be installed](https://atom-haskell.github.io/core-packages/haskell-ghc-mod/#maintain-a-separate-ghc-mod-installation-for-each-stack-resolver) for haskell-ghc-mod, following the Stack instructions.
+* If you don't like the way the `atom-haskell` package alters fonts, remove
+`hasklig`.
 
 #### Atom settings
 
