@@ -7,18 +7,19 @@ endif
 mainDb := $(PGDATABASE)
 testDb := snowdrift_test
 
-# This file is created after the cluster is initialized:
-waitForThis := $(PGDATA)/PG_VERSION
+# This file is created after the cluster is initialized.
+# It remains after the `stop` command.
+isInit := $(PGDATA)/PG_VERSION
 
-# *NB:* There seems to be a bug in Postgres 9.5 that does not care if the given
-# database exists: if the cluster's running, it's accepting and you get a
-# successful exit status, regardless of whether the specified database exists.
-# `pg_isready -d foo` tells us whether database foo is ready to accept a
-# connection. Below, "-q" is for "quiet": we only look at the program's exit
-# status, so we don't want any stdout/stderr here. Note the below is not a
-# complete command; it's intended to be coupled with a database name.
-# For example: `dbIsReady foo` expands out to `pg_isready -q -d foo`.
-dbIsReady := pg_isready -q -d
+# https://stackoverflow.com/a/16783253/994643
+# Note the below is not a complete command; it's intended to be coupled with a
+# database name. For example: `dbExists foo` expands out to
+# `psql -lqt | cut -f1 -d \| | grep -qw foo`. Also note it does not print
+# anything; we only use the exit status.
+dbExists := psql -lqt | cut -f1 -d \| | grep -qw
+
+# We just want the exit status: could `psql` connect to the cluster?
+clusRunning := psql -l &> /dev/null
 
 # | We do not use a Postgres config file. We use cmd-line flags instead.
 # "-k" specifies where to place the Postgres lock file. Otherwise, Postgres
@@ -28,41 +29,33 @@ dbIsReady := pg_isready -q -d
 # `postgres` command, from which the former inherits.
 pgStart := pg_ctl start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 
-# First, start the service (postgres server backend program), then ensure
-# the desired databases exist.
 .PHONY: start
 start: service
 	## Ensuring our databases exist...
-#   Using Make's "-" prefix to keep going even if either db already exists.
-	@-createdb $(mainDb)
-	@-createdb $(testDb)
+	$(dbExists) $(mainDb) || createdb $(mainDb)
+	$(dbExists) $(testDb) || createdb $(testDb)
 
 .PHONY: stop
 stop:
 #   The "|| echo" ensures this command is counted as a success. We're not using
 #   Make's "-" prefix because that still gives a confusing, purportedly
-#   "ignored" error. If the database can't be stopped because it's already
+#   "ignored" error. If the cluster can't be stopped because it's already
 #   stopped, then we consider this a vacuous success.
-	@pg_ctl stop || echo
+	pg_ctl stop || echo
 
 .PHONY: clean
 clean: stop
-	@rm -rf $(PGDATA)
+	rm -rf $(PGDATA)
 
 
 ######    Documented commands above, implementation-only rules below.    #######
 
 
 .PHONY: service
-service: $(waitForThis)
+service: $(isInit)
 	## Ensuring database server is running...
-#	The initdb command creates the special database "postgres". So "postgres"
-#	represents the whole cluster: if we can connect to it, the cluster is
-#	running. If we can't, we assume that's because the cluster is not running,
-#	in which case we run the start command:
-	@$(dbIsReady) postgres || $(pgStart)
+	$(clusRunning) || $(pgStart)
 
-$(waitForThis):
+$(isInit):
 	## Initializing cluster...
-#Using Make's "-" prefix to keep going even if cluster has already been init'ed.
-	@-pg_ctl initdb
+	pg_ctl initdb

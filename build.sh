@@ -6,7 +6,7 @@ projRoot=$(realpath "`dirname "$0"`")
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
 export PGDATABASE="snowdrift"
-pgClusterNoun=(make -f "$projRoot"/.sdc) # We'll build a sentence from this.
+pgClusterNoun=(make -s -f "$projRoot"/.sdc) # We'll build a sentence from this.
 
 # If we have been told to use the Nix shell, and we are not already in it, then
 # we must instruct Make to use it. But if we were not told to use the Nix shell,
