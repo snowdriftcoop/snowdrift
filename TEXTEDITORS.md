@@ -21,7 +21,7 @@ boxes about specific versions of GHC / lts.
 * Chapter II covers Atom package installation. You may wish to skip there and
 just get those things installed and then read other portions on an as-needed
 basis.
-* ghc-mod [must be installed](https://atom-haskell.github.io/core-packages/haskell-ghc-mod/#maintain-a-separate-ghc-mod-installation-for-each-stack-resolver) for haskell-ghc-mod, following the Stack instructions.
+* [ghc-mod must be installed](https://atom-haskell.github.io/core-packages/haskell-ghc-mod/#maintain-a-separate-ghc-mod-installation-for-each-stack-resolver) for haskell-ghc-mod, following the Stack instructions.
 * If you don't like the way the `atom-haskell` package alters fonts, remove
 `hasklig`.
 
