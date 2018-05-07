@@ -12,21 +12,15 @@ equally to any Yesod-based project).
 
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
 good for beginners and advanced alike.  
-To configure it for Haskell development, we recommend installing
-the [atom-haskell package](https://atom.io/packages/atom-haskell)
-and then following the *Binaries* section, choosing `brittany` as the beautifier.
-And finally:
-
-* Edit -> Preferences -> Packages -> `atom-beautify` -> Settings -> Haskell ->
-*expand* -> brittany
-* And if you don't like the way the `atom-haskell` package alters fonts, remove
-`atom-hasklig` and clear the `Font Family` box in Settings (Preferences), under
-`Editor`.
+We recommend installing the `atom-haskell` package and then following the
+*Binaries* section of its [README](https://atom.io/packages/atom-haskell),
+choosing `brittany` as the beautifier. Please note the blurb about
+`atom-hasklig` above *Quick configuration*. NB: these "packages" are Atom
+plugins, not distro packages.
 
 For more thorough doc, see [the official Atom-Haskell documentation](https://atom-haskell.github.io/).
 NB: provided we have `stack.yaml` right, you should be able to ignore any blurb
 boxes about specific versions of GHC / lts.
-
 
 #### Atom settings
 
