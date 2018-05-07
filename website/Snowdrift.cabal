@@ -9,9 +9,8 @@ maintainer:    dev@lists.snowdrift.coop
 synopsis:      Infrastructure for the Snowdrift.coop fundraising site.
 category:      Web
 stability:     Experimental
-build-type:    Simple
 homepage:      https://snowdrift.coop
-bug-reports:   https://tree.taiga.io/project/snowdrift/issues
+bug-reports:   https://git.snowdrift.coop/sd/snowdrift/issues
 
 source-repository head
   type:     git

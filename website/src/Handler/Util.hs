@@ -11,7 +11,6 @@ import Import.NoFoundation
 
 import Crowdmatch
 import Data.Text.Titlecase
-import Web.Stripe
 
 import AppDataTypes
 

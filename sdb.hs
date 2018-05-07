@@ -1,15 +1,6 @@
 #!/usr/bin/env stack
--- stack --install-ghc runghc --package turtle --package shake -- -rtsopts -with-rtsopts=-I0 -O0
-
-
-{-
-  *Heads up:* this file will be replaced with a Makefile.
-  This will also affect build.sh.
--}
-
-
+-- stack --install-ghc runghc --package turtle --package shake
 {-# LANGUAGE OverloadedStrings #-}
-
 -- | sdb.hs - a standalone script to manage a local development postgres cluster.
 
 -- Code notes:

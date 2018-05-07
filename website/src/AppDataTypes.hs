@@ -10,7 +10,6 @@ module AppDataTypes where
 import ClassyPrelude.Yesod
 
 import Database.Persist.Sql (ConnectionPool)
-import Web.Stripe
 import Yesod.Core.Types (Logger)
 import Yesod.GitRev
 

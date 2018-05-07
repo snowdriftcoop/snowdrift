@@ -10,7 +10,7 @@ import Import
 import Control.Monad.Logger
 import Crowdmatch
 import Text.Julius (rawJS)
-import Web.Stripe
+import Web.Stripe hiding (stripe)
 import Web.Stripe.Customer
 
 import Alerts
