@@ -13,7 +13,7 @@ equally to any Yesod-based project).
 [Atom](https://atom.io/) is a modern, graphical, highly-extensible text-editor,
 good for beginners and advanced alike.  
 We recommend installing the `atom-haskell` package and then following the
-*Binaries* section of its [README](https://atom.io/packages/atom-haskell),
+*Binaries* section of [atom-haskell's README](https://github.com/Tehnix/atom-haskell),
 choosing `brittany` as the beautifier. Please note the blurb about
 `atom-hasklig` above *Quick configuration*. NB: these "packages" are Atom
 plugins, not distro packages.
