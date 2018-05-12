@@ -1,0 +1,420 @@
+///------------------------------------------------------------------------///
+//  Mikuro                                                                  //
+//  Description: a set of Sass wrapper mixins for grid setup.               //
+//  Author: Iko                                                             //
+//  License: MIT                                                            //
+//  Version: 0.3 (2018-04-10)                                               //
+///------------------------------------------------------------------------///
+
+/// Mikuro?
+//
+// Mikuro is mainly a wrapper for CSS flexbox. It adds a little math to make it
+// easier to specify widths as number of columns, but output in rem instead of
+// % when fixed max-width is needed.
+//
+//
+/// Usage?
+//
+// - Define a grid map. Example:
+//
+//   $grid-ex: (container: 75rem, cols: 8, gutter: 3rem, v-rhythm: 3rem)
+//
+//   - `$grid-ex`: grid map name, like regular Sass variables.
+//   - `container`: width of the grid/flexbox
+//   - `cols`: number of columns
+//   - `gutter`: width of the spacing (usually margins) between columns
+//   - `v-rhythm`: vertical rhythm. Vertical spacing between elements (e.g.
+//     margins) can be multiples of a given value ()text line height)
+//
+// - Use +box($prop) to insert a flexbox on a parent element.
+//
+// - Use +flex($grid, $prop) to set flex values for children elements.
+//
+// - Don't want flex? Use +span($grid, $prop) to set widths.
+//
+//
+/// Mixins
+//
+// +box($prop)
+// - Shorthand for flexbox declaration:
+//       display: flex
+//       flex-wrap: wrap
+//       justify-content: [$prop 1]
+//       align-content: [$prop 2]
+// - Example: +box(center center)
+//
+// +flex($grid, $prop)
+// - Sets flex values in number of columns
+// - Example: +flex($grid-ex, 4)    // `flex: 33rem`
+//
+// +span($grid, $prop)
+// - Sets width, min-width or max-width in number of columns.
+// - (Optional) Sets gutter: left, right or both
+// - Example: +span($grid-ex, 2 auto both)
+// - Example outputs:
+//       width: 15rem
+//       margin-left: 3rem
+//       margin-right: 3rem
+//
+// +vr($grid, $prop)
+// - Sets margin or padding relative to vertical rhythm
+// - Example: +vr($grid-ex, mgn 2)    // `margin-top: 6rem`
+//
+// +pad($grid, $prop)
+// - Sets margin, padding, width, height or position direction to values
+//   relative to gutter (width) or vertical rhythm (height)
+// - Can be used to override gutters as needed
+// - Example: +pad($grid-ex, mgn 3 auto 5)    // `margin: 9rem auto 15rem`
+//
+// +show-grid($prefs)
+// - Shows a visual overlay for a grid.
+// - Add HTML, right under the <body> tag: <div class="mk__grid"></div>
+// - Add Sass, e.g.:
+//      $show-prefs: ($grid-ex, opacity: 0.5, colors: blue green, show: min)
+//      +show-grid($show-prefs)
+// - The two lines above add a media query with attributes for the `mk__grid`
+//   HTML element, based on the container width in the grid map.
+// - `$grid-ex` is a variable pointing to an existing grid map.
+//   `opacity` (optional) sets overlay opacity. Value: 0-1 inclusive.
+//   `colors` (optional) sets x and y gutter colors.
+//   `show` (optional) has 3 possible values: min, max, point
+//      min: (default) overlay appears when viewport >= container width
+//      max: overlay appears when viewport <= container width
+//      equal: overlay appears when viewport = container width
+//
+///
+
+
+///------------------------------------------------------------------------///
+//  Functions                                                               //
+///------------------------------------------------------------------------///
+
+/// Calculate the column width
+@function mk__column-width($grid)
+    $container: map-get($grid, "container")
+    $gutter: map-get($grid, "gutter")
+    $cols: map-get($grid, "cols")
+    // justify: space-between or space-evenly (default)
+    $column: (($container - $gutter) / $cols) - $gutter
+    @if map-get($grid, "justify") == "space-between"
+        $column: ($container - ($gutter * ($cols - 1))) / $cols
+    @return $column
+
+
+/// Calculate span width
+@function mk__span-width($grid, $cols)
+    $gutter: map-get($grid, "gutter")
+    $column: mk__column-width($grid)
+    @return ($column * nth($cols, 1)) + ($gutter * (nth($cols, 1) - 1))
+
+
+/// Calculate span width plus 1 or 2 gutters
+@function mk__span-width-gutters($grid, $cols, $guts)
+    $gutter: map-get($grid, "gutter")
+    $column: mk__column-width($grid)
+    @return ($column * nth($cols, 1)) + ($gutter * (nth($cols, 1) + $guts - 1))
+
+
+/// Convert number to string with desired unit
+    Can be used for media queries in a different unit than the layout unit
+@function mk__num-string($num, $end-unit)
+    @return (($num / ($num * 0 + 1)) * 10) + $end-unit
+
+
+/// Check whether a value is a number
+/// If true, multiply it with another number
+/// If false, return string "auto"
+@function mk__auto-multi($value, $multi)
+    @if type-of($value) == "number"
+        @return $value * $multi
+    @else
+        @return auto
+
+
+/// Return multiples of the vertical-rhythm unit
+@function mk__v-rhythm($grid, $multiplier)
+    @return map-get($grid, "v-rhythm") * $multiplier
+
+
+///------------------------------------------------------------------------///
+//  Grid                                                                    //
+///------------------------------------------------------------------------///
+
+/// Check for grid support, wrapping fallback rules
+=mk__grid-fallback
+    @supports not (display: grid)
+        @content
+
+/// Check for flexbox support, wrapping fallback rules
+=mk__flex-fallback
+    @supports not (display: flex)
+        @content
+
+
+/// Initialise a flexbox
+=mk__flexbox($prop)
+    display: flex
+    flex-wrap: wrap
+    @if length($prop) == 1
+        justify-content: nth($prop, 1)
+    @if length($prop) == 2
+        align-content: nth($prop, 2)
+
+
+/// Set flex attribute as span width
+=mk__flex($grid, $prop)
+    $span: mk__span-width($grid, nth($prop, 1))
+    $container: map-get($grid, "container")
+    $span-pct: #{$span / $container * 100 + "%"}
+    @if length($prop) == 2
+        @if $prop == "pct"
+            flex: $span-pct
+    @else
+        flex: $span
+
+
+/// Set span width
+/// Parameters: [grid], [no. of columns] [span options] [gutter options]
+/// +mk__flex-span(grid, cols min|max|min-pct|max-pct left|right|both)
+=mk__span($grid, $prop)
+    $span: mk__span-width($grid, nth($prop, 1))
+    $container: map-get($grid, "container")
+    $gutter: map-get($grid, "gutter")
+    // Percentage for a space-between row: |container + gutters|
+    $span-pct: #{$span / $container * 100 + "%"}
+    // Percentage for a space-evenly row: |gutter|container + gutters|gutter|
+    $span-pct-evenly: #{$span / ($container - ($gutter * 2)) * 100 + "%"}
+    @if length($prop) == 1
+        width: $span
+    // Span width options
+    @if length($prop) >= 2
+        @if nth($prop, 2) == "min"
+            min-width: $span
+        @else if nth($prop, 2) == "max"
+            max-width: $span
+        // Span printed in percentage
+        @else if nth($prop, 2) == "min-pct"
+            min-width: $span-pct
+        @else if nth($prop, 2) == "max-pct"
+            max-width: $span-pct
+        // Set span to container width
+        @else if nth($prop, 2) == ("row" or "box")
+            max-width: $container
+        // Default to set width
+        @else if nth($prop, 2) == "auto"
+            width: $span
+        @else if nth($prop, 2) == "auto-pct"
+            width: $span-pct
+    // Gutter options
+    @if length($prop) >= 3
+        @if nth($prop, 3) == "left"
+            margin-left: $gutter
+        @else if nth($prop, 3) == "right"
+            margin-right: $gutter
+        @else if nth($prop, 3) == "both"
+            margin-left: $gutter
+            margin-right: $gutter
+        @else if nth($prop, 3) == "auto"
+            margin-left: auto
+            margin-right: auto
+
+
+/// Set vertical rhythm with margin or padding
+/// Only sets top/bottom margins or padding
+=mk__vr($grid, $prop)
+    $vr: map-get($grid, "v-rhythm")
+    // If only the type is given, set top and bottom margins to vr base value
+    @if length($prop) == 1
+        @if nth($prop, 1) == "pad"
+            padding-top: $vr
+            padding-bottom: $vr
+        @else
+            margin-top: $vr
+            margin-bottom: $vr
+    // If only 1 number is given, top and bottom margins are equal
+    @else if length($prop) == 2
+        $value: mk__auto-multi(nth($prop, 2), $vr)
+        @if nth($prop, 1) == "pad"
+            padding-top: $value
+            padding-bottom: $value
+        @else
+            margin-top: $value
+            margin-bottom: $value
+    // If 2 numbers are given, set top and bottom margins respectively
+    @else if length($prop) == 3
+        $top: mk__auto-multi(nth($prop, 2), $vr)
+        $bottom: mk__auto-multi(nth($prop, 3), $vr)
+        @if nth($prop, 1) == "pad"
+            padding-top: $top
+            padding-bottom: $bottom
+        @else
+            margin-top: $top
+            margin-bottom: $bottom
+
+
+/// Override margin or padding with vertical rhythm
+/// Like +mk__vr() but for overriding gutters
+=mk__pad($grid, $prop)
+    $gutter: map-get($grid, "gutter")
+    $vr: map-get($grid, "v-rhythm")
+    // If no number is given, set top/bottom to vr, left/right to gutter
+    @if length($prop) == 1
+        @if nth($prop, 1) == "pad"
+            padding: $vr $gutter
+        @else
+            margin: $vr $gutter
+    @else if length($prop) == 2
+        // Set width based on gutter, height based on vr
+        @if nth($prop, 1) == "width"
+            width: nth($prop, 2) * $gutter
+        @else if nth($prop, 1) == "height"
+            height: nth($prop, 2) * $vr
+        @else if nth($prop, 1) == "max-width"
+            max-width: nth($prop, 2) * $gutter
+        @else if nth($prop, 1) == "max-height"
+            max-height: nth($prop, 2) * $vr
+        // Set position
+        @else if nth($prop, 1) == "top"
+            top: nth($prop, 2) * $vr
+        @else if nth($prop, 1) == "right"
+            right: nth($prop, 2) * $gutter
+        @else if nth($prop, 1) == "bottom"
+            bottom: nth($prop, 2) * $vr
+        @else if nth($prop, 1) == "left"
+            left: nth($prop, 2) * $gutter
+        // If only 1 number is given for padding/margin, default to vr
+        @else if nth($prop, 1) == "pad"
+            $top: mk__auto-multi(nth($prop, 2), $vr)
+            padding: $top
+        @else
+            $top: mk__auto-multi(nth($prop, 2), $vr)
+            margin: $top
+
+    @else if length($prop) == 3
+        $top: mk__auto-multi(nth($prop, 2), $vr)
+        $right: mk__auto-multi(nth($prop, 3), $gutter)
+        @if nth($prop, 1) == "pad"
+            padding: $top $right
+        @else
+            margin: $top $right
+    @else if length($prop) == 4
+        $top: mk__auto-multi(nth($prop, 2), $vr)
+        $right: mk__auto-multi(nth($prop, 3), $gutter)
+        $bottom: mk__auto-multi(nth($prop, 4), $vr)
+        @if nth($prop, 1) == "pad"
+            padding: $top $right $bottom
+        @else
+            margin: $top $right $bottom
+    @else if
+        $top: mk__auto-multi(nth($prop, 2), $vr)
+        $right: mk__auto-multi(nth($prop, 3), $gutter)
+        $bottom: mk__auto-multi(nth($prop, 4), $vr)
+        $left: mk__auto-multi(nth($prop, 5), $gutter)
+        @if nth($prop, 1) == "pad"
+            padding: $top $right $bottom $left
+        @else
+            margin: $top $right $bottom $left
+
+
+///------------------------------------------------------------------------///
+//  Development mixins                                                      //
+///------------------------------------------------------------------------///
+
+/// Draw a grid overlay
+=mk__overlay-grid($prefs)
+    $grid: map-get($prefs, "grid")
+    $container: map-get($grid, "container")
+    $column: mk__column-width($grid)
+    $gutter: map-get($grid, "gutter")
+    $opacity: map-get($prefs, "opacity")
+    $color-x: transparentize(#47cfec, 0.95)
+    $color-y: transparentize(#c5f1fd, 0.7)
+
+    // Check for custom colors
+    @if nth(map-get($prefs, "colors"), 1) != null
+        $color-x: nth(map-get($prefs, "colors"), 1)
+    @if nth(map-get($prefs, "colors"), 1) != null
+        $color-y: nth(map-get($prefs, "colors"), 2)
+
+    // x and y overlay with gradients
+    $grad-x: linear-gradient(transparent $gutter, $color-x $gutter)
+    $grad-y-even: linear-gradient(90deg, $color-y $gutter, transparent $gutter)
+    $grad-y-btwn: linear-gradient(90deg, transparent $column, $color-y $gutter)
+
+    // Default opacity: 0.5
+    @if $opacity == null
+        $opacity: 0.5
+
+    @if $opacity >= 0.01 and $opacity <= 1
+        opacity: $opacity
+        // Fill screen height, float and center over the page
+        width: $container
+        height: 100vh
+        margin: 0
+        position: fixed
+        left: calc((100vw - #{$container})/ 2)
+        z-index: 99
+        background-color: transparent
+        // Gutter line width
+            justify: space-between or space-evenly
+        @if map-get($grid, "justify") == "space-between"
+            background-image: $grad-y-btwn, $grad-x
+        @else
+            background-image: $grad-y-even, $grad-x
+        background-size: #{$column + $gutter} #{$gutter * 2}
+    @else
+        opacity: 0
+
+/// Load grid overlay media queries to preset class
+=mk__show-grid($prefs)
+    $grid: map-get($prefs, "grid")
+    $show: map-get($prefs, "show")
+    $width-px: num-string(map-get($grid, "container"), "px")
+    // Show at container width only
+    @if $show == "equal"
+        @media (min-width: #{$width-px}) and (max-width: #{$width-px})
+            .mk__grid
+                +mk__overlay-grid($prefs)
+    @else if $show == "max"
+        @media (max-width: #{$width-px})
+            .mk__grid
+                +mk__overlay-grid($prefs)
+    // Default to min-width
+    @else
+        @media (min-width: #{$width-px})
+            .mk__grid
+                +mk__overlay-grid($prefs)
+
+
+///------------------------------------------------------------------------///
+//  Aliases                                                                 //
+///------------------------------------------------------------------------///
+
+/// Aliases are provided for convenience. Comment them out if there are name
+    collisions with other functions.
+
+@function num-string($num, $end-unit)
+    @return mk__num-string($num, $end-unit)
+
+@function v-rhythm($num, $multi)
+    @return mk__v-rhythm($num, $multi)
+
+
+=box($prop)
+    +mk__flexbox($prop)
+
+=flex($grid, $prop)
+    +mk__flex($grid, $prop)
+
+=span($grid, $prop)
+    +mk__span($grid, $prop)
+
+=vr($grid, $prop)
+    +mk__vr($grid, $prop)
+
+=pad($grid, $prop)
+    +mk__pad($grid, $prop)
+
+
+=show-grid($prefs)
+    +mk__show-grid($prefs)

@@ -1,0 +1,11 @@
+$doctype 5
+<html>
+  <head>
+    <link rel="apple-touch-icon-precomposed" href=@{StaticR img_main_favicon_png}>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type">
+    <title>
+      #{pageTitle pc} — Snowdrift.coop
+    <meta content="width=device-width, minimum-scale=1.0,initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" name="viewport">
+    ^{pageHead pc}
+  <body>
+    ^{pageBody pc}

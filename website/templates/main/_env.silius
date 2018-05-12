@@ -1,0 +1,54 @@
+/// _env
+//
+// Description: define Sass path variables.
+//
+///
+
+
+/// Fonts
+$nunito-300: @{StaticR fonts_nunito_nunito_light_woff2}
+$nunito-300i: @{StaticR fonts_nunito_nunito_lightitalic_woff2}
+$nunito-300-woff: @{StaticR fonts_nunito_nunito_light_woff}
+$nunito-300i_woff: @{StaticR fonts_nunito_nunito_lightitalic_woff}
+
+$nunito-400: @{StaticR fonts_nunito_nunito_regular_woff2}
+$nunito-400i: @{StaticR fonts_nunito_nunito_italic_woff2}
+$nunito-400-woff: @{StaticR fonts_nunito_nunito_regular_woff}
+$nunito-400i_woff: @{StaticR fonts_nunito_nunito_italic_woff}
+
+$nunito-600: @{StaticR fonts_nunito_nunito_semibold_woff2}
+$nunito-600i: @{StaticR fonts_nunito_nunito_semibolditalic_woff2}
+$nunito-600-woff: @{StaticR fonts_nunito_nunito_semibold_woff}
+$nunito-600i_woff: @{StaticR fonts_nunito_nunito_semibolditalic_woff}
+
+$nunito-700: @{StaticR fonts_nunito_nunito_bold_woff2}
+$nunito-700i: @{StaticR fonts_nunito_nunito_bolditalic_woff2}
+$nunito-700-woff: @{StaticR fonts_nunito_nunito_bold_woff}
+$nunito-700i_woff: @{StaticR fonts_nunito_nunito_bolditalic_woff}
+
+$nunito-800: @{StaticR fonts_nunito_nunito_extrabold_woff2}
+$nunito-800i: @{StaticR fonts_nunito_nunito_extrabolditalic_woff2}
+$nunito-800-woff: @{StaticR fonts_nunito_nunito_extrabold_woff}
+$nunito-800i_woff: @{StaticR fonts_nunito_nunito_extrabolditalic_woff}
+
+
+/// Images: main
+$navbar_logo: @{StaticR img_main_navbar_logo_png}
+$navbar_menu_arrow: @{StaticR img_main_navbar_menu_arrow_png}
+$navbar_menu_open: @{StaticR img_main_navbar_menu_open_png}
+$navbar_menu_close: @{StaticR img_main_navbar_menu_close_png}
+$navbar_menu_user: @{StaticR img_main_navbar_menu_user_png}
+$header_bg_flbk: @{StaticR img_main_header_bg_flbk_png}
+$footer_logo: @{StaticR img_main_footer_logo_png}
+$footer_bg_flbk: @{StaticR img_main_footer_bg_flbk_png}
+$partner_osi: @{StaticR img_main_partner_osi_png}
+$partner_qco: @{StaticR img_main_partner_qco_png}
+$partner_oin: @{StaticR img_main_partner_oin_png}
+$partner_cfi: @{StaticR img_main_partner_cfi_png}
+
+/// Images: projects
+$project_logo: @{StaticR img_projects_project_logo_png}
+$me_signup: @{StaticR img_projects_me_signup_png}
+
+/// Images: how-it-works
+$caption_arrow: @{StaticR img_how_it_works_caption_arrow_png}

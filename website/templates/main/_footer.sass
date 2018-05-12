@@ -1,0 +1,197 @@
+/// _footer
+//
+// Description: styles for the footer partial.
+//
+///
+
+
+$p: ".footer"
+
+#{$p}
+    +pad($grid--s, mgn 5 0 0 0)
+
+#{$p} .logo
+    +image($footer-logo, 100% 4.4rem, center/contain)
+
+#{$p} .link
+    +text--link
+
+/* Nav */
+#{$p} .menu
+    list-style: none
+
+    .link
+        font-weight: 600
+
+#{$p} .licenses
+    +text--body
+    font-weight: 400
+    color: $text-blue
+
+
+/* Partners */
+#{$p} .partners
+    /* Fallback gradient bg image for older mobile browsers */
+    +bg($footer-bg-flbk, center/contain repeat-x)
+    color: $text-blue
+    list-style: none
+
+/* Partners heading */
+#{$p} .partners-header
+    +text--body
+    font-weight: 400
+    color: $text-blue
+    text-align: center
+
+/* Partner links: opacity change on hover */
+#{$p} .link
+    &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+        opacity: 0.7
+        &:hover
+            opacity: 1.0
+
+/* Partner logos */
+#{$p} .osi
+    +image($partner-osi, 100% 6rem, center/contain)
+
+#{$p} .qco
+    +image($partner-qco, 100% 6rem, center/contain)
+
+#{$p} .oin
+    +image($partner-oin, 100% 6rem, center/contain)
+
+#{$p} .cfi
+    +image($partner-cfi, 100% 6rem, center/contain)
+
+
+///------------------------------------------------------------------------///
+//  Extra small                                                             //
+///------------------------------------------------------------------------///
+
++respond("xs")
+    #{$p} .link.m--logo
+        +vr($grid--s, mgn 1)
+        +pad($grid--s, pad 0 1)
+
+
+    /* Nav */
+    #{$p} nav
+        +pad($grid--s, mgn 1 1 2)
+
+    #{$p} .menu
+        +span($grid--s, 2 max auto)
+        +vr($grid--s, mgn 1)
+
+
+    /* Partners */
+    #{$p} .partners
+        +pad($grid--s, pad 1 1)
+
+    #{$p} .partners-header
+        +pad($grid--s, mgn 1 auto)
+
+    #{$p} .link
+        &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+            +span($grid--s, 3 max auto)
+            +vr($grid--s, 1)
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
++respond("s")
+    #{$p} .link.m--logo
+        +span($grid--s, 4 auto auto)
+        +vr($grid--s, mgn 1)
+
+
+    #{$p} nav
+        +box(center)
+        +vr($grid--s, mgn 2)
+
+    #{$p} .menu
+        &.m--1-2
+            +span($grid--s, 2 auto both)
+
+        &.m--2-2
+            +span($grid--s, 2 auto right)
+
+    #{$p} .licenses
+        +span($grid--s, 4 auto both)
+        +vr($grid--s, mgn 2 1)
+
+
+    #{$p} .partners
+        +vr($grid--s, pad 2 1)
+
+    #{$p} .partners-header
+        +vr($grid--s, mgn 1)
+
+    #{$p} .partners .row
+        +box(center)
+        +vr($grid--s, mgn 2 0)
+
+        &.m--1-2
+            margin: 0
+
+    #{$p} .link
+        &.m--osi, &.m--oin
+            +span($grid--s, 2 auto both)
+
+        &.m--qco, &.m--cfi
+            +span($grid--s, 2 auto right)
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    #{$p} .logo
+        +span($grid--m, 4 max)
+        margin: auto
+
+    #{$p} .link.m--logo
+        +vr($grid--m, mgn 1)
+
+
+    #{$p} nav
+        +box(space-between)
+        +span($grid--m, 8 row auto)
+        +vr($grid--m, mgn 2 3)
+
+    #{$p} .menu
+        &.m--1-2
+            +span($grid--m, 2 auto both)
+
+        &.m--2-2
+            +span($grid--m, 2 auto right)
+
+    #{$p} .licenses
+        +flex($grid--m, 4)
+
+
+    #{$p} .partners
+        +box(center)
+        +vr($grid--m, pad 2)
+
+    #{$p} .partners-header
+        +vr($grid--m, mgn 3 1)
+
+    #{$p} .partners .row
+        display: flex
+
+        &.m--1-2
+            +span($grid--m, 4 auto both)
+
+        &.m--2-2
+            +span($grid--m, 4 auto right)
+
+    #{$p} .link
+        &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+            +span($grid--m, 2)
+            flex: auto
+
+        &.m--osi, &.m--oin
+            +span($grid--m, 2 auto right)

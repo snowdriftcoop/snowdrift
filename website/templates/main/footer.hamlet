@@ -1,0 +1,62 @@
+<footer .footer>
+  <a .link .m--div .m--logo href="https://snowdrift.coop/">
+    <div .logo>
+  $# Begin footer nav
+  <nav>
+    <ul .menu .m--1-2>
+      <li .item>
+        <a .link href=@{HowItWorksR}>
+          How it works
+      <li .item>
+        <a .link href=@{DonateR}>
+          Donate
+      <li .item>
+        <a .link href=@{AboutR}>
+          About
+      <li .item>
+        <a .link href=@{SponsorsR}>
+          Our Sponsors
+      <li .item>
+        <a .link href="https://wiki.snowdrift.coop/community/partners">
+          Our Partners
+    <ul .menu .m--2-2>
+      <li .item>
+        <a .link href=@{PrivacyR}>
+          Privacy Policy
+      <li .item>
+        <a .link href=@{TermsR}>
+          Terms Of Use
+    <p .licenses>
+      Aside from
+      <a .link href="@{TrademarksR}">trademarks#
+      \, writings and images here are free to use and share under
+      <a .link rel="license"
+        title="Creative Commons Attribution Share-Alike 4.0 International"
+        href="https://creativecommons.org/licenses/by-sa/4.0">
+        CC BY-SA#
+      \. This site's
+      <a .link href="https://git.snowdrift.coop/sd/snowdrift">source code
+      is free under the terms of the
+      <a .link title="GNU Affero GPL v3 or later"
+        href="https://www.gnu.org/licenses/agpl">
+        GNU AGPLv3+#
+      \.
+  $# End footer nav
+  $# Begin partners
+  <div .partners-header>
+    we are proud
+    <a .link href="https://wiki.snowdrift.coop/community/partners">
+      partners
+    of:
+  <div .partners>
+    <div .row .m--1-2>
+      <a .link .m--div .m--osi href="https://opensource.org/">
+        <div .osi>
+      <a .link .m--div .m--qco href="http://questioncopyright.org/">
+        <div .qco>
+    <div .row .m--2-2>
+      <a .link .m--div .m--oin href="https://www.openinventionnetwork.com/">
+        <div .oin>
+      <a .link .m--div .m--cfi href="http://copyfree.org/">
+        <div .cfi>
+  $# End partners
