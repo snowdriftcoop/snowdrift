@@ -6,6 +6,7 @@ client_session_key.aes
 .stack-work
 .stack-devel
 .stack-test
+.stack-deploy
 .shakespeare-sass
 .cabal-sandbox/
 .directory
