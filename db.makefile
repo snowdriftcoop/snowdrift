@@ -8,9 +8,11 @@ export PGDATABASE ?= snowdrift_development
 export PGHOST := $(PGDATA)
 
 pg_isready = pg_isready -q
+pg_ctl = $(shell pg_config --bindir)/pg_ctl
 
 # TODO: explain these flags
-pg_start = pg_ctl start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
+pg_start = $(pg_ctl) \
+    start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 
 # Example usage:  $(db_exists) foo
 #
@@ -27,7 +29,7 @@ service: cluster ; $(pg_isready) || $(pg_start)
 # This is one of the files created when a cluster is initialized.
 cluster_sentinel := $(PGDATA)/PG_VERSION
 cluster: $(cluster_sentinel)
-$(cluster_sentinel): ; pg_ctl initdb -D $(PGDATA)
+$(cluster_sentinel): ; $(pg_ctl) initdb -D $(PGDATA)
 
-stop: ; -$(pg_isready) && pg_ctl stop
+stop: ; -$(pg_isready) && $(pg_ctl) stop
 clean: stop ; rm -rf $(PGDATA)
