@@ -29,6 +29,8 @@ contents=(
     dist
 )
 
+stack="stack --work-dir .stack-deploy"
+
 hdr () {
     echo -e "\n-- $@"
 }
@@ -47,13 +49,11 @@ main () {
         # Have to do dependencies without --pedantic, since stack still
         # rebuilds extra-deps specified as git repos after a clean. :(
         # Refer to https://github.com/commercialhaskell/stack/issues/1295
-        stack \
-            --work-dir .stack-work-deploy \
+        $stack \
             build \
             --dependencies-only \
             --install-ghc
-        stack \
-            --work-dir .stack-work-deploy \
+        $stack \
             --local-bin-path $install_path \
             install \
             --flag Snowdrift:-dev \
