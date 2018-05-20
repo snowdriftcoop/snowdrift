@@ -1,3 +1,0 @@
-ALTER TABLE "email_verification" ADD COLUMN "sent" BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE "email_verification" DROP CONSTRAINT "unique_email_verification";
-ALTER TABLE "email_verification" ADD CONSTRAINT "unique_email_verification" UNIQUE("user","ver_email","ver_uri");

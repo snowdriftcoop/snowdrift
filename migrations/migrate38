@@ -1,1 +1,0 @@
-ALTER TABLE "notification_email" ADD CONSTRAINT "notification_email_project_fkey" FOREIGN KEY("project") REFERENCES "project"("id");

@@ -4,6 +4,8 @@ client_session_key.aes
 .stripe_keys
 .postgres-work
 .stack-work
+.stack-devel
+.stack-test
 .shakespeare-sass
 .cabal-sandbox/
 .directory

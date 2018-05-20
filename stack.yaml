@@ -38,3 +38,4 @@ nix:
     - openssl
     - postgresql96
     - zlib
+    - gnumake

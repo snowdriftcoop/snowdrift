@@ -1,66 +1,59 @@
 #!/usr/bin/env bash
+set -e
 
-#
-#  *Heads up:* sdb will be replaced with a Makefile.
-#  So please expect future changes here accordingly.
-#
-
-read -d '' usage <<EOF
+usage="
 .
 .  build.sh CMD [OPTIONS]
 .
 
-  Used to do standard Haskell/yesod things like run tests and run the
-  devel site.
+  Used to run tests and run the devel site.
 
-  It uses the shake build system to make sure a dev/test database is
-  running.
+  Uses Make to ensure the dev database is running. Consult db.makefile for more
+  DB control options.
 
   CMD can be:
 
-      devel
-      test
-      psql
-      shell
+      devel    -- Assumed if no CMD is given. Launches development site.
+      test     -- Runs Stack tests. Does not launch site.
 
-  'test' and 'psql' both accept any additional options native to those
-  commands.
+      cleandb  -- Blow away the database.
 
-  'shell' is an advanced command, which sets up the Postgres and stack
-  environments and spawns a new shell.
-EOF
+  'test' accepts any additional options native to 'stack test'
+
+"
+
+#  Figure out project root from this script's location and make it absolute:
+projRoot=$(realpath "`dirname "$0"`")
+
+export PGDATA="$projRoot"/.postgres-work
+export PGHOST="$PGDATA"
+export PGDATABASE="snowdrift_development"
+
+# Using stack ensures postgres exists for Nix users, thanks to stack's Nix
+# support.
+dbmake="stack exec -- make -s -C $projRoot -f db.makefile"
 
 run_devel () {
-    cd `dirname $0`/website
-    if [ -z "$IN_NIX_SHELL" ]; then
-        stack build yesod-bin &&
-        exec stack exec yesod devel
-    else
-        exec yesod devel
-    fi
+    cd "$projRoot"/website
+    stack --work-dir .stack-devel build yesod-bin
+    stack --work-dir .stack-devel exec yesod devel
 }
 
-dbenv () {
-    ./sdb.hs start &&
-    source <(./sdb.hs env)
-}
-
-build_deps_and_install_ghc () {
-    # Some dependencies are considered local packages by Stack, but we don't
-    # want './build.sh test --pedantic' to error out on warnings in
-    # dependencies. Therefore we build dependencies first without passing on
-    # flags.
-    #
-    # This is fixed in Stack 1.6.1 (and 1.6.1 installs GHC by default, making
-    # this function entirely redundant).
-    stack build --flag Snowdrift:library-only --only-dependencies --install-ghc Snowdrift:test
+with_db () {
+    # Shut down the database on exit
+    ( trap "$dbmake stop" EXIT
+    # . . . and start it now
+    PGDATABASE=$1 $dbmake
+    shift
+    $@
+    ) # DB shutdown happens now
 }
 
 main () {
     if [ -z "$1" ]; then
         CMD=devel
     else
-        CMD=$1
+        CMD="$1"
         shift
     fi
 
@@ -69,22 +62,13 @@ main () {
 
     case $CMD in
         devel)
-            build_deps_and_install_ghc &&
-            dbenv &&
-            run_devel
+            with_db snowdrift_development run_devel
             ;;
         test)
-            build_deps_and_install_ghc &&
-            dbenv &&
-            exec stack test --flag Snowdrift:library-only --fast $@
+            with_db snowdrift_test stack --work-dir .stack-test test "$@"
             ;;
-        psql)
-            dbenv &&
-            exec psql $@
-            ;;
-        shell)
-            dbenv &&
-            exec stack exec bash
+        cleandb)
+            $dbmake clean
             ;;
         *)
             echo "$usage"
@@ -92,4 +76,4 @@ main () {
     esac
 }
 
-main $@
+main "$@"

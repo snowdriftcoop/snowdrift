@@ -1,7 +1,0 @@
-CREATe TABLE "comment_flagging"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"flagger" INT8 NOT NULL,"comment" INT8 NOT NULL,"project_handle" VARCHAR NOT NULL,"target" VARCHAR NOT NULL,"message" VARCHAR NULL);
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "unique_comment_flagging" UNIQUE("comment");
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "comment_flagging_flagger_fkey" FOREIGN KEY("flagger") REFERENCES "user"("id");
-ALTER TABLE "comment_flagging" ADD CONSTRAINT "comment_flagging_comment_fkey" FOREIGN KEY("comment") REFERENCES "comment"("id");
-CREATe TABLE "comment_flagging_reason"("id" SERIAL PRIMARY KEY UNIQUE,"flagging" INT8 NOT NULL,"reason" VARCHAR NOT NULL);
-ALTER TABLE "comment_flagging_reason" ADD CONSTRAINT "unique_comment_flagging_reason" UNIQUE("flagging","reason");
-ALTER TABLE "comment_flagging_reason" ADD CONSTRAINT "comment_flagging_reason_flagging_fkey" FOREIGN KEY("flagging") REFERENCES "comment_flagging"("id");

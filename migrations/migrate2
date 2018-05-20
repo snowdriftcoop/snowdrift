@@ -1,4 +1,0 @@
-ALTER TABLE "project_blog" ADD COLUMN "project" INT8 NOT NULL;
-ALTER TABLE "project_blog" RENAME COLUMN "content" TO "top_content";
-ALTER TABLE "project_blog" ADD COLUMN "bottom_content" VARCHAR NULL;
-ALTER TABLE "project_blog" ADD CONSTRAINT "project_blog_project_fkey" FOREIGN KEY("project") REFERENCES "project";

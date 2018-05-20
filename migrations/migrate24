@@ -1,4 +1,0 @@
-CREATe TABLE "ticket_claiming"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"user" INT8 NOT NULL,"ticket" INT8 NOT NULL,"note" VARCHAR NULL);
-ALTER TABLE "ticket_claiming" ADD CONSTRAINT "unique_ticket_claiming" UNIQUE("ticket");
-ALTER TABLE "ticket_claiming" ADD CONSTRAINT "ticket_claiming_user_fkey" FOREIGN KEY("user") REFERENCES "user"("id");
-ALTER TABLE "ticket_claiming" ADD CONSTRAINT "ticket_claiming_ticket_fkey" FOREIGN KEY("ticket") REFERENCES "comment"("id");
