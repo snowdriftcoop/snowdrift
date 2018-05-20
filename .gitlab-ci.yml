@@ -9,6 +9,7 @@ stages:
 cache:
     paths:
     - .stack-work
+    - .stack-test
     - "*/.stack-work"
     - website/.shakespeare-sass
 
