@@ -11,21 +11,14 @@ module Crowdmatch.Stripe
     , chargeCents
     , stripeProduction
     , StripeDevState (..)
-    , stripeDevelopment
     )
 where
 
 import Control.Arrow (right)
-import Control.Concurrent (MVar, modifyMVar_)
 import Control.Lens (Iso', iso, view)
-import Web.Stripe (stripe, (-&-), StripeConfig, Expandable(..), StripeError)
+import Web.Stripe (stripe, (-&-), StripeConfig, StripeError)
 import Web.Stripe.Balance
 import Web.Stripe.Charge
-import Web.Stripe.Customer hiding
-        ( updateCustomer
-        , createCustomer
-        , deleteCustomer
-        )
 
 import qualified Web.Stripe.Customer as SC
 
@@ -74,23 +67,3 @@ stripeProduction c = StripeActions
 
 newtype StripeDevState = StripeDevState { lastCharge :: Maybe Cents }
     deriving (Eq, Show)
-
--- | Use this instead of actually talking to Stripe during tests. Uses an MVar
--- to maintain stripe's internal state.
-stripeDevelopment :: MVar StripeDevState -> StripeActions
-stripeDevelopment state = StripeActions
-    { createCustomer =
-        \ _tok -> pure (Right Customer { customerId = CustomerId "dummy" })
-    , updateCustomer =
-        \ _tok cust -> pure (Right Customer { customerId = cust })
-    , deleteCustomer =
-        \ _ -> pure (Right ())
-    , chargeCustomer =
-        \ _ c -> do
-            modifyMVar_ state
-                (\StripeDevState {..} ->
-                    pure StripeDevState { lastCharge = Just c, .. })
-            pure (Right Charge{ chargeBalanceTransaction = Nothing })
-    , balanceTransaction =
-        \ _ -> pure (Right BalanceTransaction{})
-    }

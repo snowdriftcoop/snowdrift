@@ -17,7 +17,6 @@ module Crowdmatch (
         , StripeActions (..)
         , stripeProduction
         , StripeDevState (..)
-        , stripeDevelopment
 
         -- * Store/delete payment tokens
         , storePaymentToken

@@ -5,9 +5,9 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -fno-warn-missing-fields #-}
+{-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -Wno-missing-fields #-}
 
-import Control.Concurrent (newEmptyMVar, newMVar)
+import Control.Concurrent (newEmptyMVar, newMVar, MVar, modifyMVar_)
 import Control.Exception.Safe (bracket)
 import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class (liftIO)
@@ -47,7 +47,9 @@ import Test.QuickCheck
         , getPositive
         , counterexample)
 import Test.QuickCheck.Monadic (PropertyM, monadicIO, run, pick, monitor, assert)
-import Web.Stripe.Customer (CustomerId(..), TokenId(..))
+import Web.Stripe.Customer
+import Web.Stripe.Balance
+import Web.Stripe.Charge
 import qualified Data.ByteString.Char8 as B
 import qualified Data.Text as T
 import qualified Database.PostgreSQL.Simple as PG
@@ -58,6 +60,27 @@ import Crowdmatch.Model (StorageAction(..))
 import qualified Crowdmatch.Model as Model
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
+
+
+-- | Use this instead of actually talking to Stripe during tests. Uses an MVar
+-- to maintain stripe's internal state.
+stripeDevelopment :: MVar StripeDevState -> StripeActions
+stripeDevelopment state = StripeActions
+    { createCustomer =
+        \ _tok -> pure (Right Customer { customerId = CustomerId "dummy" })
+    , updateCustomer =
+        \ _tok cust -> pure (Right Customer { customerId = cust })
+    , deleteCustomer =
+        \ _ -> pure (Right ())
+    , chargeCustomer =
+        \ _ c -> do
+            modifyMVar_ state
+                (\StripeDevState {..} ->
+                    pure StripeDevState { lastCharge = Just c, .. })
+            pure (Right Charge{ chargeBalanceTransaction = Nothing })
+    , balanceTransaction =
+        \ _ -> pure (Right BalanceTransaction{})
+    }
 
 -- | Execute a transaction-free statement in Postgres
 pgExecute_ q = bracket open' PG.close (void . (`PG.execute_` q))
