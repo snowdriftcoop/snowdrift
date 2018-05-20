@@ -148,7 +148,7 @@ To download the latest updates of the snowdrift code:
 
 * Go to your snowdrift directory, if not there already
 * if not already on your master branch, run `git checkout master`
-* run `git pull origin master`
+* run `git pull`
 
 You should have no conflicts because this is the only situation where you
 should ever change your local master. **Work should be done on other branches.**
