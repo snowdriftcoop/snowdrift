@@ -101,26 +101,12 @@ With brew, install the core dependencies:
 
 ### Windows
 
-*Status:* We welcome testing but do not officially support Windows. In the past,
-we have had only partial success running on Windows. We know that the `.sdc`
-Makefile won't work on Windows because it uses UNIX sockets. And therefore,
-`build.sh` won't either: it uses `.sdc`. We welcome any patches, feedback, or
-Postgres-on-Windows help to get an alternative working. Steps used in past
-testing:
+**Status:** We welcome testing but do not officially support Windows.
 
-Install [Git] per instructions on the website.
-
-Install PostgreSQL 32-bit version from
-<http://www.enterprisedb.com/products-services-training/pgdownload#windows>
-
-Add the PostgreSQL bin directory to the path
-`C:\Program Files (x86)\PostgreSQL\9.4\bin`
-
-Follow the instructions to [install Stack for Windows].
-
-*TODO:* We're yet to test Make on Windows. For the time being, you'll have to
-research yourself how to install it on Windows. Please let us know what you did
-if you get something working.
+In the past, we have had only partial success running on Windows. We know that
+our development database scripts won't work on Windows because they use UNIX
+sockets. We welcome any patches, feedback, or Postgres-on-Windows help to get an
+alternative working.
 
 ## Get the Snowdrift code
 
