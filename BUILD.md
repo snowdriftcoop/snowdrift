@@ -144,7 +144,7 @@ To stop the site, type `quit` in the terminal, then press Enter.
 
 ## Troubleshooting
 
-If `./build.sh` commands fail in any way, try running `./build.sh clean` and
+If `./build.sh` commands fail in any way, try running `./build.sh cleandb` and
 then building again.
 
 ## Using the local site
