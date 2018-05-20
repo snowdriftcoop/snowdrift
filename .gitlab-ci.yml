@@ -5,7 +5,6 @@ stages:
     - deps
     - build
     - test
-    - cleanup
 
 deps:
     stage: deps
@@ -16,17 +15,15 @@ deps:
         #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
         #- curl -sSL https://get.haskellstack.org/ | sh
         - stack clean
-        - stack test --fast --no-run-tests --only-dependencies --install-ghc
-        - stack build shakespeare-sass
+        - stack test --no-run-tests --only-dependencies --install-ghc
 
 build:
     stage: build
     script:
-        - stack build --fast
+        - touch website/src/Settings/StaticFiles.hs
+        - stack build
 
 test:
     stage: test
     script:
         - ./build.sh test
-        # Stop the database, so gitlab-runner knows the whole job is done.
-        - ./build.sh clean
