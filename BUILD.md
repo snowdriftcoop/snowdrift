@@ -131,22 +131,21 @@ Run the tests to fetch and build all Haskell dependencies:
 
 This will take a while!
 
-## Running the site via `yesod devel`
+## Running the site
 
-Run the site in development mode via:
+Run the site in development mode with
 
     ./build.sh
 
-The command builds anything that has been deleted or changed before launching.
+This will automatically rebuild and rerun the site whenever it detects
+changes to the code.
 
 To stop the site, type `quit` in the terminal, then press Enter.
-
-Currently, the above command is our usual means of launching the site.
 
 ## Troubleshooting
 
 If `./build.sh` commands fail in any way, try running `./build.sh clean` and
-then try building again.
+then building again.
 
 ## Using the local site
 
