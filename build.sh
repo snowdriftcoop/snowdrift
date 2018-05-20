@@ -65,6 +65,7 @@ main () {
             with_db snowdrift_development run_devel
             ;;
         test)
+            touch website/src/Settings/StaticFiles.hs
             with_db snowdrift_test stack --work-dir .stack-test test "$@"
             ;;
         cleandb)
