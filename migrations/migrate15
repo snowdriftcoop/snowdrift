@@ -1,2 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "message_preferences" VARCHAR NOT NULL DEFAULT '["sMessageOnReply"]';
-ALTER TABLE "message" ADD COLUMN "type" VARCHAR NOT NULL DEFAULT 'MessageDirect';

@@ -1,2 +1,0 @@
-ALTER TABLE "comment" ADD COLUMN "language" VARCHAR NOT NULL DEFAULT 'en';
-ALTER TABLE "comment" ALTER COLUMN "language" DROP DEFAULT;

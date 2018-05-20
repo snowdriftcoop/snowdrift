@@ -1,2 +1,0 @@
-ALTER TABLE "comment_flagging" DROP COLUMN "project_handle";
-ALTER TABLE "comment_flagging" DROP COLUMN "target";

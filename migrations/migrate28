@@ -1,5 +1,0 @@
-ALTER TABLE "ticket_claiming" ADD COLUMN "released_ts" TIMESTAMP NULL;
-CREATe TABLE "event_ticket_claimed"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"claim" INT8 NOT NULL);
-ALTER TABLE "event_ticket_claimed" ADD CONSTRAINT "event_ticket_claimed_claim_fkey" FOREIGN KEY("claim") REFERENCES "ticket_claiming"("id");
-CREATe TABLE "event_ticket_unclaimed"("id" SERIAL PRIMARY KEY UNIQUE,"ts" TIMESTAMP NOT NULL,"claim" INT8 NOT NULL);
-ALTER TABLE "event_ticket_unclaimed" ADD CONSTRAINT "event_ticket_unclaimed_claim_fkey" FOREIGN KEY("claim") REFERENCES "ticket_claiming"("id");

@@ -1,4 +1,0 @@
-CREATE TABLE "view_time"("id" SERIAL PRIMARY KEY UNIQUE,"user" INT8 NOT NULL,"project" INT8 NOT NULL,"type" VARCHAR NOT NULL,"time" TIMESTAMP NOT NULL DEFAULT now());
-ALTER TABLE "view_time" ADD CONSTRAINT "unique_view_time_user_project_type" UNIQUE("user","project","type");
-ALTER TABLE "view_time" ADD CONSTRAINT "view_time_user_fkey" FOREIGN KEY("user") REFERENCES "user";
-ALTER TABLE "view_time" ADD CONSTRAINT "view_time_project_fkey" FOREIGN KEY("project") REFERENCES "project";

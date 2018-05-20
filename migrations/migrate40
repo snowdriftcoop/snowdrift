@@ -1,1 +1,0 @@
-ALTER TABLE "email_verification" ADD COLUMN "ver_email" VARCHAR NOT NULL;

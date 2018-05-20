@@ -1,5 +1,0 @@
-DROP TABLE "manual_establishment";
-CREATe TABLE "manual_establishment"("id" SERIAL PRIMARY KEY UNIQUE,"established_user" INT8 NOT NULL,"establishing_user" INT8 NOT NULL);
-ALTER TABLE "manual_establishment" ADD CONSTRAINT "unique_manual_establishment" UNIQUE("established_user");
-ALTER TABLE "manual_establishment" ADD CONSTRAINT "manual_establishment_established_user_fkey" FOREIGN KEY("established_user") REFERENCES "user"("id");
-ALTER TABLE "manual_establishment" ADD CONSTRAINT "manual_establishment_establishing_user_fkey" FOREIGN KEY("establishing_user") REFERENCES "user"("id");
