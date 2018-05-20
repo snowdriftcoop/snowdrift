@@ -2,9 +2,15 @@
 # https://docs.gitlab.com/ee/ci/yaml/README.html
 
 stages:
-    - deps
-    - build
-    - test
+- deps
+- build
+- test
+
+cache:
+    paths:
+    - .stack-work
+    - "*/.stack-work"
+    - website/.shakespeare-sass
 
 deps:
     stage: deps
@@ -14,16 +20,14 @@ deps:
         #- apt-get --quiet update
         #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
         #- curl -sSL https://get.haskellstack.org/ | sh
-        - stack clean
-        - stack test --no-run-tests --only-dependencies --install-ghc
+        "stack test --no-run-tests --only-dependencies --install-ghc"
 
 build:
     stage: build
     script:
-        - touch website/src/Settings/StaticFiles.hs
-        - stack build
+    - "touch website/src/Settings/StaticFiles.hs"
+    - "stack build"
 
 test:
     stage: test
-    script:
-        - ./build.sh test
+    script: "./build.sh test"
