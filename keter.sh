@@ -29,7 +29,9 @@ contents=(
     dist
 )
 
+export PGDATABASE=snowdrift_deploy
 stack="stack --work-dir .stack-deploy"
+dbmake="$stack exec -- make -f db.makefile"
 
 hdr () {
     echo -e "\n-- $@"
@@ -45,7 +47,7 @@ main () {
         fi
         rm -rf ${install_path}
         mkdir -p ${install_path}
-        stack --work-dir .stack-work-deploy clean
+        $stack clean
         # Have to do dependencies without --pedantic, since stack still
         # rebuilds extra-deps specified as git repos after a clean. :(
         # Refer to https://github.com/commercialhaskell/stack/issues/1295
@@ -53,11 +55,14 @@ main () {
             build \
             --dependencies-only \
             --install-ghc
+        (trap "$dbmake stop" EXIT
+        $dbmake
         $stack \
             --local-bin-path $install_path \
             install \
             --flag Snowdrift:-dev \
             --pedantic
+        ) # $dbmake stop
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
         hdr "Tarballing"
