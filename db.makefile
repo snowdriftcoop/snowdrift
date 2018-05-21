@@ -7,11 +7,11 @@ export PGDATA ?= $(CURDIR)/.postgres-work
 export PGDATABASE ?= snowdrift_development
 export PGHOST := $(PGDATA)
 
-pg_isready = pg_isready -q
-pg_ctl = $(shell pg_config --bindir)/pg_ctl
+pg_isready := pg_isready -q
+pg_ctl := $(shell pg_config --bindir)/pg_ctl
 
 # TODO: explain these flags
-pg_start = $(pg_ctl) \
+pg_start := $(pg_ctl) \
     start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 
 # Example usage:  $(db_exists) foo
