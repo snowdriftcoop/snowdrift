@@ -1,26 +1,41 @@
 <h1>Contact Snowdrift.coop
 
 As a distributed team with a global pool of volunteers, we communicate almost
-entirely online. Coming soon: more contact options besides those listed below.
+entirely online.
 
+Communication options:
 
-<h2>Mailing Lists
-
-<p>
-  For details about the topical email lists we use, see
-  <a href="https://lists.snowdrift.coop">lists.snowdrift.coop
-
-
-<h2>Chat with the Snowdrift team and wider community on IRC!
+<h2>Community Forum
 
 <p>
-  A JavaScript portal to our channel should open up below. Just pick a
-  username and get started.
+  We run an instance of the wonderful Discourse software at
+  <a href="https://community.snowdrift.coop">community.snowdrift.coop
+  where you can connect with the team and community on any related topic.
 
 <p>
-  Or for other options and more info about IRC, check out our
-  <a href="https://wiki.snowdrift.coop/community/irc"
-    >IRC wiki page</a>.
+  The forum log-in and registration uses the same account as the main
+  Snowdrift.coop site.
+
+<h2>Email
+
+<p>
+  Although the forum is generally best and has private-message features too, you
+  may email us at community@snowdrift.coop for support, general questions,
+  privacy concerns etc.
+
+<h2>Live chat
+
+<p>
+  We have a public IRC channel `#snowdrift` at Freenode.net which is also
+  bridged to Matrix.org `#snowdrift:matrix.org`.
+<p>
+  If you have JavaScript enabled, a portal to our channel should open right
+  below. Just pick a username and say "hi".
+
+<p>
+  See our
+  <a href="https://wiki.snowdrift.coop/community/irc">IRC wiki page
+  has more details and options.
 
 <iframe src="https://kiwiirc.com/client/irc.freenode.net/#snowdrift"
   style="border:0; width:100%; height:450px;"></iframe>
