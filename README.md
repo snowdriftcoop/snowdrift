@@ -8,46 +8,37 @@ It uses the [Yesod web framework] and [Haskell] programming language.
 Key links:
 
 * [What is Snowdrift?]
-* [Issues]
-* [Specs]
-* [Roadmap]
+* [code issues]
+* [specs]
+* [roadmap]
 
 ## Code repositories
 
-Main repository: [git.snowdrift.coop] (running GitLab CE)
+Main repositories: [git.snowdrift.coop] (running GitLab CE)
 
-We also have a mirror on [GitHub] but prefer issues and merge requests at the
-main location.
+We also mirror the code repo on [GitHub] but prefer issues and merge requests at
+the main location (and we do not maintain mirrors of the separate project repos
+like design, legal, ops, etc.).
 
 ## Contributing
 
 Snowdrift.coop welcomes contributions of all sorts.
 
-For ways to contribute outside of coding, see our [how-to-help] wiki page.
+Outside of coding, see our [how-to-help] wiki page.
 
 For code contributions, our **[contributor guide]** covers all the steps in
 detail (including notes about our development practices, basic setup, and
 resources for those new to Git, Haskell, or even to programming in general). The
-following is an abbreviated summary:
+core points are:
 
 * Follow our [build instructions] to build and test the software.
 
-* File and search issues/tickets in the [issues] sections at git.snowdrift.coop.
+* File and search concrete issues/tickets/tasks in the [issues] sections at
+  git.snowdrift.coop.
 
-* Connect with us in whatever way is most efficient for you. All questions,
-    feedback, help requests, etc. are welcome.
-
-### Communicating with us
-
-* Email us at <community@snowdrift.coop> to discuss your volunteer interests.
-
-* Sign up on the [dev email list] (and perhaps [other email lists]), and send a
-  message introducing yourself to the community.
-
-* Visit `#snowdrift` on freenode.net [IRC] for live chat (or the bridged Matrix
-  room at `#snowdrift:matrix.org`)
-
-* All public discourse is covered by our [Code of Conduct]
+* Get in touch *any* time. Don't hesitate to ask questions, ask for help,
+    provide feedback etc. Use any of our [contact options] as appropriate.
+    * Note that we follow a [Code of Conduct] for all public discussions.
 
 License
 -------
@@ -65,15 +56,13 @@ Our text and graphics documents (non-program-code) are also licensed under
 [contributor guide]: CONTRIBUTING.md
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [Haskell]: https://www.haskell.org/
-[IRC]: https://wiki.snowdrift.coop/community/irc
-[Issues]: https://git.snowdrift.coop/sd/snowdrift/issues
-[Roadmap]: https://tree.taiga.io/project/snowdrift/epics
+[code issues]: https://git.snowdrift.coop/sd/snowdrift/issues
+[roadmap]: https://wiki.snowdrift.coop/planning
 [Snowdrift.coop]: https://snowdrift.coop/
 [What is Snowdrift?]: https://snowdrift.coop/about
 [Yesod web framework]: http://www.yesodweb.com/
-[dev email list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd
 [how-to-help]: https://wiki.snowdrift.coop/community/how-to-help
-[other email lists]: https://lists.snowdrift.coop/
 [Specs]: SPECS-STORIES.md
 [Code of Conduct]: https://wiki.snowdrift.coop/community/conduct
+[contact options]: https://snowdrift.coop/contact
