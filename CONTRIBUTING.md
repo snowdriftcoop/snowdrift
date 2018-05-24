@@ -9,8 +9,8 @@ adapt the instructions as they see fit.
 ## Get in touch!
 
 Reading this guide is *not* a prerequisite to contacting us. Feel free to
-connect and engage with real people in the community, if only to let us know
-about your interest in contributing. See our [contact options].
+connect and engage with real people in the community right away, if only to let
+us know about your interest in contributing. See our [contact options].
 
 ## Licensing note
 
@@ -22,17 +22,16 @@ in the [README]). Other compatible licensing can work with special notice.
 
 ## Prerequisites to contributing
 
-* Decently powerful computer (probably less than 10 years old, 4GB+ RAM)
-* Basic ability to use terminal command-line-interface (CLI)
+* Decently powerful computer (probably less than 10 years old, ideally 4GB+ RAM)
 * GNU/Linux, \*BSD, or MacOS system
-    * We do not support Windows at this time, so we suggest Windows users switch
+    * We do not support Windows at this time. We suggest Windows users switch
       systems overall or use a virtual machine. If you really want to help test
       Snowdrift on Windows, our [Build guide] has some notes about that.
+* Basic ability to use terminal command-line-interface (CLI)
 
 ## Installing
 
-**Follow the [Build guide]** for instructions to get Snowdrift going on your
-computer.
+**Follow the [Build guide]** to get Snowdrift going on your computer.
 
 ## Working on the code
 
@@ -51,18 +50,17 @@ Recommended workflow:
 
 * Keep local master synced to the upstream main project master
 * Do all work on new branches
-* Use separate branches for fully-independent work
+* Use separate branches for independent work
 * Once branches have been published and merge-requests opened, please retain the
-  full list of commits, and only rebase when requested.
+  full list of commits and only rebase when requested.
 
 #### Basic Git setup for collaboration
 
 The following covers the bare minimum process for those new to Git.
 
-We collaborate on the code via the FLO (Free/Libre/Open) site
-[git.snowdrift.coop] using GitLab CE. We also mirror on the popular but
-proprietary site [GitHub], which you may use if you already have an account
-there. As we encourage everyone to use FLO tools, the instructions below assume
+We collaborate via the FLO (Free/Libre/Open) site [git.snowdrift.coop] (running
+GitLab CE). We also mirror on the popular but proprietary site [GitHub], but we
+encourage everyone to use FLO tools, and so the instructions below assume
 git.snowdrift.coop.
 
 1. Locally clone the project from the main Snowdrift repo to your computer as
@@ -70,10 +68,10 @@ git.snowdrift.coop.
 2. Fork the project at git.snowdrift.coop
     * sign in or create an account on [git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in)
     * go to the [project repository]
-    * click the "Fork" link at the top of the main page, below the header
+    * click the "Fork" link (toward the top of the page)
     * choose your account for the fork
-    * you should end up at your fork; to check, see that the header at the top
-      of the page has your account name followed by "/Snowdrift"
+    * you should end up at your fork (to check, see that the header at the top
+      of the page has your account name followed by "/Snowdrift")
 3. Add your git.snowdrift.coop fork as a remote for your local clone
     * While we recommend SSH, those not comfortable with the full [SSH setup]
       can use HTTPS instead.
@@ -89,11 +87,9 @@ git.snowdrift.coop.
 #### Updating your local code to snowdrift master
 
 Whenever you begin new work, you should first get the latest master code from
-the Snowdrift project.
+the Snowdrift project:
 
-To download the latest updates of the snowdrift code:
-
-* In your snowdrift directory,
+* In your local snowdrift project directory,
 * assuming you have the main snowdrift code as your "origin" (verify with
   `git remote -v`),
 * with the master branch checked out (`git checkout master`),
@@ -139,31 +135,28 @@ how to fix the issue or don't understand the error, contact us for help.
 When your updates all compile, tests pass, and you are ready to submit to the
 main Snowdrift project, *commit* your changes.
 
-For now, though it isn't best practice, you can quickly commit all your changes
-with the command:
+Though it isn't best practice, the simplest command for beginners to commit all
+changes (though any *new* files need `git add` first) is:
 
     git commit -a
 
-An editor will show asking you to summarize your changes. For the first line,
+An editor will show asking you to summarize your changes. On the first line,
 write a short commit title that will be meaningful to people skimming all the
-commits in the future. If you want to add further comments about the work, do
-that on additional lines below the title. Then save and close the editor.
+commits in the future. Add any further comments about the work on additional
+lines below the title. Then save and close the editor.
 
 #### Getting your changes merged
 
 When you are ready to share your work (one or more commits all relevant to the
-same overall update), and you have confirmed that everything works and all tests
-pass, run `git status` to make sure no work is missing and all new files were
-committed.
+same overall update), you have confirmed that everything works as intended, and
+all tests pass, run `git status` to make sure no work is missing and all new
+files were committed.
 
 Next, send your changes to your git.snowdrift.coop account with:
 
     git push -u my-snow some_branch
 
-Change `some_branch` to the name of the branch where you made the commit(s).
-
-NB: if you make additional changes to the same branch before a maintainer merges
-it into master, you can push those new updates with just `git push`.
+Changing `some_branch` to the name of the branch where you made the commit(s).
 
 To notify the snowdrift team about your work, visit the git.snowdrift.coop page
 with your fork. You should see a button **"Create Merge Request"**. Click that
@@ -178,11 +171,8 @@ soon (hopefully within a few hours, maybe a day or two depending on timing).
 
 Several ways to get started contributing and/or to learn more overall:
 
-* Visit our [Taiga Issues] page and filter to the "newcomer" tag and see
-  what looks interesting and/or doable. Consider exploring other issues based
-  on your skills or interests. If you decide to work on a specific ticket, chat
-  with us on [IRC] or send an email to the [dev mailing list] to get added to
-  the team.
+* See the "newcomer-friendly" tag in our [issues] and consider working on any
+  item not already assigned to someone and with no "blocked" tag.
 
 * Play around with the site locally. See if you can understand what does what.
   You may find bits that seem incomplete or confusing, and you can explore them
@@ -198,14 +188,11 @@ Several ways to get started contributing and/or to learn more overall:
           (plus some other logic that connects to the Haskell). For more
           details, see the documentation on [Shakespearean Templates].
         * Any .julius files are containers for JavaScript.
-        * For CSS, we're moving from .cassius and switching to Sass files
-          (TODO: update this with documention for contributing to Sass once the
-          process is finalized)
+        * For CSS, we use .sass and .silius files
+          (TODO: document this better)
 
-    * For those familiar with Haskell, consider exploring our files and updating
-      any code that doesn't match our code style (see the "Code style" section
-      below). After you have some familiarity with the project, you can take
-      on some real development tasks.
+    * For those familiar with Haskell, one way to get started is by exploring
+      our files and updating any code that doesn't match our code style described below.
 
 * Read the code documention in this repo and other pages on the Snowdrift.coop
   [wiki].
@@ -220,8 +207,7 @@ and avoid browser-specific code.
 
 ### Design considerations
 
-We have separate [design] wiki pages for our specific design guide and general
-design-related issues.
+We have a separate [design] repo for design tasks, our design guide and so on.
 
 ### Code style
 
@@ -254,14 +240,13 @@ code formatter. Besides that, consider:
     ```
 ### Code review
 
-As a best practice, we want to have adequate code review for every merge before
-it goes into the master code.
+As a best practice, we want adequate code review for every merge before it goes
+into the master code.
 
-For volunteers interested in helping with code review, please choose to *watch*
-the code repositories (the main repo at [git.snowdrift.coop] and also the
-[GitHub] mirror if you use GitHub). Then, you can make general and in-line
-comments about new code as it is committed and before it goes into the master
-repository.
+To help with code review, please choose to *watch* the code repository at
+[git.snowdrift.coop] (and perhaps also the [GitHub] mirror if you use GitHub).
+Then, you can make general and in-line comments about new code as it is
+committed and before it goes into the master repository.
 
 ### Use of JavaScript
 
@@ -271,11 +256,10 @@ that basis, we can add JavaScript as appropriate for enhancement, considering
 [Unobtrusive JavaScript]. Use of NoScript should never cause a broken
 experience. All our JavaScript should be recognized by the FSF's [LibreJS plugin].
 
-Although we haven't used them as of January 2016, we have considered
-[GHCJS] and [PureScript] as options for more Haskell-connected ways to generate
-JavaScript. If contributors want to work with either of those, we would happily
-accept that. [Yesod JavaScript Options] explains further about those or other
-possibilities.
+Although we haven't used them as of May 2018, we have considered [GHCJS] and
+[PureScript] as options for more Haskell-connected ways to generate JavaScript.
+If contributors want to work with either of those, we would happily accept that.
+[Yesod JavaScript Options] explains further about those or other possibilities.
 
 ## Learning resources and helpful tools
 
@@ -339,11 +323,12 @@ here are some resources (nearly all fully-FLO):
 
 [Build guide]: BUILD.md
 [contact options]: https://snowdrift.coop/contact
-[design]: https://wiki.snowdrift.coop/design
+[design]: https://git.snowdrift.coop/sd/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
 [GHCJS]: https://github.com/ghcjs/ghcjs
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
+[issues]: https://git.snowdrift.coop/sd/snowdrift/issues?label_name%5B%5D=newcomer-friendly
 [IRC]: https://wiki.snowdrift.coop/community/irc
 [LibreJS plugin]: https://www.gnu.org/software/librejs/
 [project repository]: https://git.snowdrift.coop/sd/snowdrift
@@ -351,7 +336,6 @@ here are some resources (nearly all fully-FLO):
 [README]: README.md
 [Shakespearean Templates]: http://www.yesodweb.com/book/shakespearean-templates
 [SSH setup]: https://git.snowdrift.coop/help/ssh/README
-[Taiga Issues]: https://tree.taiga.io/project/snowdrift-dev/issues
 [TEXTEDITORS.md]: TEXTEDITORS.md
 [Unobtrusive JavaScript]: http://en.wikipedia.org/wiki/Unobtrusive_JavaScript
 [wiki]: https://wiki.snowdrift.coop/
