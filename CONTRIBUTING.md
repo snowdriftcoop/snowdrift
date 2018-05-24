@@ -324,12 +324,10 @@ here are some resources (nearly all fully-FLO):
 [Build guide]: BUILD.md
 [contact options]: https://snowdrift.coop/contact
 [design]: https://git.snowdrift.coop/sd/design
-[dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
 [GHCJS]: https://github.com/ghcjs/ghcjs
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [issues]: https://git.snowdrift.coop/sd/snowdrift/issues?label_name%5B%5D=newcomer-friendly
-[IRC]: https://wiki.snowdrift.coop/community/irc
 [LibreJS plugin]: https://www.gnu.org/software/librejs/
 [project repository]: https://git.snowdrift.coop/sd/snowdrift
 [PureScript]: http://www.purescript.org/
