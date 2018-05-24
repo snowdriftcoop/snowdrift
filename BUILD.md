@@ -7,7 +7,7 @@ any efforts to add such support. See below for partial setup instructions.
 
 ## Install System Dependencies
 
-[Git], [PostgreSQL], [Stack] and [Make] are the only dependencies needed at the
+[Git], [PostgreSQL], [Stack], and [Make] are the only dependencies needed at the
 system level. Stack takes care of finding or installing the correct GHC version.
 Some systems need a few additional libraries to support the core dependencies.
 
@@ -65,7 +65,11 @@ Once ncurses5-compat-libs is installed, add the following line to
 ghc-build: nopie
 ~~~~~
 
-**NOTE: Entering this into ~/.stack/config.yaml will apply to *all* Haskell projects that you build using stack going forward.**  This command tells stack to use a version of ghc that compiles without PIE.  We were unable to find a way to set this configuration *just* for Snowdrift, however we don't believe making this change will cause any issues with compiling other Haskell projects.
+**NOTE: Entering this into ~/.stack/config.yaml will apply to *all* Haskell
+projects that you build using stack going forward.** This command tells stack
+to use a version of ghc that compiles without PIE. We were unable to find a way
+to set this configuration *just* for Snowdrift, however we don't believe making
+this change will cause any issues with compiling other Haskell projects.
 
 ### NixOS
 
@@ -110,10 +114,9 @@ alternative working.
 
 ## Get the Snowdrift code
 
-NB: We primarily use a completely FLO (Free/Libre/Open) host for our code:
-[git.snowdrift.coop/sd/snowdrift], and our instructions assume that repository.
-For convenience and redundancy, we also mirror at [GitHub], a popular but
-proprietary platform.
+Our primary repository is at [git.snowdrift.coop/sd/snowdrift], and our
+instructions assume that repository. For convenience and redundancy, we also
+mirror at [GitHub].
 
 From within your preferred directory, get the code with:
 
@@ -214,10 +217,6 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
-## Database notes
-
-See [DATABASE-MANAGEMENT.md] for details on resetting the database and more.
-
 ## Getting help, learning, contributing etc.
 
 We welcome any and all feedback on these build instructions, on the site
@@ -228,14 +227,11 @@ about technical development.
 [AUR ArchWiki Page]: https://wiki.archlinux.org/index.php/Arch_User_Repository
 [brew]: http://brew.sh/
 [Contributing Guide]: CONTRIBUTING.md
-[DATABASE-MANAGEMENT.md]: DATABASE-MANAGEMENT.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
 [discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads
 [git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
-[haskell-stack]: https://aur.archlinux.org/packages/haskell-stack
-[install Stack for Windows]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#windows
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
 [Make]: https://www.gnu.org/software/make/manual/html_node/index.html
 [PostgreSQL]: http://www.postgresql.org/download/
