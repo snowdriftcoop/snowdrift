@@ -43,9 +43,9 @@ with_db () {
     # Shut down the database on exit
     ( trap "${dbmake[*]} stop" EXIT
     # . . . and start it now
-    PGDATABASE=$1 ${dbmake[*]}
+    PGDATABASE="$1" ${dbmake[*]}
     shift
-    $@
+    "$@"
     ) # DB shutdown happens now
 }
 
@@ -60,7 +60,7 @@ main () {
     # Configure local Stripe keys for shell, devel, and test.
     [ -e .stripe_keys ] && source .stripe_keys
 
-    case $CMD in
+    case "$CMD" in
         devel)
             with_db snowdrift_development run_devel
             ;;
