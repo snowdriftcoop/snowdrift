@@ -1,57 +1,33 @@
-**[Editor's note: this document needs serious pruning. A modern contributing
-guide should merely be a quick reference for those who wish to submit
-merges/patches.]**
+**[Editor's note: we know this needs serious pruning to keep it shorter easier
+for those ready to jump in.]**
 
 # Snowdrift Beginning Contributor's Guide
 
-To contribute to Snowdrift, you don't have to be tech savvy. This guide is
-written to work for even novice programmers. Advanced readers may adapt the
-instructions as they see fit.
-
-In this guide, we will cover pretty much all you need to do to get Snowdrift
-running locally and to start making and submitting updates.
+This guide is written to work for even novice programmers. Advanced readers may
+adapt the instructions as they see fit.
 
 ## Get in touch!
 
-Our *recommended* approach to getting started *includes* asking questions,
-getting mentored, and otherwise having real human engagement with others in the
-community. Please don't hesitate to speak up, and don't worry about taking
-people's time. We always welcome questions. For efficiency, we will point you to
-resources or pair you with others.
+Reading this guide is *not* a prerequisite to contacting us. Feel free to
+connect and engage with real people in the community, if only to let us know
+about your interest in contributing. See our [contact options].
 
 ## Licensing note
 
 When you contribute patches to this repository, such as via a merge request, you
-retain the copyright to your contributions. Of course, given unchanged license
-notices in your copy of the repository, you automatically release your work
-under the same licenses we use (GNU AGPLv3+ primarily with non-code text and
-graphics also under CC BY-SA 4.0 International, as specified in the [README].
+retain the copyright to your contributions. In doing so, you agree that the
+patches are under under the same licenses we use (GNU AGPLv3+ for program code
+and non-program text and graphics under CC BY-SA 4.0 International, as specified
+in the [README]). Other compatible licensing can work with special notice.
 
 ## Prerequisites to contributing
 
-To work with Snowdrift, you should have a reasonably new laptop or desktop
-computer system (less than 10 years old generally) and know how to open a
-terminal and enter commands.
-
-Generally, everything works smoothly with GNU/Linux, \*BSD systems, and OS X.
-
-We do not support Windows at this time, so we suggest Windows users switch
-systems or run a virtual machine. We encourage Windows users to switch to a
-free/libre/open system anyway, but if you really want to help test Snowdrift on
-Windows, our [Build guide] has some notes about that.
-
-## Command-line beginner's basics
-
-In general, when you see a list of commands to enter, we recommend entering them
-in one-at-a-time exactly as you see them. However, it should work to copy and
-paste a collection of commands all at once.
-
-NB: in most cases, you must use Ctrl-Shift-V to paste into the terminal (for
-historic reasons, Ctrl-V does something else usually).
-
-We also highly recommend use of tab-completion. See the wikibook "A Quick
-Introduction to Unix" in the resources at the end of this file for more
-command-line basics.
+* Decently powerful computer (probably less than 10 years old, 4GB+ RAM)
+* Basic ability to use terminal command-line-interface (CLI)
+* GNU/Linux, \*BSD, or MacOS system
+    * We do not support Windows at this time, so we suggest Windows users switch
+      systems overall or use a virtual machine. If you really want to help test
+      Snowdrift on Windows, our [Build guide] has some notes about that.
 
 ## Installing
 
@@ -65,28 +41,23 @@ according to the instructions linked above.**
 
 ### Text-editors and settings
 
-All systems should come with a code-appropriate text-editor (or two), e.g.
-Gedit, Kate, Pluma, Scratch, etc. Any of those will work for now, but we
-recommend installing an editor with stronger Haskell and Yesod support. See
-[TEXTEDITORS.md] for our specific recommendations and settings.
+Any code-appropriate text-editor will work, but we recommend those with stronger
+Haskell and Yesod support. See [TEXTEDITORS.md] for our specific recommendations
+and settings.
 
 ### Working with Git
 
-Short version for experienced Git users:
+Recommended workflow:
 
-**We suggest keeping your local master matched to the main project master. Work
-*only* on other git branches. Use as many branches as needed to separate all
-work that functions independently** (and avoid clutter by deleting branches once
-no longer needed).
-
-To make it easier to follow changes, please retain the full list of commits
-when pushing branch updates, and only rebase when requested.
-
-The following covers the bare minimum process for those new to Git.
+* Keep local master synced to the upstream main project master
+* Do all work on new branches
+* Use separate branches for fully-independent work
+* Once branches have been published and merge-requests opened, please retain the
+  full list of commits, and only rebase when requested.
 
 #### Basic Git setup for collaboration
 
-##### Forking at the host platform
+The following covers the bare minimum process for those new to Git.
 
 We collaborate on the code via the FLO (Free/Libre/Open) site
 [git.snowdrift.coop] using GitLab CE. We also mirror on the popular but
@@ -94,60 +65,38 @@ proprietary site [GitHub], which you may use if you already have an account
 there. As we encourage everyone to use FLO tools, the instructions below assume
 git.snowdrift.coop.
 
-Fork the project:
-* create an account on [git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in) or sign in if you already have an account
-* go to the [project repository]
-* click the "Fork" link at the top of the main page, below the header
-* choose your account for the fork
-* you should end up at the page for your fork of the project; to check, see that the header at the top of the page has
-your account name followed by "/Snowdrift"
-
-##### Adding your fork as a remote
-
-*Key to note*: you clone the main Snowdrift repo to your computer as described
-in the BUILD guide. To this local clone, you then add a link, called a "remote",
-that points to your fork: more on this later. Note that you do *not* clone your
-fork.
-
-At the top of the main page, below the header, you'll see a box with an address.
-By default, the SSH option is selected, and we recommend SSH ideally. However,
-[SSH setup] is kind of tricky, especially for those new to SSH. To stick with
-the easier option for now, click "HTTPS" and use that address, which will look
-like: "https://git.snowdrift.coop/YOURNAME/snowdrift.git"
-
-Where `YOURNAME` is your git.snowdrift.coop username.
-
-Copy that address to your clipboard.
-
-In your snowdrift directory, where you cloned the main repo, paste the address
-into your terminal as part of the following command:
-
-    git remote add my-snow https://git.snowdrift.coop/YOURNAME/snowdrift.git
-
-If you have not used Git before, run these additional Git setup commands,
-replacing `YOUR NAME` and `YOUR EMAIL` with your actual name and email.
-
-    git config --global user.name "YOUR NAME"
-    git config --global user.email "YOUR EMAIL"
-
-Optional: specify a particular text editor for commit messages (replace `nano`
-with the command for whatever editor you prefer):
-
-    git config --global core.editor "nano"
+1. Locally clone the project from the main Snowdrift repo to your computer as
+   described in the BUILD guide
+2. Fork the project at git.snowdrift.coop
+    * sign in or create an account on [git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in)
+    * go to the [project repository]
+    * click the "Fork" link at the top of the main page, below the header
+    * choose your account for the fork
+    * you should end up at your fork; to check, see that the header at the top
+      of the page has your account name followed by "/Snowdrift"
+3. Add your git.snowdrift.coop fork as a remote for your local clone
+    * While we recommend SSH, those not comfortable with the full [SSH setup]
+      can use HTTPS instead.
+    * For HTTPS, choose that instead of SSH from the dropdown menu on the page
+      of your fork at git.snowdrift.coop
+    * copy the address (which looks like
+      `https://git.snowdrift.coop/YOURNAME/snowdrift.git` where `YOURNAME` is
+      your git.snowdrift.coop username).
+    * using the correct address, enter a modified version of this command in the
+        directory of your local clone:
+        `git remote add my-snow https://git.snowdrift.coop/YOURNAME/snowdrift.git`
 
 #### Updating your local code to snowdrift master
 
 Whenever you begin new work, you should first get the latest master code from
 the Snowdrift project.
 
-The following assumes you originally cloned the code from one of our main hosts
-(as described in the BUILD guide), so you will have the main snowdrift code
-as your "origin" (verify this with `git remote -v`).
-
 To download the latest updates of the snowdrift code:
 
-* Go to your snowdrift directory, if not there already
-* if not already on your master branch, run `git checkout master`
+* In your snowdrift directory,
+* assuming you have the main snowdrift code as your "origin" (verify with
+  `git remote -v`),
+* with the master branch checked out (`git checkout master`),
 * run `git pull`
 
 You should have no conflicts because this is the only situation where you
@@ -159,11 +108,17 @@ From the master branch, having pulled the latest updates, create a new branch:
 
     git checkout -b some-branch
 
-Replace `some-branch` with a one- or two-word (with hyphens, not spaces)
-description of your planned changes. For example, when fixing a problem in the
-header, a good branch name would be `header-fix`.
+Replace `some-branch` with a short descriptive name (with hyphens, not spaces)
+for your planned changes. For example, when fixing a problem in the header, a
+good branch name could be `header-fix`.
 
-Now, you can edit files, save work as you go, etc.
+#### Working on the code
+
+On a working branch, you can make your edits/additions etc. to the code files.
+
+To review the status and save important points in your progress, learn about the
+staging process and commands like `git add`, `git status`, and `git diff`. See
+the links at the end of this file for learning resources.
 
 #### Building your updates
 
@@ -183,10 +138,6 @@ how to fix the issue or don't understand the error, contact us for help.
 
 When your updates all compile, tests pass, and you are ready to submit to the
 main Snowdrift project, *commit* your changes.
-
-If you are new to Git, we urge you to learn about the process of staging with
-`git add` before committing and about review tools like `git status` and
-`git diff`. See the links at the end of this file for learning resources.
 
 For now, though it isn't best practice, you can quickly commit all your changes
 with the command:
@@ -387,6 +338,7 @@ here are some resources (nearly all fully-FLO):
     and #haskell-beginners (among many other relevant channels).
 
 [Build guide]: BUILD.md
+[contact options]: https://snowdrift.coop/contact
 [design]: https://wiki.snowdrift.coop/design
 [dev mailing list]: https://lists.snowdrift.coop/mailman/listinfo/dev
 [git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
