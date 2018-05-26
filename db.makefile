@@ -10,7 +10,10 @@ export PGHOST := $(PGDATA)
 pg_isready := pg_isready -q
 pg_ctl := $(shell pg_config --bindir)/pg_ctl
 
-# TODO: explain these flags
+# Start postgres process, put all the files in the same place, and wait for
+# startup to complete before continuting.
+# pg_ctl: -w: wait, -o: postgres options (need quotes), -l: log file path
+# postgres: -F: no fsync, -h '': no IP/hostname connections. -k: socket dir
 pg_start := $(pg_ctl) \
     start -w -o "-F -h '' -k $(PGHOST)" -l $(PGDATA)/log
 
