@@ -29,6 +29,7 @@ extra-deps:
   - stripe-core-2.2.3
   - stripe-haskell-2.2.3
   - stripe-http-streams-2.2.3
+  - yesod-bin-1.6.0.3
 nix:
   pure: false
   packages:

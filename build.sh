@@ -34,9 +34,9 @@ export PGDATABASE="snowdrift_development"
 dbmake=(stack exec -- make -s -C "$projRoot" -f db.makefile)
 
 run_devel () {
+    stack build
     cd "$projRoot"/website
-    stack --work-dir .stack-devel build yesod-bin
-    stack --work-dir .stack-devel exec yesod devel
+    stack exec yesod devel
 }
 
 with_db () {
