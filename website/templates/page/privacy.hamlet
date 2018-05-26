@@ -2,41 +2,51 @@
 <p>
   <strong>
     <em>
-      Version 0.4 effective December 1, 2016
+      Version 0.5 effective May 25, 2018
 <p>
   <strong>
     Snowdrift.coop is dedicated to maintaining the utmost respect for user
-    privacy.
-  Although technology makes private information easy to collect, we choose to
-  collect it
-  <em>only
-  when deemed necessary.
+    privacy. We collect and store only the minimum necessary personal
+    information to operate the service.
 
 <h2 id="policy-highlights">Policy highlights:
 <ul>
   <li>
-    Snowdrift.coop uses cookies to keep your account logged-in, but we do not
-    otherwise track you.
+    If you simply view the site, we collect no information aside from server
+    logs.
   <li>
-    Anyone may anonymously view the site, but you must register an account to
-    edit a wiki page, participate in discussions, or pledge as a patron. Your
-    account maintains a history of transactions such as which projects you have
-    supported.
+    If you create a Snowdrift.coop account, we store your email address to
+    identify your account and use cookies to keep you logged in.
+$# TODO: add this feature, then add this policy line
+$#  <li>
+$#    If you check the "keep me logged in" option, a cookie will be stored on your computer.
   <li>
-    You can unsubscribe from non-essential email updates at any time.
+    If you connect a third-party payment providers to your account, their terms
+    apply, and you should check their independent privacy policies.
+    Snowdrift.coop does not directly collect, retain, or use any financial
+    information (such as credit card numbers).
   <li>
-    Snowdrift.coop uses third-party payment providers. When using these
-    services, you should check their independent privacy policies.
+    If you pledge as a patron to any projects, we keep a record of your
+    transactions, such as your pledges and donations.
   <li>
-    No financial information (such as credit card numbers) is collected,
-    retained, or used directly by Snowdrift.coop.
+    If you use our <a href="https://community.snowdrift.coop">community forum</a>, a
+    <a href="https://community.snowdrift.coop/privacy">separate privacy policy
+    applies.
+  <li>
+    If you provide us with additional personal information, we will use it only
+    for purposes you consent to (such as communication as a volunteer or to
+    receive merchandise by mail).
+  <li>
+    If you want to download your personal information or have it anonymized or
+    deleted, please email privacy@snowdrift.coop.
 
-<h2 id="policy-in-full">Policy in full
-<h3 id="personal-information">Personal information
+<h2 id="additional-details">Additional details
+
+<h3 id="definitions">Definition of personal information
 <p>
   We consider "personal information" to mean either directly identifiable
   information (such as your name or email address) or several pieces of
-  information that in combination may directly identify you, even if each piece
+  information that may identify you when combined, even if each piece
   individually does not.
 <p>
   Also, if we store personal information with other information, we consider
@@ -60,10 +70,7 @@
     overall geographic distribution based on IP address).
 <ul>
   <li>
-    Snowdrift.coop uses cookies to identify visitors and save login settings.
-    <strong>
-      We do not use cookies for other tracking purposes nor do we retain them
-      long-term.
+    Snowdrift.coop uses cookies only to keep accounts logged in.
   <li>
     When you sign up with us, your email address is required. You can browse
     Snowdrift.coop without logging in, but you must register an account in order
@@ -72,9 +79,12 @@
     We collect only basic server log data (browser ID, IP address, referring
     site, and time) and make no attempt to connect that with account
     information.
-    <strong>All analytics processing is done in-house, not by third-party contractors.
-    We do not store server logs any longer than necessary and we destroy old
-    information.
+  <li>
+    We use no third-party analytics and store server logs no longer than
+    necessary.
+
+<h3 id="projects">For projects
+<ul>
   <li>
     If you are a team leader who submits a project to Snowdrift.coop, we will
     ask for detailed information about your project that may be displayed
@@ -85,46 +95,22 @@
     This policy does not cover interactions with projects outside the
     Snowdrift.coop system. External project websites and other systems may have
     their own privacy policies.
-    <a href="#fn1" class="footnoteRef" id="fnref1">
-      <sup>1
 
 <h3 id="what-we-do-with-your-info">What we do with your info
 <div class="figure">
   <img src=@{StaticR img_mimi_eunice_nonprofit_junkmail_png}>
 
-<p>
-  <strong>
-    We use your information only in the manner to which you consent.
 <ul>
   <li>
     We may use your email address to inform you of administrative messages from
-    Snowdrift.coop (such as notices of updates to our Terms of Use agreement).
-    You may
-    <em>elect
-    to receive additional communications from us, and if you do, you can then
+    Snowdrift.coop (such as notices of updates to our legal terms).
+  <li>
+    You may elect to receive additional communications from us. If you do, you can then
     opt-out from receiving them by following the “unsubscribe” instructions in
     any such communication.
   <li>
     If you edit a wiki page or create other content in the Snowdrift.coop, your
     username will be displayed publicly.
-  <li>
-    You may
-    <em>optionally
-    fill in details of your public user profile, such as weblinks, contact
-    information (including real name), and profile picture. These will be
-    displayed publicly.
-  <li>
-    When you donate to a project, we sign your receipt with the username
-    associated with your account.
-  <li>
-    We maintain a history of your transactions, but Snowdrift.coop does not
-    directly process payment information. When you donate to a project, the
-    information that you give to one of our
-    <a href="https://wiki.snowdrift.coop/market-research/payment-services">
-      authorized payment providers
-    is governed by that provider’s privacy policy. We strive to identify and
-    work with only the most ethically sound providers, but we do not have
-    direct control over their policies.
 
 <h3 id="when-we-share-your-info">When we share your info
 <p>
@@ -132,10 +118,9 @@
     We do not sell or otherwise share your info with any third-party not
     involved directly in our operations.
 <p>
-  Snowdrift.coop is an open organization, and we may publish non-personal
-  aggregated information that we think will help foster an open web. Whenever
-  we publish information about our users, we'll remove anything private that we
-  believe might identify you.
+  Snowdrift.coop may publish or otherwise share non-personal aggregated
+  statistics. Whenever we publish information about our users, we'll remove
+  anything private that we believe might identify you.
 <p>
   If we share your personal information, we only share it with employees,
   contractors and service providers who have contractually promised to handle
@@ -143,16 +128,6 @@
   status changes (e.g., if we restructure, are acquired, or go bankrupt), we
   will give all users a chance to get private information out of our systems
   before we pass them on to a successor or affiliate.
-<ul>
-  <li>
-    When you support a project, we notify the project team of your username and
-    the number of shares pledged. This helps facilitate interactions between
-    you and the project.
-  <li>
-    We share non-personal aggregated statistics with projects on the site usage
-    of their supporters. We provide such statistics as a distribution of
-    numbers not tied to an email address, unique ID, or other identifiable
-    piece of information.
 
 <h3 id="storage-and-protection-of-data">Storage and protection of data
 <p>
@@ -168,8 +143,8 @@
   break in and access your data. If we find out about a security breach, we'll
   make concerted efforts to let you know so that you can take appropriate
   protective steps. We only keep information as long as we need to do the
-  things we collected it for. Once we don't need it any more, we'll destroy it
-  unless we are required by law to keep it longer.
+  things we collected it for. Once we no longer need it, we'll destroy it
+  unless we are legally required to keep it.
 <p>
   You are always entitled to see and correct the private information we have
   about you. Please see the contact information below if you wish to do so. If
@@ -196,20 +171,18 @@
 <h3 id="policy-changes-and-contact-information">Policy changes and contact information
 <p>
   We may sometimes change our privacy policies. When we do, we'll post a notice
-  about the change on Snowdrift.coop and email our users. During our initial
-  beta period, the privacy policy may be subject to change without notice,
-  although we welcome public feedback. Once our site is in stable operating
-  status, we will post any proposed changes for a 30-day comment period before
-  they become effective (3 days for changes required purely for legal or
-  administrative reasons).
+  about the change on Snowdrift.coop and email our users. When feasible, we will
+  post proposed changes and offer a reasonable comment period before they become
+  effective. Once official, we will ask users to consent to the updated policy.
 <p>
-  If you want to make a correction to your information, or you have any
-  questions or comments about our privacy policies, please
-  <a href="/about">contact us<a>.
+  If you want to make a correction to your information, delete your account, or
+  have other personal concerns, please contact us at privacy@snowdrift.coop.
+  For general questions or comments about this policy, you may also post at our
+  <a href="https://community.snowdrift.coop">community forum</a>.
 <hr />
 <p>
   <em>
-    The Snowdrift.coop Privacy Policy is adapted from the
+    The Snowdrift.coop Privacy Policy was adapted from the
     <a href="https://marketplace.firefox.com/privacy-policy">Firefox Marketplace Privacy Policy</a>,
     which is licensed by
     <a href="https://www.mozilla.org/en-US/">the Mozilla Corporation
@@ -219,12 +192,3 @@
     under
     <a href="http://creativecommons.org/licenses/by-sa/4.0/">version 4.0 of the same CC-BY-SA license</a>.
 
-<div class="footnotes">
-  <hr />
-  <h4>Footnotes
-  <ol>
-    <li id="fn1">
-      We do ask projects to summarize whether their external policies deviate
-      substantially from our standards; that way, any issues may be considered
-      when users choose which projects to support.#
-      <a href="#fnref1">↩
