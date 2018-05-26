@@ -17,11 +17,8 @@
   <li>
     If you create a Snowdrift.coop account, we store your email address to
     identify your account and use cookies to keep you logged in.
-$# TODO: add this feature, then add this policy line
-$#  <li>
-$#    If you check the "keep me logged in" option, a cookie will be stored on your computer.
   <li>
-    If you connect a third-party payment providers to your account, their terms
+    If you connect third-party payment providers to your account, their terms
     apply, and you should check their independent privacy policies.
     Snowdrift.coop does not directly collect, retain, or use any financial
     information (such as credit card numbers).
