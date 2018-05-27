@@ -2,9 +2,9 @@
 
 ### Execution Notes
 
-* We highly recommend adding the absolute path to dev-tools to your PATH
-variable, such as by editing ~/.bash_profile. This way, you may simply run
-`foo [command]` instead of `dev-tools/foo [command]`.
+* We recommend adding the absolute path to dev-tools to your PATH variable, such
+as by editing ~/.bash_profile. This way, you may simply run `foo [args]` instead
+of `dev-tools/foo [args]`.
 
 ## Tools
 
@@ -21,11 +21,9 @@ They print the development & production versions of the project, respectively.
 They parse strings from the web. Unfortunately, neither work at the moment.
 
 ## Other Files
-The tagging script produces the following Git-ignored files:
+The tagging script produces the following Git-ignored files; see comments in
+the script for details:
 
-* linked-for-non-Cabal-tagging: A soft link to the non-Hackage, Git-hosted
-deps downloaded by Stack. This link is part of a plot to get Codex to tag those
-deps.
+* linked-for-non-Cabal-tagging
 
-* dummy.cabal: An empty file created to get Codex to crawl into
-linked-for-non-Cabal-tagging and tag away.
+* dummy.cabal
