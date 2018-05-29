@@ -12,9 +12,11 @@ of `dev-tools/foo [args]`.
 Produces tags for definition lookup. See *Other Files*.
 
 ### keter.sh and company
-The script keter.sh is like Yesod's "keter" command, but for multi-package
+The script, keter.sh, is like Yesod's "keter" command, but for multi-package
 projects. It creates a distributable tarball. For more info on similarly named
-scripts, please view their comments.
+scripts, please view their comments.  
+NB: don't expect these scripts to work on your end. They are for deployment onto
+the main server.
 
 ### prodbuild
 Prints the production version of the project by parsing a string from the web.
