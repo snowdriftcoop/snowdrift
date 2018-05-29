@@ -36,10 +36,10 @@ main () {
     log "Switching to build rev ${BUILDREV}"
     git reset --hard ${BUILDREV}
     log "Building deployment bundle"
-    DEPLOY=false ${dev-tools}/keter.sh
-    mv ${APPNAME}.keter ${dev-tools}
+    DEPLOY=false ${DEVTOOLS}/keter.sh
+    mv ${APPNAME}.keter ${DEVTOOLS}
 }
 
-dev-tools=$(dirname "$0")
-cd ${dev-tools}
+DEVTOOLS=$(dirname "$0")
+cd ${DEVTOOLS}
 main $@
