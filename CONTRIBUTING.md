@@ -1,6 +1,3 @@
-**[Editor's note: we know this needs serious pruning to keep it shorter easier
-for those ready to jump in.]**
-
 # Snowdrift Beginning Contributor's Guide
 
 This guide is written to work for even novice programmers. Advanced readers may
@@ -23,7 +20,7 @@ in the [README]). Other compatible licensing can work with special notice.
 ## Prerequisites to contributing
 
 * Decently powerful computer (probably less than 10 years old, ideally 4GB+ RAM)
-* GNU/Linux, \*BSD, or MacOS system
+* GNU/Linux, \*BSD, or macOS
     * We do not support Windows at this time. We suggest Windows users switch
       systems overall or use a virtual machine. If you really want to help test
       Snowdrift on Windows, our [Build guide] has some notes about that.
@@ -154,15 +151,15 @@ files were committed.
 
 Next, send your changes to your git.snowdrift.coop account with:
 
-    git push -u my-snow some_branch
+    git push -u my-snow some-branch
 
-Changing `some_branch` to the name of the branch where you made the commit(s).
+Changing `some-branch` to the name of the branch where you made the commit(s).
 
 To notify the snowdrift team about your work, visit the git.snowdrift.coop page
-with your fork. You should see a button **"Create Merge Request"**. Click that
-to bring up a form where you can add further notes about your work (especially
-useful if you are merging multiple commits). You may ignore "Assign to",
-"Milestone", and "Labels" at this point.
+with your fork. You should see a button called **"Create Merge Request"**. Click
+that to bring up a form where you can add further notes about your work
+(especially useful if you are merging multiple commits). You may ignore "Assign
+to", "Milestone", and "Labels" at this point.
 
 After you submit the merge request, someone should comment on your submission
 soon (hopefully within a few hours, maybe a day or two depending on timing).
@@ -179,8 +176,7 @@ Several ways to get started contributing and/or to learn more overall:
   and/or check with others about the status, such as whether the issue is known
   or tickets exist already.
 
-* Explore the code files and see if you can figure out what does what and how
-  things fit together.
+* Explore the code files and see if you can figure out how things fit together.
 
     * For non-Haskell work:
         * The .hamlet files in the /website/templates directory are comparable
@@ -188,14 +184,12 @@ Several ways to get started contributing and/or to learn more overall:
           (plus some other logic that connects to the Haskell). For more
           details, see the documentation on [Shakespearean Templates].
         * Any .julius files are containers for JavaScript.
-        * For CSS, we use .sass and .silius files
-          (TODO: document this better)
+        * For CSS, we use [Sass]
 
-    * For those familiar with Haskell, one way to get started is by exploring
-      our files and updating any code that doesn't match our code style described below.
+    * For those familiar with Haskell, one starting option: explore our files
+      and update any code that doesn't match our code style described below.
 
-* Read the code documention in this repo and other pages on the Snowdrift.coop
-  [wiki].
+* Read the code documentation in this repo and related pages on our [wiki].
 
 * Read on below and check out links to learn more about the overall ecosystem,
   our development practices, and the tools we use.
@@ -238,6 +232,7 @@ code formatter. Besides that, consider:
     stack install hlint
     hlint -XQuasiQuotes -XTemplateHaskell $FILE
     ```
+
 ### Code review
 
 As a best practice, we want adequate code review for every merge before it goes
@@ -316,9 +311,9 @@ here are some resources (nearly all fully-FLO):
 *   At Stack Overflow (which uses FLO licensing for content), see tags for
     [yesod](http://stackoverflow.com/questions/tagged/yesod) and
     [haskell](http://stackoverflow.com/questions/tagged/yesod)
-    (and, of course, other topics like HTML, CSS, Git, and so on)
+    (and, of course, other topics like HTML, CSS, Sass, Git, and so on)
 
-*   Alongside #snowdrift on freenode.net, check out #yesod , #haskell ,
+*   Alongside #snowdrift on freenode.net IRC, check out #yesod , #haskell ,
     and #haskell-beginners (among many other relevant channels).
 
 [Build guide]: BUILD.md
@@ -332,6 +327,7 @@ here are some resources (nearly all fully-FLO):
 [project repository]: https://git.snowdrift.coop/sd/snowdrift
 [PureScript]: http://www.purescript.org/
 [README]: README.md
+[Sass]: https://sass-lang.com
 [Shakespearean Templates]: http://www.yesodweb.com/book/shakespearean-templates
 [SSH setup]: https://git.snowdrift.coop/help/ssh/README
 [TEXTEDITORS.md]: TEXTEDITORS.md
