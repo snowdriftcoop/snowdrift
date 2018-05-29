@@ -1,8 +1,11 @@
 #!/bin/sh
 #
-# Note: as of 2016-05-15, this works on the site currently up on
-# <https://snowdrift.coop>. This *will not* work on the new site.
+# Usage: ./prodbuild
+#
+# You can try this out with the development site by running:
+#
+# $ curl -sL 'http://localhost:3000/dev/build' | grep -e '^<dd>[a-fA-F0-9]\{40\}' | sed 's,^<dd>,,;s,</dd>$,,'
 
 curl -sL 'https://snowdrift.coop/dev/build' |
-    sed 's,^.\+<title>\([0-9a-fA-F]\{40\}\)</title>.\+$,\1,' |
-    head -1
+    grep -e '^<dd>[a-fA-F0-9]\{40\}' |
+    sed 's,^<dd>,,;s,</dd>$,,'

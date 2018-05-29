@@ -21,6 +21,7 @@ opt_appname=${APPNAME:=SnowdriftReboot}
 #
 #
 
+cd $(cd $(dirname "$0"); git rev-parse --show-toplevel)
 install_path=./website/dist/bin
 
 contents=(
@@ -41,8 +42,8 @@ main () {
     if $opt_build
     then
         hdr "Building"
-        if [ -z "$install_path" ]; then
-            >&2 echo "Hold up, \$install_path should be specified!"
+        if [ -z ${install_path} ]; then
+            >&2 echo "Hold up, \${install_path} should be specified!"
             exit 1
         fi
         rm -rf ${install_path}
@@ -58,7 +59,7 @@ main () {
         (trap "$dbmake stop" EXIT
         $dbmake
         $stack \
-            --local-bin-path $install_path \
+            --local-bin-path ${install_path} \
             install \
             --flag Snowdrift:-dev \
             --pedantic

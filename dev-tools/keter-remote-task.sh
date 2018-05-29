@@ -18,8 +18,8 @@ main () {
         log "Expected: [BUILDREV APPNAME]"
         exit 1
     fi
-    BUILDREV=$1
-    export APPNAME=$2
+    BUILDREV="$1"
+    export APPNAME="$2"
 
     mkdir -p keter-remote-task
     cd keter-remote-task
@@ -36,7 +36,10 @@ main () {
     log "Switching to build rev ${BUILDREV}"
     git reset --hard ${BUILDREV}
     log "Building deployment bundle"
-    DEPLOY=false ./keter.sh
-    mv ${APPNAME}.keter ../..
+    DEPLOY=false ${dev-tools}/keter.sh
+    mv ${APPNAME}.keter ${dev-tools}
 }
+
+dev-tools=$(dirname "$0")
+cd ${dev-tools}
 main $@

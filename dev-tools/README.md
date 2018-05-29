@@ -16,9 +16,8 @@ The script keter.sh is like Yesod's "keter" command, but for multi-package
 projects. It creates a distributable tarball. For more info on similarly named
 scripts, please view their comments.
 
-### devbuild & prodbuild
-They print the development & production versions of the project, respectively.
-They parse strings from the web. Unfortunately, neither work at the moment.
+### prodbuild
+Prints the production version of the project by parsing a string from the web.
 
 ## Other Files
 The tagging script produces the following Git-ignored files; see comments in

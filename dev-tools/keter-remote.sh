@@ -12,7 +12,7 @@
 set -e
 
 usage () {
-    echo -e "Usage:\n\t$0 <REMOTE-HOST>"
+    echo -e "Usage:\n\t""$0"" <REMOTE-HOST>"
     echo
     echo "Optional vars:"
     echo -e "\tAPPNAME \tWhat to call the deployment (default: SnowdriftReboot)"
@@ -21,7 +21,7 @@ usage () {
 
 cancel_handler () {
     echo ":: Sending cancel commands"
-    ssh $1 'pkill -u ubuntu stack'
+    ssh "$1" 'pkill -u ubuntu stack'
 }
 
 main () {
@@ -29,13 +29,13 @@ main () {
     then
         usage
         exit 1
-    elif [ $1 = "--help" -o $1 = "-h" ]
+    elif [ "$1" = "--help" -o "$1" = "-h" ]
     then
         usage
         exit 0
     fi
 
-    HOST=$1
+    HOST="$1"
 
     : ${APPNAME:=SnowdriftReboot}
     : ${BUILDREV:=$(git rev-parse HEAD)}
@@ -43,8 +43,8 @@ main () {
 
     echo ":: Running remote task"
     (
-        trap "cancel_handler $HOST" EXIT
-        ssh $HOST 'bash -s' -- < ./keter-remote-task.sh ${BUILDREV} ${APPNAME}
+        trap "cancel_handler ${HOST}" EXIT
+        ssh ${HOST} 'bash -s' -- < ./keter-remote-task.sh ${BUILDREV} ${APPNAME}
         trap - EXIT
     )
     echo ":: Fetching deployment bundle"
@@ -53,4 +53,5 @@ main () {
     BUILD=false ./keter.sh
 }
 
+cd $(dirname "$0")
 main $@
