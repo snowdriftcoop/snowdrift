@@ -68,10 +68,6 @@
   <li>
     If you create a Snowdrift.coop account, we store your email address and use
     cookies to keep you logged in.
-    <ul>
-      <li>
-        And we make a good faith effort to retain the IP addresses associated
-        with users for no more than 5 years.
   <li>
     If you connect a third-party payment service to your account, their terms
     apply, and you should read their independent privacy policy.
@@ -189,6 +185,10 @@
    information.
   <li>
     When you register and when you post, Discourse records your IP address.
+    <ul>
+      <li>
+        But we make a good faith effort to retain the IP addresses associated
+        with users for no more than 5 years.
   <li>
     Discourse uses cookies to save some preferences and state of visitors and to
     compile aggregate data about site traffic and site interaction.
