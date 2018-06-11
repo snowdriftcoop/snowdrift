@@ -164,10 +164,12 @@
   free/libre/open forum program.
 
 <p>
-  Discourse tracks users in order to customize the experience, provide stats
-  about usage, and prevent spam.  We make no use of this data outside of
-  Discourse. Within available settings, we turn off unecessary tracking where we
-  can. We also advocate at
+  Discourse tracks users in order to customize the experience, award badges,
+  calculate a "trust level" for each user, provide stats about usage, and
+  prevent spam.
+<p>
+  We make no use of this data outside of Discourse. Within available settings,
+  we turn off unecessary tracking where we can. We also advocate at
   <a href="https://meta.discourse.org">Discourse's own community forum
   for stronger privacy options.
 
