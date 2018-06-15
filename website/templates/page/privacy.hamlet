@@ -51,7 +51,7 @@
       several pieces of information that may identify you when combined (even if
       each piece individually does not)
     <li>
-      any other data specific to an individual user when stored in combination
+      any other data specific to an individual user when stored together
       with personal data
 
 
@@ -162,7 +162,6 @@
 <p>
   At community.snowdrift.coop, we run an instance of Discourse, a
   free/libre/open forum program.
-
 <p>
   Discourse tracks users in order to customize the experience, award badges,
   calculate a "trust level" for each user, provide stats about usage, and
@@ -186,7 +185,7 @@
    If you arrive at Discourse from an outside link, Discourse logs referer
    information.
   <li>
-    When you register and when you post, Discourse records your IP address.
+    When you first sign in and when you post, Discourse records your IP address.
     <ul>
       <li>
         But we make a good faith effort to retain the IP addresses associated
@@ -199,19 +198,22 @@
 
 <ul>
   <li>
-    You can see your account data at any time by visiting your account page on the forum.
+    You can see the data Discourse stores with your account by visiting your
+    account page on the forum.
   <li>
-    Your account page also lists your posts and other activity on the forum.
+    Your Discourse account page also lists your posts and other activity on the
+    forum.
   <li>
     Your account activity page also includes a link to download all of your
     activity in standard
     <a href="https://en.wikipedia.org/wiki/Comma-separated_values">comma-separated values
     format.
   <li>
-    You can change your account data at any time by visiting the profile
-    settings page for your account.
+    You can change your Discourse account data at any time by visiting the
+    profile settings page for your account.
   <li>
-    If you think your trust level has been set incorrectly, contact an administrator.
+    If you think your trust level has been set incorrectly, contact an
+    administrator.
   <li>
     Depending on the settings available, you may also be able to edit,
     anonymize, or erase your posts.
