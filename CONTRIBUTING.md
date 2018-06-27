@@ -293,24 +293,24 @@ here are some resources (nearly all fully-FLO):
     * [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
       is a fully-FLO book written in a more narrative style.
 
-    * The [Git Docs](http://git-scm.com/doc/) page includes many links, an
+    * The [Git Docs](https://git-scm.com/doc/) page includes many links, an
       online version of the core Git manuals, and the full Pro Git book which
       uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
       unfortunately.
 
-*   [CanIUse.com](http://caniuse.com/) is a reference website to check that all
+*   [CanIUse.com](https://caniuse.com/) is a reference website to check that all
     web features you use are compatible with various browsers and standards.
     The CanIUse data is fully FLO under a CC-BY license.
 
-*   [The Yesod Book](http://www.yesodweb.com/book/) is the primary resource
+*   [The Yesod Book](https://www.yesodweb.com/book/) is the primary resource
     for learning about Yesod, the web framework we use to develop Snowdrift.
 
 *   The [School of Haskell](https://www.schoolofhaskell.com) includes
     basic and advanced topics including some Yesod sections.
 
 *   At Stack Overflow (which uses FLO licensing for content), see tags for
-    [yesod](http://stackoverflow.com/questions/tagged/yesod) and
-    [haskell](http://stackoverflow.com/questions/tagged/yesod)
+    [yesod](https://stackoverflow.com/questions/tagged/yesod) and
+    [haskell](https://stackoverflow.com/questions/tagged/yesod)
     (and, of course, other topics like HTML, CSS, Sass, Git, and so on)
 
 *   Alongside #snowdrift on freenode.net IRC, check out #yesod , #haskell ,
@@ -328,9 +328,9 @@ here are some resources (nearly all fully-FLO):
 [PureScript]: http://www.purescript.org/
 [README]: README.md
 [Sass]: https://sass-lang.com
-[Shakespearean Templates]: http://www.yesodweb.com/book/shakespearean-templates
+[Shakespearean Templates]: https://www.yesodweb.com/book/shakespearean-templates
 [SSH setup]: https://git.snowdrift.coop/help/ssh/README
 [TEXTEDITORS.md]: TEXTEDITORS.md
-[Unobtrusive JavaScript]: http://en.wikipedia.org/wiki/Unobtrusive_JavaScript
+[Unobtrusive JavaScript]: https://en.wikipedia.org/wiki/Unobtrusive_JavaScript
 [wiki]: https://wiki.snowdrift.coop/
 [Yesod JavaScript Options]: https://github.com/yesodweb/yesod/wiki/JavaScript-Options
