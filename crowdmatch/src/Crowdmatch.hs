@@ -275,17 +275,10 @@ runMech (DeletePledgeI pptr) = do
 
 runMech FetchProjectI = do
     numPledges <- count [PatronPledgeSince !=. Nothing]
-    -- Persistent terrible SQL :|
-    receivable <-
-        fmap
-            (sum . map (Model.patronDonationPayable . entityVal))
-            (selectList [] [])
+    receivable <- Skeleton.sumField PatronDonationPayable
     -- This should be verified against Stripe. This calculation is nothing more
     -- than a "guess".
-    received <-
-        fmap
-            (sum . map (Model.donationHistoryAmount . entityVal))
-            (selectList [] [])
+    received <- Skeleton.sumField DonationHistoryAmount
 
     let pledgevalue = DonationUnits (fromIntegral numPledges)
         income = unitsToCents (pledgevalue * pledgevalue)
