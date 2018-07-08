@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeFamilies #-}
+
 -- | This is the closet, where we keep the skeletons.
 --
 -- Esqueleto produces the most wicked type errors when things go awry.
@@ -48,3 +50,19 @@ patronsReceivable minBal =
         where_ (not_ (isNothing (p ^. PatronPaymentToken))
             &&. (p ^. PatronDonationPayable >=. val minBal))
         return p
+
+sumField
+  :: ( PersistEntityBackend val ~ SqlBackend
+     , PersistEntity val
+     , PersistField a
+     , Num a
+     , MonadIO m
+     )
+     => EntityField val a
+     -> SqlPersistT m a
+sumField f = do
+    [row] <-
+        select $
+        from $ \entity ->
+            return $ coalesceDefault [sum_ (entity ^. f)] $ val 0
+    return $ unValue row
