@@ -48,9 +48,9 @@ module AuthSite
     , AuthUser
     , provisional
     , logout
-    , priviligedProvisionalUser
+    , privilegedProvisionalUser
     , privilegedCreateUser
-    , priviligedLogin
+    , privilegedLogin
     , VerifiedUser(..)
     , Verification(..)
       -- ** @persistent@-generated types
@@ -293,14 +293,14 @@ privilegedCreateUser VerifiedUser{..} = do
 
 -- | This privileged function must be used with care. It modifies the
 -- user's session; it's the difference between being logged in and not!
-priviligedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
-priviligedLogin = setSession authSessionKey . toPathPiece . entityKey
+privilegedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
+privilegedLogin = setSession authSessionKey . toPathPiece . entityKey
 
 -- | Store a provisional user for later verification. Returns the token to
 -- use for verification.
-priviligedProvisionalUser :: MonadIO m
+privilegedProvisionalUser :: MonadIO m
                           => Credentials -> SqlPersistT m Verification
-priviligedProvisionalUser creds = do
+privilegedProvisionalUser creds = do
     verf <- liftIO (genVerificationToken creds)
     prov <- liftIO (provisional creds verf)
     _ <- upsertBy (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
@@ -348,7 +348,7 @@ postLoginR = do
                 not recognized.|] render)
             redirect (master LoginR))
         (\u -> do
-            priviligedLogin u
+            privilegedLogin u
             alertInfo "Welcome"
             redirectUltDest =<< (postLoginRoute <$> getYesod))
 
@@ -401,7 +401,7 @@ postCreateAccountR = do
             mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
             lift $ sendAuthEmail (credsIdent c) =<< maybe
                 (VerifyUserCreation . verifyToken
-                    <$> runDB (priviligedProvisionalUser c))
+                    <$> runDB (privilegedProvisionalUser c))
                 (pure . const BadUserCreation)
                 mu
             redirectParent' VerifyAccountR)
@@ -426,7 +426,7 @@ postResetPassphraseR = do
             lift $ sendAuthEmail (credsIdent c) =<< maybe
                 (pure BadPassReset)
                 (const $ VerifyPassReset . verifyToken
-                    <$> runDB (priviligedProvisionalUser c))
+                    <$> runDB (privilegedProvisionalUser c))
                 mu
             redirectParent' VerifyAccountR)
         res
@@ -463,7 +463,7 @@ getVerifyAccountR = do
 
 -- | Handle an attempted verification.
 --
--- This method is rather blithe in the belief that the priviliged methods
+-- This method is rather blithe in the belief that the privileged methods
 -- above ensure that a good token is truly "good".
 postVerifyAccountR :: (Yesod m
                       ,YesodPersist m
