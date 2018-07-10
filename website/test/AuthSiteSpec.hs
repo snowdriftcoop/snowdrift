@@ -109,12 +109,12 @@ getMailMessage = do
 postLoginBypass :: Text -> Handler Text
 postLoginBypass e =
     "Logged in, you cheeky bastard you"
-    <$ (priviligedLogin =<< runDB (getBy404 (UniqueUsr e)))
+    <$ (privilegedLogin =<< runDB (getBy404 (UniqueUsr e)))
 
 postProvisionalUserBypass :: Text -> Text -> Handler Text
 postProvisionalUserBypass e p = fromAuthToken . verifyToken <$>
     runDB
-        (priviligedProvisionalUser
+        (privilegedProvisionalUser
             (Credentials (AuthEmail e) (ClearPassphrase p)))
 
 postLogoutBypass :: Handler ()
