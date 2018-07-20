@@ -160,14 +160,13 @@ type AuthExample a = YesodExample AuthHarness a
 -- ** Some local tools
 
 -- | Create Bob before all tests
--- This is old; should probably create/use createUserBypass instead
 withBob :: SpecWith (TestApp AuthHarness) -> SpecWith (TestApp AuthHarness)
 withBob = beforeWith makeBob
   where
     makeBob stuff@(harness, _) =
        runSqlPersistMPool goBobGo (ahConnPool harness) >> pure stuff
-    goBobGo = createUser (AuthEmail "bob@example.com")
-                         (ClearPassphrase "aaaaaaaaaaaaa")
+    goBobGo = privilegedCreateUserBypass (AuthEmail "bob@example.com")
+                                         (ClearPassphrase "aaaaaaaaaaaaa")
 
 -- ** The actual tests!
 
@@ -343,11 +342,3 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
     bypassLogin :: Text -> AuthExample ()
     bypassLogin = post . LoginBypass
     bypassLogout = post LogoutBypass
-
-createUser :: AuthEmail -> ClearPassphrase -> SqlPersistM ()
-createUser e p = do
-    ProvisionalUser{..} <-
-        liftIO
-            (provisional (Credentials e p) (Verification e (AuthToken "stuff")))
-    privilegedCreateUser
-        (VerifiedUser provisionalUserEmail provisionalUserDigest)

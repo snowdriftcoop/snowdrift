@@ -156,7 +156,6 @@ test-suite test
         AuthSiteSpec
         AlertsSpec
         DiscourseSpec
-        Factories
         HandlerSpec
         SampleSpec
         StripeMock

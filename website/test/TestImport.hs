@@ -26,8 +26,6 @@ import AuthSite
 import Model as X
 import Settings (AppSettings(..))
 
-import Factories
-
 -- | Run a query outside of a handler
 testDB :: SqlPersistM a -> YesodExample App a
 testDB query = do
@@ -39,7 +37,8 @@ runDBWithApp app query = runSqlPersistMPool query (appConnPool app)
 
 dummyLogin :: YesodExample App ()
 dummyLogin = do
-    testDB $ createUser "alice" "ccccccccccccc"
+    testDB $ privilegedCreateUserBypass
+        (AuthEmail "alice") (ClearPassphrase "ccccccccccccc")
     get (AuthR LoginR)
     request $ do
         addToken
