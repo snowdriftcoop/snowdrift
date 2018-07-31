@@ -3,13 +3,12 @@
 
 <.section>
   <p .intro>
-    As soon as possible, more projects will be listed here that you can support
-    via Snowdrift.coop. After all, that's the whole point of Snowdrift.coop!
-    For now, pledging to support Snowdrift.coop itself is a great way for you
-    to help us get to that point.
+    As soon as possible, more projects will be listed here for support via
+    Snowdrift.coop. After all, that's the whole point! For now, pledging to
+    support Snowdrift.coop itself will help us get to that point.
 
   <.list-gradient>
-  <ol .projects-list>
+  <ul .projects-list>
     <li .item>
       <.project .m--live>
         <a .link href=@{SnowdriftProjectR}>
