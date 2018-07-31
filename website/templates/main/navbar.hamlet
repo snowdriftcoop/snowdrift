@@ -1,5 +1,5 @@
 <nav .navbar>
-  <a .link .m--div .m--logo href="https://snowdrift.coop">
+  <a .link .m--div .m--logo href=@{WelcomeR}>
     <div .logo>
   $# Begin L2 menu
   <input .nav-menu-toggle type="checkbox">
