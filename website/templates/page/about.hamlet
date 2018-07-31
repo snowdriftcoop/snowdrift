@@ -1,10 +1,10 @@
 <.homepage-section>
   <h2>About Snowdrift.coop
   <p>
-    We're building a sustainable funding platform for freely-licensed works
-    everyone can use and share without limitations.
-    Our innovative crowdmatching pledge creates a network effect
-    where we all work together to support these public goods.
+    We're building a sustainable funding platform for public goods — those
+    things that everyone can use and share without limitations. Using our
+    innovative crowdmatching pledge, we create a network effect where we all
+    work together to support free/libre/open projects of all sorts.
   <.homep-link>
     <a href="https://wiki.snowdrift.coop/about/intro">
       Quick illustrated intro
@@ -20,7 +20,7 @@
   <p>
     The campaign video from our initial 2014
     <a href="https://snowdrift.tilt.com">launch fund-drive
-    remains a good introduction:
+    remains a good (but dated) introduction:
   <video poster="https://wiki.snowdrift.coop/assets/fund-drive/fund-drive-intro-still.png" controls>
     <source type="video/mp4"
       src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
@@ -35,18 +35,18 @@
     <a href="https://git.snowdrift.coop/groups/sd/-/activity">
       Activity at git.snowdrift.coop
   <.homep-link>
-    Sign up for our
-    <a href="https://lists.snowdrift.coop">
-      email lists
+    Join our
+    <a href="https://community.snowdrift.coop">
+      forum
   <.homep-link>
     Live chat at
     <a href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">
       #snowdrift IRC channel
   <.homep-link>
-    Follow us on GNU Social
-    <small>(or Twitter)
-    <a href="https://quitter.se/snowdriftcoop">
-      @snowdriftcoop
+    Follow us on Mastodon
+    <a href="https://social.coop/@snowdrift">
+      @snowdrift@social.coop
+    <small>(or Twitter: @snowdriftcoop)
 
 <.homepage-section>
   <h2>Volunteer

@@ -43,9 +43,9 @@ $nothing
       <a href="https://git.snowdrift.coop/groups/sd/-/activity">
         Code and other activity at git.snowdrift.coop
     <li>
-      Follow us on GNU Social via
-      <a href="https://quitter.se/snowdriftcoop">
-        quitter.se/snowdriftcoop
+      Follow us on Mastodon
+      <a href="https://social.coop/@snowdrift">
+        @snowdrift@social.coop
 <.plans>
   <h2>Plans
   <ul>
@@ -60,7 +60,7 @@ $nothing
 <.transparency>
   <h2>Financial transparency report
   <p>
-    Until we design a standard report, we publish an 
+    Until we design a standard report, we publish an
     <a href="https://wiki.snowdrift.coop/operations/accounting">accounting summary
     on our wiki so that patrons can understand how we have used funds in the
     past and where any outside income comes from.
