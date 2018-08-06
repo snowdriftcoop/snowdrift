@@ -15,11 +15,11 @@ module Application
 
 import Import
 
-import Control.Monad.Logger (liftLoc, runLoggingT)
+import Control.Monad.Logger (liftLoc, runLoggingT, runStdoutLoggingT)
 import Crowdmatch
         (crowdmatchManualMigrations, migrateCrowdmatch, stripeProduction)
 import Database.Persist.Postgresql
-        (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlPool)
+        (createPostgresqlPool, pgConnStr, pgPoolSize, runSqlConn, runSqlPool, withPostgresqlConn)
 import Database.Persist.Sql (runMigrationSilent)
 import Database.PostgreSQL.Simple (close, connectPostgreSQL)
 import Language.Haskell.TH.Syntax (qLocation)
@@ -144,6 +144,7 @@ getApplicationDev :: IO (Settings, Application)
 getApplicationDev = do
     settings <- getAppSettings
     foundation <- makeFoundation settings
+    createDefaultDevelUser settings
     wsettings <- getDevSettings $ warpSettings foundation
     app <- makeApplication foundation
     return (wsettings, app)
@@ -154,6 +155,14 @@ getAppSettings = loadYamlSettings ["config/settings.yml"] [] useEnv
 -- | main function for use by yesod devel
 develMain :: IO ()
 develMain = develMainHelper getApplicationDev
+
+createDefaultDevelUser :: AppSettings -> IO ()
+createDefaultDevelUser appSettings =
+    runStdoutLoggingT $ withPostgresqlConn
+        (pgConnStr $ appDatabaseConf appSettings)
+        (runSqlConn
+            (privilegedCreateUserBypass (AuthEmail "user@example.com")
+                                        (ClearPassphrase "userpassphrase")))
 
 -- | The @main@ function for an executable running this site.
 appMain :: IO ()
@@ -183,6 +192,7 @@ getApplicationRepl :: IO (Int, App, Application)
 getApplicationRepl = do
     settings <- getAppSettings
     foundation <- makeFoundation settings
+    createDefaultDevelUser settings
     wsettings <- getDevSettings $ warpSettings foundation
     app1 <- makeApplication foundation
     return (getPort wsettings, foundation, app1)

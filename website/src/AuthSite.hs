@@ -49,7 +49,7 @@ module AuthSite
     , provisional
     , logout
     , privilegedProvisionalUser
-    , privilegedCreateUser
+    , privilegedCreateUserBypass
     , privilegedLogin
     , VerifiedUser(..)
     , Verification(..)
@@ -290,6 +290,15 @@ privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
 privilegedCreateUser VerifiedUser{..} = do
     now <- liftIO getCurrentTime
     insert_ (User verifiedEmail verifiedDigest now now)
+
+-- | Create a new user for testing or development purposes. Does nothing if a
+-- user with the given email already exists.
+privilegedCreateUserBypass :: MonadIO m
+                           => AuthEmail -> ClearPassphrase -> SqlPersistT m ()
+privilegedCreateUserBypass e p = do
+    now <- liftIO getCurrentTime
+    passDigest <- liftIO $ makeAuthPass $ fromClear p
+    void $ insertUnique $ User (fromAuth e) passDigest now now
 
 -- | This privileged function must be used with care. It modifies the
 -- user's session; it's the difference between being logged in and not!

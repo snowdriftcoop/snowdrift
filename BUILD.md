@@ -158,8 +158,10 @@ Access the site in your browser at <http://localhost:3000>
 
 ### Using auth in development
 
-If during development, you need to log in to the locally-running site, follow
-these instructions:
+You can log in to the locally-running site using the default user
+`user@example.com` and passphrase `userpassphrase`.
+
+To create a new account, follow these instructions:
 
 As the development site does not normally send out emails (the authentication
 approach for the live Snowdrift.coop system), you can get the necessary auth

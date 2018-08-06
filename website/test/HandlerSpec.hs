@@ -2,7 +2,7 @@ module HandlerSpec (spec_handler) where
 
 import TestImport
 
-import Factories (createUser)
+import AuthSite
 import Settings (AppSettings(..))
 
 import qualified Discourse
@@ -63,7 +63,8 @@ getDashboardSpec =
 getDiscourseSpec :: SpecWith (TestApp App)
 getDiscourseSpec = do
     it "returns 400 when missing sso param" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         -- GET /discourse/sso
@@ -74,7 +75,8 @@ getDiscourseSpec = do
         bodyContains (unpack (Discourse.getDPErrorMsg Discourse.NoPayload))
 
     it "returns 400 when missing sig param" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         -- GET /discourse/sso?sso=foo
@@ -88,7 +90,8 @@ getDiscourseSpec = do
         bodyContains (unpack (Discourse.getDPErrorMsg Discourse.NoSignature))
 
     it "returns 400 when signature doesn't validate" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         -- GET /discourse/sso?sso=foo&sig=bar
@@ -104,7 +107,8 @@ getDiscourseSpec = do
           (unpack (Discourse.getDPErrorMsg Discourse.InvalidSignature))
 
     it "returns 400 when the payload doesn't contain 'nonce'" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         let payload = encodePayload "foo"
@@ -124,7 +128,8 @@ getDiscourseSpec = do
           (unpack (Discourse.getDPErrorMsg Discourse.PayloadMissingNonce))
 
     it "returns 400 when the payload doesn't contain 'return_sso_url'" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         let payload = encodePayload "nonce=foo"
@@ -155,7 +160,8 @@ getDiscourseSpec = do
             addGetParam "sig" sig
 
     it "redirects to 'return_sso_url' with 'sso' and 'sig' params" $ do
-        testDB (createUser "bob" "barker")
+        testDB $ privilegedCreateUserBypass (AuthEmail "bob")
+                                            (ClearPassphrase "barker")
         login "bob" "barker"
 
         let payload = encodePayload "nonce=foo&return_sso_url=bar"
