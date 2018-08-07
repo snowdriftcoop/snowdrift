@@ -417,9 +417,13 @@ postCreateAccountR = do
         res
 
 -- | ResetPassphrase page
-getResetPassphraseR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                     => HandlerT AuthSite (HandlerT m IO) Html
-getResetPassphraseR = lift resetPassphraseHandler
+getResetPassphraseR :: (AuthMaster master
+                       ,YesodPersist master
+                       ,YesodPersistBackend master ~ SqlBackend)
+                    => HandlerT AuthSite (HandlerT master IO) Html
+getResetPassphraseR = lift $ do
+    r <- postLoginRoute <$> getYesod
+    maybeAuth >>= maybe resetPassphraseHandler (const (redirect r))
 
 postResetPassphraseR :: (Yesod master
                         ,AuthMaster master
