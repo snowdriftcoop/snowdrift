@@ -9,19 +9,23 @@
         <li>
           <a href=@{HowItWorksR}>How it works
         <li>
-          <a href=@{DonateR}>Donate
+          <a href="https://blog.snowdrift.coop">Blog
+        <li>
+          <a href="https://community.snowdrift.coop">Community Forum
+        <li>
+          <a href=@{ContactR}>Contact
+    <div .col .span_4_of_12>
+      <ul>
         <li>
           <a href=@{AboutR}>About
         <li>
+          <a href=@{DonateR}>Donate
+        <li>
           <a href=@{SponsorsR}>Our Sponsors
-    <div .col .span_4_of_12>
-      <ul>
         <li>
           <a href=@{PrivacyR}>Privacy Policy
         <li>
           <a href=@{TermsR}>Terms Of Use
-        <li>
-          <a href=@{ContactR}>Contact
     <div .col .span_4_of_12>
       <ul>
         <li>
