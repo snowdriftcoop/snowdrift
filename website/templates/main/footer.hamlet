@@ -8,18 +8,24 @@
         <a .link href=@{HowItWorksR}>
           How it works
       <li .item>
-        <a .link href=@{DonateR}>
-          Donate
+        <a .link href="https://blog.snowdrift.coop">
+          Blog
+      <li .item>
+        <a .link href="https://community.snowdrift.coop">
+          Forum
+      <li .item>
+        <a .link href=@{ContactR}>
+          Contact
+    <ul .menu .m--2-2>
       <li .item>
         <a .link href=@{AboutR}>
           About
       <li .item>
+        <a .link href=@{DonateR}>
+          Donate
+      <li .item>
         <a .link href=@{SponsorsR}>
           Our Sponsors
-      <li .item>
-        <a .link href="https://wiki.snowdrift.coop/community/partners">
-          Our Partners
-    <ul .menu .m--2-2>
       <li .item>
         <a .link href=@{PrivacyR}>
           Privacy Policy
