@@ -285,12 +285,6 @@ genVerificationToken :: Credentials -> IO Verification
 genVerificationToken Credentials{..} =
     Verification credsIdent . AuthToken <$> nonce128urlT tokenGenerator
 
--- | Insert a new user into the database.
-privilegedCreateUser :: MonadIO m => VerifiedUser -> SqlPersistT m ()
-privilegedCreateUser VerifiedUser{..} = do
-    now <- liftIO getCurrentTime
-    insert_ (User verifiedEmail verifiedDigest now now)
-
 -- | Create a new user for testing or development purposes. Does nothing if a
 -- user with the given email already exists.
 privilegedCreateUserBypass :: MonadIO m
