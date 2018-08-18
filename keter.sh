@@ -78,7 +78,12 @@ main () {
     if $opt_deploy
     then
         hdr "Deploying"
-        scp ${opt_appname}.keter `sd-main-dns`:/opt/keter/incoming
+        (
+            keyfile=$(mktemp)
+            trap "rm -f $keyfile" EXIT
+            echo $PROD_SSH_KEY > $keyfile
+            scp -i $keyfile ${opt_appname}.keter gitlab@${SD_MAIN_INSTANCE_IP}:/opt/keter/incoming
+        )
     else
         hdr "Not deploying, as requested"
     fi
