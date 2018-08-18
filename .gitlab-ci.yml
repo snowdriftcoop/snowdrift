@@ -15,6 +15,7 @@ cache:
     - "*/.stack-work" # subprojects (crowdmatch)
     - website/.shakespeare-sass
     - .stack-deploy
+    - SnowdriftReboot.keter
 
 deps:
     stage: deps
