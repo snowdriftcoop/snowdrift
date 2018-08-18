@@ -17,8 +17,6 @@ cache:
 
 deps:
     stage: deps
-    only:
-    - branches@sd/snowdrift
     script:
         # I did these steps manually on the system, since I'm using the shell
         # runner for now.
@@ -29,22 +27,16 @@ deps:
 
 test-build:
     stage: build
-    only:
-    - branches@sd/snowdrift
     script:
     - "touch website/src/Settings/StaticFiles.hs"
     - "stack build"
 
 test:
     stage: test
-    only:
-    - branches@sd/snowdrift
     script: "./build.sh test"
 
 deploy-build:
     stage: test
-    only:
-    - branches@sd/snowdrift
     script:
     - DEPLOY=false ./keter.sh
     allow_failure: true
