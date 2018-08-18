@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-
-set -e
+set -Eeuo pipefail
 
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
