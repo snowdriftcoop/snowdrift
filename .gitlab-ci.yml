@@ -5,6 +5,7 @@ stages:
 - deps
 - build
 - test
+- deploy-build
 - deploy
 
 cache:
@@ -36,7 +37,7 @@ test:
     script: "./build.sh test"
 
 deploy-build:
-    stage: test
+    stage: deploy-build
     script:
     - DEPLOY=false ./keter.sh
     allow_failure: true
