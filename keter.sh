@@ -80,9 +80,14 @@ main () {
         hdr "Deploying"
         (
             keyfile=$(mktemp)
-            trap "rm -f $keyfile" EXIT
+            host_keyfile=$(mktemp)
+            trap "rm -f $keyfile $host_keyfile" EXIT
             echo $PROD_SSH_KEY > $keyfile
-            scp -i $keyfile ${opt_appname}.keter gitlab@${SD_MAIN_INSTANCE_IP}:/opt/keter/incoming
+            echo $PROD_HOST_KEY > $host_keyfile
+            scp -i $keyfile \
+                -o "UserKnownHostsFile $host_keyfile" \
+                ${opt_appname}.keter \
+                gitlab@${SD_MAIN_INSTANCE_IP}:/opt/keter/incoming
         )
     else
         hdr "Not deploying, as requested"
