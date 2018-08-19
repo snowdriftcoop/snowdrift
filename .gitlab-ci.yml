@@ -50,7 +50,7 @@ deploy:
     only:
     # Will only work from master; this also acts as an access control,
     # since only people with commit access to master will be able to deploy.
-    - branches@sd/snowdrift
+    - master@sd/snowdrift
     when: manual
     environment:
         name: production
