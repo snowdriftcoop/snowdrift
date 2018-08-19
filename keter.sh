@@ -82,6 +82,7 @@ main () {
             keyfile=$(mktemp)
             host_keyfile=$(mktemp)
             trap "rm -f $keyfile $host_keyfile" EXIT
+            chmod 400 $keyfile
             echo $PROD_SSH_KEY > $keyfile
             echo $PROD_HOST_KEY > $host_keyfile
             scp -i $keyfile \
