@@ -5,18 +5,20 @@ stages:
 - deps
 - build
 - test
+- deploy-build
+- deploy
 
 cache:
     paths:
     - .stack-work
     - .stack-test
-    - "*/.stack-work"
+    - "*/.stack-work" # subprojects (crowdmatch)
     - website/.shakespeare-sass
+    - .stack-deploy
+    - SnowdriftReboot.keter
 
 deps:
     stage: deps
-    only:
-    - branches@sd/snowdrift
     script:
         # I did these steps manually on the system, since I'm using the shell
         # runner for now.
@@ -25,16 +27,31 @@ deps:
         #- curl -sSL https://get.haskellstack.org/ | sh
         "stack test --no-run-tests --only-dependencies --install-ghc"
 
-build:
+test-build:
     stage: build
-    only:
-    - branches@sd/snowdrift
     script:
     - "touch website/src/Settings/StaticFiles.hs"
     - "stack build"
 
 test:
     stage: test
-    only:
-    - branches@sd/snowdrift
     script: "./build.sh test"
+
+deploy-build:
+    stage: deploy-build
+    script:
+    - DEPLOY=false ./keter.sh
+    allow_failure: true
+
+deploy:
+    stage: deploy
+    script:
+    - BUILD=false ./keter.sh
+    only:
+    # Will only work from master; this also acts as an access control,
+    # since only people with commit access to master will be able to deploy.
+    - master@sd/snowdrift
+    when: manual
+    environment:
+        name: production
+        url: https://snowdrift.coop
