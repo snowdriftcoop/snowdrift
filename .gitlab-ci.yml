@@ -1,15 +1,15 @@
 # This file's semantics are documented at
-# https://docs.gitlab.com/ee/ci/yaml/README.html
+# https://docs.gitlab.com/ce/ci/yaml/README.html
 
 stages:
-- deps
-- build
-- test
-- deploy-build
-- deploy
+  - deps
+  - build
+  - test
+  - deploy-build
+  - deploy
 
 cache:
-    paths:
+  paths:
     - .stack-work
     - .stack-test
     - "*/.stack-work" # subprojects (crowdmatch)
@@ -18,40 +18,45 @@ cache:
     - SnowdriftReboot.keter
 
 deps:
-    stage: deps
-    script:
-        # I did these steps manually on the system, since I'm using the shell
-        # runner for now.
-        #- apt-get --quiet update
-        #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
-        #- curl -sSL https://get.haskellstack.org/ | sh
-        "stack test --no-run-tests --only-dependencies --install-ghc"
+  stage: deps
+  script:
+    # I did these steps manually on the system, since I'm using the shell
+    # runner for now.
+    #- apt-get --quiet update
+    #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
+    #- curl -sSL https://get.haskellstack.org/ | sh
+    "stack test --no-run-tests --only-dependencies --install-ghc"
 
+# Build for test
 test-build:
-    stage: build
-    script:
+  stage: build
+  script:
     - "touch website/src/Settings/StaticFiles.hs"
     - "stack build"
 
 test:
-    stage: test
-    script: "./build.sh test"
+  stage: test
+  script: "./build.sh test"
 
+# Build for deploy, using --pedantic
 deploy-build:
-    stage: deploy-build
-    script:
+  stage: deploy-build
+  script:
     - DEPLOY=false ./keter.sh
-    allow_failure: true
+  allow_failure: true
 
 deploy:
-    stage: deploy
-    script:
+  stage: deploy
+  script:
     - BUILD=false ./keter.sh
-    only:
-    # Will only work from master; this also acts as an access control,
-    # since only people with commit access to master will be able to deploy.
+  only:
+    # Only deploy from master.
+    #
+    # This is not a security measure, since someone could push a branch that
+    # changes this line. It's a convenience. Security is maintained by only
+    # allowing production secrets to be sent to protected branches.
     - master@sd/snowdrift
-    when: manual
-    environment:
-        name: production
-        url: https://snowdrift.coop
+  when: manual
+  environment:
+    name: production
+    url: https://snowdrift.coop
