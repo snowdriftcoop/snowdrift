@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+DEBUG=false
+DEBUG=${KETER_DEBUG+true}
+
+if $DEBUG; then set -x; fi
+
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
 #
@@ -83,8 +88,17 @@ main () {
             host_keyfile=$(mktemp)
             trap "rm -f $keyfile $host_keyfile" EXIT
             chmod 600 $keyfile
-            echo $PROD_SSH_KEY > $keyfile
-            echo $PROD_HOST_KEY > $host_keyfile
+
+            # Turn off -x to dump secrets
+            if $DEBUG; then set +x; fi
+            echo "$PROD_SSH_KEY" > $keyfile
+            echo "$PROD_HOST_KEY" > $host_keyfile
+            # Turn it back on
+            if $DEBUG; then
+                wc $keyfile $host_keyfile
+                set -x
+            fi
+
             scp -i $keyfile \
                 -o "UserKnownHostsFile $host_keyfile" \
                 ${opt_appname}.keter \
