@@ -17,7 +17,14 @@ cache:
     - .stack-deploy
     - SnowdriftReboot.keter
 
+# Don't even try to run for forks. It will fail anyway, because the sole
+# runner is protected. This prevents an ugly stalled CI experience.
+.only_parent: &only_parent
+  only:
+    - branches@sd/snowdrift
+
 deps:
+  <<: *only_parent
   stage: deps
   script:
     # I did these steps manually on the system, since I'm using the shell
@@ -29,26 +36,30 @@ deps:
 
 # Build for test
 test-build:
+  <<: *only_parent
   stage: build
   script:
     - "touch website/src/Settings/StaticFiles.hs"
     - "stack build"
 
 test:
+  <<: *only_parent
   stage: test
   script: "./build.sh test"
 
 # Build for deploy, using --pedantic
 deploy-build:
+  <<: *only_parent
   stage: deploy-build
   script:
-    - DEPLOY=false ./keter.sh
+    - DEPLOY=false ./s/deploy
+  # Don't force pedantry on people.
   allow_failure: true
 
 deploy:
   stage: deploy
   script:
-    - BUILD=false ./keter.sh
+    - BUILD=false ./s/deploy
   only:
     # Only deploy from master.
     #
@@ -56,6 +67,9 @@ deploy:
     # changes this line. It's a convenience. Security is maintained by only
     # allowing production secrets to be sent to protected branches.
     - master@sd/snowdrift
+  # The scheduled runs don't get deployed.
+  except:
+    - schedules
   when: manual
   environment:
     name: production
