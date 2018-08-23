@@ -71,7 +71,7 @@
   <p #avoid-paypal-fees>
     Note: the convenient button above works with or without a Paypal account,
     but it costs us a 2.9% + $0.30 fee. To skip the fee, log-in to Paypal and
-    send funds to aaron@snowdrift.coop funded by your bank or Paypal balance
+    send funds to admin@snowdrift.coop funded by your bank or Paypal balance
     (not by credit card or paypal credit) and marked as a gift.
 <hr>
 <.donate-option #bitcoin-donate>
