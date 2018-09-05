@@ -65,6 +65,9 @@ $navbar-l3-item: 100%
     &-label, .item
         +navbar-menu__item
 
+    &-label
+        width: 100%
+
     /* Arrow below the label */
     &-toggle:checked + &-label .arrow
         +image($navbar-menu-arrow, 2.3rem 1.2rem, center/contain)
@@ -170,20 +173,36 @@ $navbar-l3-item: 100%
     /* Level 3 menus */
     .nav-about
         +navbar-l3
+        position: absolute
+        left: 0
+        +pad($grid--s, top 4)
+
+        &-dropdown
+            width: $navbar-l2-item
+
+        /* When toggle is triggered, make room for the 3 elements of
+            nav-about */
+        &-toggle:checked + &-label
+            +pad($grid--s, margin 0 0 6)
 
         /* Toggle is the same size as other level 2 items */
         &-toggle
             width: $navbar-l2-item
             +pad($grid--s, top 2)
-            left: $navbar-l2-item
+
+        /* Arrow is on top of nav-about */
+        &-label .arrow
+            z-index: 1
 
     .nav-user
         +navbar-l3
 
+        &-dropdown
+            width: $navbar-l3-item
+
         /* Username label */
         &-label
             +navbar-menu__item--shadow
-            width: $navbar-l3-item
 
         /* User icon next to label */
         &-label:before
@@ -193,19 +212,8 @@ $navbar-l3-item: 100%
             margin: 0 0.6rem 0 0
             display: inline-block
 
-        /* Set absolute toggle position in relation to the bottom
-            of the navbar menu. */
         &-toggle
             width: $navbar-l3-item
-            bottom: 0
-            left: 0
-
-        /* When toggle is triggered, re-position it further up the revealed
-            menu so it stays over the label. The offset is (navbar menu item
-            height) * (no. of user item rows). In multiples of the vertical
-            rhythm value, this would be 2 * 4 = 8. */
-        &-toggle:checked
-            +pad($grid--s, height 8)
 
         /* When toggle is triggered, remove drop shadow from the label, as it
             is no longer the last item on the navbar menu. */
@@ -271,7 +279,7 @@ $navbar-l3-item: 100%
         +pad($grid--m, pad 0 0.5 0 0)
 
     /* Fill remaining space until the last item */
-    .nav-about-label
+    .nav-about-dropdown
         flex: 1
 
     /* [FIXME] Temporarily hide elements pending confirmed design */
