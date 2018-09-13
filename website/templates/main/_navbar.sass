@@ -253,13 +253,13 @@ $navbar-l3-item: 100%
 +respond("m")
     /* Float to the right */
     .navbar .link.m--logo
-        +pad($grid--m, width 3)
-        +pad($grid--m, pad 0 1 0 0)
+        +pad($grid--m, width 2.5)
+        +pad($grid--m, pad 0 0.5 0 0)
         margin-left: auto
 
     /* Float to the left */
     .nav-menu
-        +pad($grid--m, width 22)
+        +pad($grid--m, width 22.5)
         display: flex
         margin: auto auto auto 0
 
@@ -271,12 +271,12 @@ $navbar-l3-item: 100%
     /* Menu links and about menu label */
     .navbar .item,
     .nav-about-label,
-        +pad($grid--m, pad 0 1 0 0)
+        +pad($grid--m, pad 0 0.5)
 
     /* Sign in link and user menu label */
     .navbar .m--last,
     .nav-user-label
-        +pad($grid--m, pad 0 0.5 0 0)
+        +pad($grid--m, pad 0 0.5 0 0.5)
 
     /* Fill remaining space until the last item */
     .nav-about-dropdown
