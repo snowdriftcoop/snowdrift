@@ -8,9 +8,9 @@
   <div .nav-menu>
     <a .item .m--left href=@{WelcomeR}>
       Home
-    <a .item href=@{HowItWorksR}>
+    <a .item href=@{HowItWorksR} :active HowItWorksR:.active>
       How it works
-    <a .item .m--left href=@{ProjectsR}>
+    <a .item .m--left href=@{ProjectsR} :active ProjectsR:.active>
       Projects
     $# Begin L3 about menu
     <input .nav-about-toggle name="navbar-menu" type="radio">

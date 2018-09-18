@@ -215,6 +215,9 @@ navbarLayout pageName widget = do
 defaultLayoutNew :: Widget -> Handler Html
 defaultLayoutNew widget = do
     maybeUser <- maybeAuth
+
+    active <- maybe (const False) (==) <$> getCurrentRoute
+
     let navbar :: Widget
         navbar = $(widgetFile "main/navbar")
 
