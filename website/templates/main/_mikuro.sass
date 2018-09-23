@@ -70,11 +70,11 @@
 // - Shows a visual overlay for a grid.
 // - Add HTML, right under the <body> tag: <div class="mk__grid"></div>
 // - Add Sass, e.g.:
-//      $show-prefs: ($grid-ex, opacity: 0.5, colors: blue green, show: min)
+//      $show-prefs: (grid: $grid, opacity: 0.5, colors: blue green, show: min)
 //      +show-grid($show-prefs)
 // - The two lines above add a media query with attributes for the `mk__grid`
 //   HTML element, based on the container width in the grid map.
-// - `$grid-ex` is a variable pointing to an existing grid map.
+// - `$grid` is a variable pointing to an existing grid map.
 //   `opacity` (optional) sets overlay opacity. Value: 0-1 inclusive.
 //   `colors` (optional) sets x and y gutter colors.
 //   `show` (optional) has 3 possible values: min, max, point
