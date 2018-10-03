@@ -31,7 +31,7 @@
       <div .nav-user-dropdown>
         <input .nav-user-toggle name="navbar-menu" type="radio">
         <div .nav-user-label>
-          Jane Doe
+          My Account
           <div .arrow>
         <div .nav-user>
           <a .item href="">
