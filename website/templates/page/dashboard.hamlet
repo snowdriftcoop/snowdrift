@@ -3,10 +3,15 @@
 <h2>Crowdmatching
 <.crowdmatching>
   <p>
-    In October 2017, we began running crowdmatch events.
+    In October 2017, we began running crowdmatch events for
+    <a href=@{SnowdriftProjectR}>Snowdrift.coop itself
+    as our first test project.
   <p>
-    Pending donations will not be charged until they add up to
-    #{minimumDonation}, which is when processing fees will fall below 10%.
+    Once you pledge to a project, we add a donation to your balance based on
+    the pledge values at the time of each monthly crowdmatch event.
+  <p>
+    To keep processing fees below 10%, we only charge your pending donations
+    when the total goes beyond #{minimumDonation}.
 
   <table.crowdmatch-progress>
     <caption>
@@ -32,34 +37,6 @@
     You will <em>never</em> be charged more than your budget limit of $10 per
     month.
   <p>
-    Each month, we set your donations based on pledge values at that time. In
-    order to keep processing fees under 10% for any charge, we may delay
-    processing of small donations and then combine multiple months' donations in
-    a single charge (adjusting to make sure all charges stay within your budget
-    limit).
-
-<h2>Payment method
-$maybe _ <- patronPaymentToken patron
-  <p>
-    Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings
-    (reminder/apology: there is proprietary JavaScript on that page).
-$nothing
-  <.prop-js-note>
-    <p>
-      <strong>Please note!
-      At this stage of our beta, we are relying on Stripe's proprietary
-      JavaScript to maintain compliance in handling credit card information.
-    <p>
-      There's no technical reason for their JavaScript to be proprietary, but it
-      currently is. To avoid this in the future, we will need to implement a
-      method to take financial information and pass it, server-side, to Stripe's
-      API without storing any secure information ourselves. That will still
-      present security concerns and technical challenges that we do not have the
-      resources to handle adequately at this time. We hope to eventually avoid
-      reliance on any proprietary software, but we have made this one compromise
-      for now.
-    <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
 <h2>Pledges
 $maybe _ <- patronPledgeSince patron
@@ -82,13 +59,30 @@ $nothing
     $nothing
       <p>
         Before pledging, you must configure payment settings through
-        Stripe (see above).
+        Stripe (see below).
+
+<h2>Payment method
+$maybe _ <- patronPaymentToken patron
+  <p>
+    Your payment method is Stripe. You may
+    <a href=@{PaymentInfoR}>configure your payment settings
+    (reminder/apology: there is proprietary JavaScript on that page).
+$nothing
+  <.prop-js-note>
+    <p>
+      <strong>Please note!
+      We currently rely on Stripe's proprietary JavaScript to maintain
+      compliance in handling credit card information.
+    <p>
+      To avoid this, we will need to implement a method to take financial
+      information and pass it, server-side, to Stripe's API without storing any
+      secure information ourselves. We currently lack the resources to handle
+      that adequately. So, for now, we have made this one compromise to our
+      dedication otherwise to software freedom.
+    <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
 <h2 .beta-note>Beta note
 <p .beta-note>
-  Currently, Snowdrift.coop is operating in a semi-open beta. The Snowdrift site
-  and software itself is the first and only active project. Your support helps
-  us both to continue developing the platform and to do real-world testing to
-  address immediate issues. As soon as everything is working cleanly enough and
-  all important concerns are handled, we will begin supporting other FLO
-  projects. Thank you for helping us clear the path!
+  We are operating in a semi-open beta. Your support helps us both to continue
+  developing and testing. We hope to begin supporting other FLO projects soon.
+  Thank you for helping us clear the path!
