@@ -31,10 +31,10 @@ getHowItWorksR = do
         $(widgetFile "page/how-it-works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = $(widget "page/privacy" "Privacy")
+getPrivacyR = $(widget "page/privacy" "Privacy Policy")
 
 getTermsR :: Handler Html
-getTermsR = $(widget "page/terms" "Terms of Use")
+getTermsR = $(widget "page/terms" "Terms of Service")
 
 getProjectsR :: Handler Html
 getProjectsR = do
