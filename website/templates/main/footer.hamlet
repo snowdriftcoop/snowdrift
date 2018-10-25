@@ -31,7 +31,7 @@
           Privacy Policy
       <li .item>
         <a .link href=@{TermsR}>
-          Terms Of Use
+          Terms of Service
     <p .licenses>
       Aside from
       <a .link href="@{TrademarksR}">trademarks#

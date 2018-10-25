@@ -25,7 +25,7 @@
         <li>
           <a href=@{PrivacyR}>Privacy Policy
         <li>
-          <a href=@{TermsR}>Terms Of Use
+          <a href=@{TermsR}>Terms Of Service
     <div .col .span_4_of_12>
       <ul>
         <li>

@@ -1,4 +1,5 @@
-<h1 id="snowdrift.coop-privacy-policy">Snowdrift.coop Privacy Policy
+<h1 #snowdrift-coop-privacy-policy>
+  Snowdrift.coop Privacy Policy
 <p>
   <strong>
     <em>
@@ -10,7 +11,7 @@
   described below. Aside from any legal obligations, we do not share your data
   with any party not directly involved with our operations.
 
-<h2 id="contents">Contents
+<h2 #contents>Contents
 
 <ol>
   <li>
@@ -31,17 +32,18 @@
       <li>
         <a href="#discourse-deletion">
           Correcting, anonymizing, or deleting your data in Discourse
-<ul>Appendix
   <li>
-    <a href="#policy-changes">Policy changes
-  <li>
-    <a href="#contact">Contact options
-  <li>
-    <a href="#policy-license">License for this policy
+    <a href="#appendices">Appendices
+    <ul>
+      <li>
+        <a href="#policy-changes">Policy changes
+      <li>
+        <a href="#contact">Contact options
+      <li>
+        <a href="#policy-license">License for this policy
 
 
-
-<h2 id="definition">Definition of personal data
+<h2 #definition>Definition of personal data
 <p>
   We consider "personal data" to mean any of:
   <ul>
@@ -55,7 +57,7 @@
       with personal data
 
 
-<h2 id="data-collection">When and what personal data do we collect?
+<h2 #data-collection>When and what personal data do we collect?
 
 <ul>
   <li>
@@ -98,9 +100,11 @@
      using or storing your data and to delete it if you do not consent.
 
 
-<h3 id="data-uses">What do we do with your data?
+<h3 #data-uses>What do we do with your data?
 <div .figure>
-  <img src=@{StaticR img_mimi_eunice_nonprofit_junkmail_png}>
+  <img
+    alt="(comic) Mimi: 'I sent $20 to a non-profit. Since then, they've spent $30 sending me junk-mail solicitations. I want a refund.' Eunice: 'But you owe them $10!'"
+    src=@{StaticR img_ME_268_Nonprofit1_png}>
 
 <p>
   We may use your data to provide a customized experience with our website and
@@ -112,7 +116,7 @@
   use your email address to send you important policy and security updates.
 
 
-<h2 id="data-sharing">When do we share your data?
+<h2 #data-sharing>When do we share your data?
 
 <ul>
   <li>
@@ -141,7 +145,7 @@
     successor or affiliate.
 
 
-<h2 id="data-storage-protection">Storage and protection of data
+<h2 #data-storage-protection>Storage and protection of data
 <p>
   We make concerted efforts to follow the best security practices. But if we
   discover a security breach, we'll make concerted efforts to let you know as
@@ -151,13 +155,13 @@
   Unless we are legally required to retain it, we make a good faith effort to
   delete personal data when no longer needed.
 
-<h2 id="data-deletion-etc">Getting, correcting, or deleting your data
+<h2 #data-deletion-etc>Getting, correcting, or deleting your data
 <p>
   If you want to download your personal data or have it edited, anonymized, or
   deleted, please email privacy@snowdrift.coop.
 
 
-<h2 id="discourse-privacy">Specific privacy issues for our Discourse forum
+<h2 #discourse-privacy>Specific privacy issues for our Discourse forum
 
 <p>
   At community.snowdrift.coop, we run an instance of Discourse, a
@@ -194,7 +198,7 @@
     Discourse uses cookies to save some preferences and state of visitors and to
     compile aggregate data about site traffic and site interaction.
 
-<h3 id="discourse-deletion">Correcting, anonymizing, or deleting your data in Discourse
+<h3 #discourse-deletion>Correcting, anonymizing, or deleting your data in Discourse
 
 <ul>
   <li>
@@ -225,9 +229,9 @@
 
 <hr>
 
-<h2>Appendix
+<h2 #appendices>Appendices
 
-<h3 id="policy-changes">Policy changes
+<h3 #policy-changes>Policy changes
 <p>
   We may sometimes change this privacy policy. When we do, we'll post a notice
   about the change on Snowdrift.coop and email anyone who we have on record as
@@ -235,7 +239,7 @@
   changes in advance and offer a reasonable comment period before they become
   effective. Once official, we will ask users to accept the updated policy.
 
-<h3 id="contact">Contact options
+<h3 #contact>Contact options
 <p>
 <ul>
   <li>
@@ -245,7 +249,7 @@
     For general questions or comments about this policy, consider posting at
     our <a href="https://community.snowdrift.coop">community forum</a>.
 
-<h3 id="policy-license">License for this policy
+<h3 #policy-license>License for this policy
 <p>
   <em>
     The Snowdrift.coop Privacy Policy is available for free adaptation under the
