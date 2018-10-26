@@ -333,6 +333,10 @@
  If we determine your bandwidth usage to be significantly excessive in relation to other Users, we reserve the right to take technical measures to reduce your bandwidth consumption and to suspend your Account if necessary.
 <h3 #d-copyright-licensing-and-using-content-from-snowdrift-coop>
  D. Copyright Licensing and Using Content from Snowdrift.coop
+ <strong>
+  Short version:
+ <em>
+  You can use, modify, and share most anything from the Website as long as you follow the applicable FLO license requirements (giving credit, keeping terms for others). There's just a few exceptions such as Trademarks.
 <p>
  Most public writings and images at Snowdrift.coop are free to use and share under CC BY-SA (with attribution credit simply to "Snowdrift.coop"), with the following exceptions and qualifications:
 <ul>
@@ -399,8 +403,14 @@
   For Trademarked Content (such as project logos), you must have legal authority to grant usage and agree to grant Snowdrift.coop permission to display the Trademarks where appropriate in reference to the trademarked project, goods, or services.
 <h3 #f-copyright-infringement-and-dmca-policy>
  F. Copyright Infringement and DMCA Policy
+ <strong>
+  Short version:
+ <em>
+  We follow standard legal procedures in handling copyright infringement allegations and aim to inform everyone of their rights.
 <p>
- If you believe that Content anywhere on Snowdrift.coop infringes on a copyright you hold, we encourage you to first reach out informally via one of the methods on our <a href=@{ContactR}>contact page</a>. To take action under Section 512(c) of the U.S. Digital Millennium Copyright Act of 1998, follow our
+ If you believe that Content anywhere on Snowdrift.coop infringes on a copyright you hold, we encourage you to first reach out informally via one of the methods on our <a href=@{ContactR}>contact page</a>.
+<p>
+ To take action under Section 512(c) of the U.S. Digital Millennium Copyright Act of 1998, follow our
  <a href="https://git.snowdrift.coop/sd/legal/blob/master/DMCA/DMCA-guide.md">
   DMCA Guide
  and the connected
@@ -414,7 +424,8 @@
 <p>
  <strong>
   Short version:
- Crowdmatching involves many Patrons agreeing to donate by matching each other. You participate by pledging to various Projects listed at Snowdrift.coop, and we then bill you monthly through a connected payment service. We combine charges to reduce fees. You can remove pledges at any time, but previous donations are non-refundable.
+ <em>
+  Crowdmatching involves many Patrons agreeing to donate by matching each other. You participate by pledging to various Projects listed at Snowdrift.coop, and we then bill you monthly through a connected payment service. We combine charges to reduce fees. You can remove pledges at any time, but previous donations are non-refundable.
 <h4 #crowdmatching>
  1. Crowdmatching
 <p>
@@ -457,7 +468,8 @@
 <p>
  <strong>
   Short version:
- Snowdrift.coop will only include listings for Projects that publish free/libre/open public goods and meet our other specific requirements. Donations through Crowdmatching come directly from patrons via a supported third-party payment service.
+ <em>
+  Snowdrift.coop will only include listings for Projects that publish free/libre/open public goods and meet our other specific requirements. Donations through Crowdmatching come directly from patrons via a supported third-party payment service.
 <h4 #project-requirements>
  1. Project Requirements
 <p>
@@ -482,6 +494,11 @@
  When we remove a Project, we will retain historic information for our records.
 <h3 #i-volunteers>
  I. Volunteers
+ <strong>
+  Short version:
+ <em>
+  We welcome volunteers to help develop and run the Website as long as they accept some basic responsibilities.
+
 <p>
  Volunteers assist with many aspects of our Service, including but not limited to providing technical support, creating Content, performing site administration duties, providing expert advice, research, technical writing, reviewing, categorizing, and other duties as necessary.
 <p>
