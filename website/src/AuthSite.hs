@@ -73,6 +73,7 @@ import Database.Persist.Sql
 import Yesod
 import qualified Crypto.Nonce as Nonce
 import qualified Data.Text as T
+import qualified Database.Esqueleto as E
 
 -- Used to create a single, application-wide nonce token. I'm doing this
 -- out of expediency; Yesod.Auth uses it and nobody seems to care. But I
@@ -247,10 +248,17 @@ tokenGenerator = unsafePerformIO Nonce.new
 makeAuthPass :: Text -> IO ByteString
 makeAuthPass t = makePassword (encodeUtf8 t) pbkdf1Strength
 
+getUserCI :: MonadIO m => AuthEmail -> SqlPersistT m (Maybe (Entity User))
+getUserCI (AuthEmail t) = fmap listToMaybe $
+    E.select $ E.from $ \ user -> do
+        E.where_ $ E.lower_ (user E.^. UserEmail) E.==. E.lower_ (E.val t)
+        E.limit 1
+        return user
+
 -- | Compare some Credentials to what's stored in the database.
 checkCredentials :: MonadIO m => Credentials -> SqlPersistT m (Maybe AuthUser)
 checkCredentials Credentials{..} = do
-    mu <- getBy (UniqueUsr (fromAuth credsIdent))
+    mu <- getUserCI credsIdent
     pure $ verify =<< mu
   where
     verify x@(Entity _ u) =
@@ -401,7 +409,7 @@ postCreateAccountR = do
             unless
                 (validPassphrase (credsPass c))
                 (passphraseError (credsIdent c))
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
+            mu <- lift (runDB (getUserCI (credsIdent c)))
             lift $ sendAuthEmail (credsIdent c) =<< maybe
                 (VerifyUserCreation . verifyToken
                     <$> runDB (privilegedProvisionalUser c))
@@ -429,12 +437,16 @@ postResetPassphraseR = do
     ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
     formResult
         (\c -> do
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
-            lift $ sendAuthEmail (credsIdent c) =<< maybe
-                (pure BadPassReset)
-                (const $ VerifyPassReset . verifyToken
-                    <$> runDB (privilegedProvisionalUser c))
-                mu
+            mu <- lift (runDB (getUserCI (credsIdent c)))
+            lift $ case mu of
+                Nothing -> sendAuthEmail (credsIdent c) BadPassReset
+                Just (Entity _ u) -> do
+                    let email = AuthEmail $ _userEmail u
+                        c' = c { credsIdent = email }
+                    msg <-
+                        VerifyPassReset . verifyToken <$>
+                        runDB (privilegedProvisionalUser c')
+                    sendAuthEmail email msg
             redirectParent' VerifyAccountR)
         res
 
