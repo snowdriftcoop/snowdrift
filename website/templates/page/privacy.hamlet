@@ -168,8 +168,8 @@
   free/libre/open forum program.
 <p>
   Discourse tracks users in order to customize the experience, award badges,
-  calculate a "trust level" for each user, provide stats about usage, and
-  prevent spam.
+  calculate a "trust level" for each user, provide stats about usage, determine
+  when to send notification emails, and prevent spam.
 <p>
   We make no use of this data outside of Discourse. Within available settings,
   we turn off unecessary tracking where we can. We also advocate at
