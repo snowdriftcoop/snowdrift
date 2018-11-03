@@ -252,6 +252,33 @@ $navbar-l3-item: 100%
             color: $dark-blue
 
 
+=dropdown--m
+    position: absolute
+    display: none
+    flex-direction: column
+    background: $white
+    box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
+    +pad($grid--m, top 2)
+    padding-bottom: 0.6rem
+    border-radius: 0 0 0.5rem 0.5rem
+
+    &-toggle
+        position: absolute
+        opacity: 0
+        cursor: pointer
+
+    &-toggle:hover + &-label,
+    &-toggle:checked + &-label
+        color: $dark-blue
+
+    & .item
+        +pad($grid--m, height 2)
+        padding: 1.9rem 1.5rem
+
+    &-toggle:checked + &-label + &,
+        display: flex
+
+
 +respond("m")
     /* Float to the right */
     .navbar .link.m--logo
@@ -289,32 +316,11 @@ $navbar-l3-item: 100%
     .nav-about-dropdown
         flex: 1
 
-    .nav-about,
+    .nav-about
+        +dropdown--m
+
     .nav-user
-        position: absolute
-        display: none
-        flex-direction: column
-        background: $white
-        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
-        +pad($grid--m, top 2)
-        padding-bottom: 0.6rem
-        border-radius: 0 0 0.5rem 0.5rem
-
-        &-toggle
-            position: absolute
-            opacity: 0
-            cursor: pointer
-
-        &-toggle:hover + &-label,
-        &-toggle:checked + &-label
-            color: $dark-blue
-
-        & .item
-            +pad($grid--m, height 2)
-            padding: 1.9rem 1.5rem
-
-        &-toggle:checked + &-label + &,
-            display: flex
+        +dropdown--m
 
     .nav-about-toggle
         width: 9.1rem
