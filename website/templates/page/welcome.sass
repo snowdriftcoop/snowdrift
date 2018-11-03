@@ -1,0 +1,120 @@
+@import ../main/main
+
+
+.video
+    /* Same shadow as used for the navbar */
+    box-shadow: 0 0 1.5rem 0.1rem transparentize(#09628e, 0.6)
+
+
+.signup
+    .button
+        +button--big($white, $green, $green-shade)
+
+    .more-info
+        +text--link
+
+
+.text
+    +text--body
+    color: $dark-blue
+
+    .headline
+        +text--headline
+
+
+///------------------------------------------------------------------------///
+//  Common layout                                                           //
+///------------------------------------------------------------------------///
+
+.video
+    +vr($grid--m, mgn 0 2)
+    display: block
+    width: 100%
+
+
+.signup
+    +vr($grid--m, mgn 2)
+    text-align: center
+
+    .button
+        +pad($grid--s, mgn 0 auto 0.5)
+
+
+.headline
+    +vr($grid--m, mgn 1.23 0.77)
+
+
+.handshake
+    +pad($grid--m, mgn 4 auto)
+    display: block
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
+=home--s
+    .header
+        +bg($header-bg-flbk, center bottom/cover no-repeat)
+        margin: 0 0 3rem 0
+        padding: 10.5rem 0 6rem
+
+        .header-logo
+            +span($grid--s, 4 max-pct auto)
+            display: block
+
+
+    section
+        +span($grid--s, 4 max-pct auto)
+
+
++respond("xs")
+    +home--s
+
+    /* Scale down signup button */
+    .signup .button
+        +button--medium($white, $green, $green-shade)
+
+
++respond("s")
+    +home--s
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    main
+        +bg($home-bg, top 6rem center no-repeat)
+
+
+    .header
+        +span($grid--m, 8 row auto)
+
+        .header-logo
+            +pad($grid--m, left 3)
+            +vr($grid--m, mgn 4 2)
+            position: relative
+
+
+    section
+        +span($grid--m, 8 row auto)
+
+
+    .video
+        +span($grid--m, 8 max auto)
+        border-radius: 4px
+
+
+    .text
+        +span($grid--m, 8 max auto)
+
+
+    .signup
+        +span($grid--m, 4 max auto)
+
+
+@media (min-width: 1950px)
+    .background
+        background-size: 100%

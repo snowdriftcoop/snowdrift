@@ -52,3 +52,6 @@ $me_signup: @{StaticR img_projects_me_signup_png}
 
 /// Images: how-it-works
 $caption_arrow: @{StaticR img_how_it_works_caption_arrow_png}
+
+/// Images: home
+$home_bg: @{StaticR img_home_bg_png}

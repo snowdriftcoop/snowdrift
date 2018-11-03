@@ -1,15 +1,47 @@
-<div .section .group>
-  <div .col .span_12_of_12>
-    <img src=@{StaticR img_logo_big_png} .logo-big alt=Snowdrift.coop>
-    <.rotate .break4>
-      <.sun>
-    <.background>
-      <.plane .break4>
-    <.foreground>
-    <a href=@{HowItWorksR} .bigbutton>How it Works
-    <.home-text>
-      <p>
-        Like roads we all share, freely-licensed works are public goods that
-        benefit everyone. We need to cooperate to fund them sustainably.
-      <p>
-        <a href=@{AuthR LoginR} .join>Join us!
+<h1 .header>
+  <img .header-logo src=@{StaticR img_home_header_png} alt="Snowdrift.coop">
+
+<section>
+  <video .video poster=@{StaticR img_home_video_poster_png} controls>
+    <source type="video/mp4"
+      src="https://archive.org/download/snowdrift-dot-coop-intro/snowdrift-dot-coop-intro.mp4">
+    <source type="video/ogg"
+      src="https://archive.org/download/snowdrift-dot-coop-intro/snowdrift-dot-coop-intro.ogv">
+
+  $if not loggedIn
+    <.signup>
+      <a .button href=@{AuthR LoginR}>
+        Sign Up
+      <a .more-info href="https://wiki.snowdrift.coop/about">
+        learn more
+
+  <.text>
+    <h1 .headline>
+      Funding free/libre/open projects
+    <p>
+      We support works that everyone can use, adapt, and share freely. But as
+      public goods, anyone can freeride. And that presents a dilemma in
+      getting funded. Our innovative platform brings people together to
+      address this problem.
+
+    <h1 .headline>
+      Matching and sustainability
+    <p>
+      In a single pledge, crowdmatching combines the two most effective
+      solutions for getting voluntary donations to public goods:
+    <p>
+      (A) matching donations where patrons agree to give together and
+    <p>
+      (B) sustaining memberships which provide reliable, long-term salaries
+      and accountability.
+
+    <h1 .headline>
+      Democracy
+    <p>
+      We don't serve the concentrated power of advertisers, investors, or
+      wealthy philanthropists. Both in our technical design and in running as
+      a non-profit co-op, we work to empower regular citizens. By coordinating
+      the resources of large numbers of patrons, we can ensure that the
+      creative work we fund serves the public interest.
+
+  <img .handshake src=@{StaticR img_home_handshake_png}>

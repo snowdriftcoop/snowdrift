@@ -21,7 +21,11 @@ getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
 getWelcomeR :: Handler Html
-getWelcomeR = $(widget "page/welcome" "Crowdmatching for Public Goods")
+getWelcomeR = do
+    loggedIn <- isJust <$> maybeAuth
+    defaultLayoutNew $ do
+        setTitle "Crowdmatching for Public Goods"
+        $(widgetFile "page/welcome")
 
 getHowItWorksR :: Handler Html
 getHowItWorksR = do
