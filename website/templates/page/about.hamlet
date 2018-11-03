@@ -1,54 +1,35 @@
-<.homepage-section>
+<.about>
   <h2>About Snowdrift.coop
   <p>
     We're building a sustainable funding platform for public goods — those
     things that everyone can use and share without limitations. Using our
     innovative crowdmatching pledge, we create a network effect where we all
     work together to support free/libre/open projects of all sorts.
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about/intro">
-      Quick illustrated intro
-    (old version, updates planned)
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about">
-      Full explanations and details
-  <.homep-link>
-    <a href="https://wiki.snowdrift.coop/about/faq">
-      FAQ
-<hr>
-<.homepage-section>
   <p>
-    The campaign video from our initial 2014
-    <a href="https://snowdrift.tilt.com">launch fund-drive
-    remains a good (but dated) introduction:
-  <video poster="https://wiki.snowdrift.coop/assets/fund-drive/fund-drive-intro-still.png" controls>
-    <source type="video/mp4"
-      src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.mp4">
-    <source type="video/ogg"
-      src="https://archive.org/download/snowdrift-fund-drive-intro/snowdrift-fund-drive-intro.ogv">
-
-<.homepage-section>
-  <h2>News and Activity
-  <.homep-link>
-    <a href="https://blog.snowdrift.coop">Blog
-  <.homep-link>
-    <a href="https://git.snowdrift.coop/groups/sd/-/activity">
-      Activity at git.snowdrift.coop
-  <.homep-link>
-    Join our
-    <a href="https://community.snowdrift.coop">
-      forum
-  <.homep-link>
-    Live chat at
-    <a href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">
-      #snowdrift IRC channel
-  <.homep-link>
-    Follow us on Mastodon
-    <a href="https://social.coop/@snowdrift">
-      @snowdrift@social.coop
-    <small>(or Twitter: @snowdriftcoop)
-
-<.homepage-section>
+    Besides the video on our
+    <a href=@{WelcomeR}>home page
+    and other parts of the main site, our
+    <a href="https://wiki.snowdrift.coop">wiki
+    has all sorts of other details.
+  <h2>News and Activity links
+  <ul>
+    <li .homep-link>
+      <a href="https://blog.snowdrift.coop">Blog
+    <li .homep-link>
+      <a href="https://git.snowdrift.coop/groups/sd/-/activity">
+        Activity feed at git.snowdrift.coop
+    <li .homep-link>
+      <a href="https://community.snowdrift.coop">forum
+    <li .homep-link>
+      <a href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">
+        #snowdrift IRC channel
+    <li .homep-link>
+      Follow us on Mastodon
+      <a href="https://social.coop/@snowdrift">
+        @snowdrift@social.coop
+      <ul>
+        <li>
+          <small>(or Twitter: @snowdriftcoop)
   <h2>Volunteer
   <p>
     Our core team is supported by a widespread community.
