@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+#
+# s/dev_psql: Connects to the dev database with psql.
+#
+
+export PGHOST="${PWD}/.postgres-work"
+export PGDATABASE=snowdrift_development
+
+make -f db.makefile
+psql

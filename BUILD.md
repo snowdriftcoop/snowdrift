@@ -145,10 +145,16 @@ changes to the code.
 
 To stop the site, type `quit` in the terminal, then press Enter.
 
-## Troubleshooting
+### Troubleshooting
 
 If `./build.sh` commands fail in any way, try running `./build.sh cleandb` and
 then building again.
+
+## Connecting to the local database
+
+The script `./s/dev_psql` will spawn a psql shell that is connected to the dev
+database. Refer to [Postgres' psql
+documentation](https://www.postgresql.org/docs/9.6/app-psql.html).
 
 ## Using the local site
 
