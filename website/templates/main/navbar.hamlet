@@ -6,7 +6,7 @@
   <div .nav-menu-label>
     Menu
   <div .nav-menu>
-    <a .item .m--left href=@{WelcomeR}>
+    <a .item .m--left href=@{WelcomeR} :active WelcomeR:.active>
       Home
     <a .item href=@{HowItWorksR} :active HowItWorksR:.active>
       How it works
