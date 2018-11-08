@@ -12,7 +12,7 @@
     <.signup>
       <a .button href=@{AuthR LoginR}>
         Sign Up
-      <a .more-info href="https://wiki.snowdrift.coop/about">
+      <a .more-info href=@{HowItWorksR}>
         learn more
 
   <.text>
