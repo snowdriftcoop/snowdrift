@@ -11,7 +11,7 @@
         +button--big($white, $green, $green-shade)
 
     .more-info
-        +text--link
+        +text--link-large
 
 
 .text
@@ -71,9 +71,13 @@
 +respond("xs")
     +home--s
 
-    /* Scale down signup button */
-    .signup .button
-        +button--medium($white, $green, $green-shade)
+    /* Scale down signup button and more info link*/
+    .signup
+        .button
+            +button--medium($white, $green, $green-shade)
+
+        .more-info
+            +text--link
 
 
 +respond("s")
