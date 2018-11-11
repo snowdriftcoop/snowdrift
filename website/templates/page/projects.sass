@@ -46,7 +46,7 @@
         +button--big($white, $green, $green-shade)
 
     .more-info
-        +text--link
+        +text--link-large
 
 
 ///------------------------------------------------------------------------///
@@ -146,9 +146,13 @@
             white-space: nowrap
 
 
-    /* Scale down signup button */
-    .signup .button
-        +button--medium($white, $green, $green-shade)
+    /* Scale down signup button and more info link*/
+    .signup
+        .button
+            +button--medium($white, $green, $green-shade)
+
+        .more-info
+            +text--link
 
 
 ///------------------------------------------------------------------------///

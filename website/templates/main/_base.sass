@@ -118,6 +118,10 @@ $link--visited:      $green-shade   // link, visited (unknown)
     &:visited
         color: $link--visited
 
+=text--link-large
+    +text--link
+    font: 600 2.9rem/3rem Nunito, sans-serif
+
 =text--small
     font: 400 1.7rem/3rem Nunito, sans-serif
 
@@ -240,24 +244,18 @@ $link--visited:      $green-shade   // link, visited (unknown)
 
 =button--big($tc, $bc1, $bc2)
     +button--base($tc, $bc1, $bc2)
-    font-size: 2.1rem
-    padding: 0.9rem 12rem 1.2rem
-    &:hover
-        padding: 0.9rem 6rem 1.2rem
+    font-size: 2.9rem
+    padding: 1.5rem 11rem 1.2rem
 
 =button--medium($tc, $bc1, $bc2)
     +button--base($tc, $bc1, $bc2)
     font-size: 2.1rem
     padding: 0.9rem 6rem 1.2rem
-    &:hover
-        padding: 0.9rem 3rem 1.2rem
 
 =button--small($tc, $bc1, $bc2)
     +button--base($tc, $bc1, $bc2)
     font-size: 1.7rem
     padding: 0.6rem 3rem 0.9rem
-    &:hover
-        padding: 0.6rem 1.5rem 0.9rem
 
 
 /// Add a tilted baseline effect to a header
