@@ -45,3 +45,10 @@
       creative work we fund serves the public interest.
 
   <img .handshake src=@{StaticR img_home_handshake_png}>
+
+  $if not loggedIn
+    <.signup>
+      <a .button href=@{AuthR LoginR}>
+        Sign Up
+      <a .more-info href=@{HowItWorksR}>
+        learn more
