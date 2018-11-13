@@ -122,19 +122,19 @@
   <tr .even>
    <td>
     <a href="#l-disclaimer-of-warranties">
-     L. Disclaimer of Warranties
+     <strong>
+      L. Disclaimer of Warranties
    <td>
-    We provide our service as is, and we make no promises or guarantees about this service.
     <strong>
-     We are legally required to emphasize this section.
+     We provide our service as is, and we make no promises or guarantees about this service.
   <tr .odd>
    <td>
     <a href="#m-limitation-of-liability">
-     M. Limitation of Liability
+     <strong>
+      M. Limitation of Liability
    <td>
-    We will not be liable for damages or losses arising from your use or inability to use the service or otherwise arising under this agreement.
     <strong>
-     We are legally required to emphasize this section.
+     We will not be liable for damages or losses arising from your use or inability to use the service or otherwise arising under this agreement.
   <tr .even>
    <td>
     <a href="#n-release-and-indemnification">
