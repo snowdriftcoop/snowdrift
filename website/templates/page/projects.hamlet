@@ -31,5 +31,5 @@
       <.me>
       <a .button href=@{AuthR LoginR}>
         Sign Up
-      <a .more-info>
+      <a .more-info href=@{HowItWorksR}>
         how it works
