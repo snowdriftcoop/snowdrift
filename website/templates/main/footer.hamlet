@@ -33,20 +33,18 @@
         <a .link href=@{TermsR}>
           Terms of Service
     <p .licenses>
-      Aside from
-      <a .link href="@{TrademarksR}">trademarks#
-      \, writings and images here are free to use and share under
+      Our free/libre/open licenses:
       <a .link rel="license"
         title="Creative Commons Attribution Share-Alike 4.0 International"
         href="https://creativecommons.org/licenses/by-sa/4.0">
-        CC BY-SA#
-      \. This site's
-      <a .link href="https://git.snowdrift.coop/sd/snowdrift">source code
-      is free under the terms of the
+        CC&nbsp;BY&#8209;SA#
+      for content except
+      <a .link href="@{TrademarksR}">trademarks#
+      \, and
       <a .link title="GNU Affero GPL v3 or later"
         href="https://www.gnu.org/licenses/agpl">
-        GNU AGPLv3+#
-      \.
+        GNU&nbsp;AGPLv3+
+      for code.
   $# End footer nav
   $# Begin partners
   <div .partners-header>

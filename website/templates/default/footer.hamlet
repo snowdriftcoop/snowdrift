@@ -30,23 +30,19 @@
       <ul>
         <li>
           <p>
-            Aside from
-            <a href=@{TrademarksR}>trademarks</a>,
-            writings and images here are free to use and share under
-            <a rel=license
-                title="Creative Commons Attribution Share-Alike 4.0 International"
-                href=https://creativecommons.org/licenses/by-sa/4.0>
-              CC&nbsp;BY-SA</a>.
-
-            This site's
-            <a href="https://git.snowdrift.coop/sd/snowdrift">
-              source code
-            is free under the terms of the
-            <a rel=license
-                title="GNU Affero GPL v3 or later"
-                href=https://www.gnu.org/licenses/agpl>
-              GNU&nbsp;AGPLv3+</a>.
-            <!-- Currently not true because of stripe. :(
+            Our free/libre/open licenses:
+            <a .link rel="license"
+              title="Creative Commons Attribution Share-Alike 4.0 International"
+              href="https://creativecommons.org/licenses/by-sa/4.0">
+              CC&nbsp;BY&#8209;SA#
+            for content except
+            <a .link href="@{TrademarksR}">trademarks#
+            \, and
+            <a .link title="GNU Affero GPL v3 or later"
+              href="https://www.gnu.org/licenses/agpl">
+              GNU&nbsp;AGPLv3+
+            for code.
+            <!-- Other than the Stripe payment setup,
             All JavaScript on this site is
             <a href=@{JsLicensesR} rel=jslicense>
               freely-licensed</a>.
