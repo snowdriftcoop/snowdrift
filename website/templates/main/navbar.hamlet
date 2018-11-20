@@ -41,5 +41,5 @@
       $# End L3 user menu
     $nothing
       <a .item .m--last href=@{AuthR LoginR}>
-        Sign in
+        Log in
   $# End L2 menu
