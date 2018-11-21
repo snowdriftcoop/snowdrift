@@ -15,8 +15,6 @@
           <img .logo src=@{StaticR img_projects_snowdrift_logo_png}>
           <.title>
             Snowdrift.coop
-          <.desc>
-            Crowdmatching for public goods
     <li .item>
       <.project .m--coming>
         <.desc>
