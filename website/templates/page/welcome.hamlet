@@ -1,5 +1,5 @@
 <h1 .header>
-  <img .header-logo src=@{StaticR img_home_header_png} alt="Snowdrift.coop">
+  <img .logo src=@{StaticR img_home_header_png} alt="Snowdrift.coop">
 
 <section>
   <video .video poster=@{StaticR img_home_video_poster_png} controls>
