@@ -28,6 +28,10 @@
 //  Common layout                                                           //
 ///------------------------------------------------------------------------///
 
+.header .logo
+    display: block
+
+
 .video
     +vr($grid--m, mgn 0 2)
     display: block
@@ -63,7 +67,6 @@
 
         .logo
             +span($grid--s, 4 max-pct auto)
-            display: block
 
 
     section
@@ -97,10 +100,10 @@
 
     .header
         +span($grid--m, 8 row auto)
+        +vr($grid--m, pad 4 2)
 
         .logo
             +pad($grid--m, left 3)
-            +vr($grid--m, mgn 4 2)
             position: relative
 
 
