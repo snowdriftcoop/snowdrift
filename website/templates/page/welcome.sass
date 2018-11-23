@@ -1,6 +1,13 @@
 @import ../main/main
 
 
+.header .slogan
+    color: transparentize(#09628e, 0.4)
+    font-family: Nunito, sans-serif
+    font-weight: 300
+    line-height: 1em
+
+
 .video
     /* Same shadow as used for the navbar */
     box-shadow: 0 0.3rem 1rem 0 rgba(9, 98, 142, 0.24), 0 1rem 4rem 0rem rgba(9, 98, 142, 0.1)
@@ -63,11 +70,14 @@
     .header
         +bg($header-bg-flbk, center bottom/cover no-repeat)
         margin: 0 0 3rem 0
-        padding: 10.5rem 0 6rem
+        padding-top: 10.5rem
+        padding-bottom: 6rem
 
         .logo
-            +span($grid--s, 4 max-pct auto)
+            max-width: 100%
 
+        .slogan
+            margin-left: 15.2%
 
     section
         +span($grid--s, 4 max-pct auto)
@@ -89,6 +99,42 @@
     +home--s
 
 
+/* Variables for sizing and placing the slogan: */
+/* Proportion of the viewport width taken up by one margin of the page */
+$margin-vp-ratio: 0.077
+/* Unscaled width of the logo image */
+$logo-width: 542px
+/* Width of the viewport at which the logo reaches full size. Below this target
+    width, the slogan needs to be scaled down with the logo. */
+$vp-width: $logo-width / (1 - 2 * $margin-vp-ratio)
+/* Font-size the slogan takes when above the target width */
+$max-slogan-size: 29px
+/* Vertical gap between the logo and slogan when above the target width */
+$max-separation: 13px
+
+
+@media (max-width: #{floor($vp-width)})
+    .header
+        padding-left: #{$margin-vp-ratio * 100 + "%"}
+        padding-right: #{$margin-vp-ratio * 100 + "%"}
+
+        .slogan
+            font-size: calc(#{$max-slogan-size / $vp-width} * 100vw)
+            margin-top: calc(#{$max-separation / $vp-width} * 100vw)
+
+
+@media (min-width: #{floor($vp-width) + 1px}) and (max-width: #{$view--m-1})
+    .header
+        /* Keep header content-width equal to the logo's width, so that the
+            slogan is correctly positioned relative to the logo */
+        padding-left: calc((100% - #{$logo-width}) / 2)
+        padding-right: calc((100% - #{$logo-width}) / 2)
+
+        .slogan
+            font-size: $max-slogan-size
+            margin-top: $max-separation
+
+
 ///------------------------------------------------------------------------///
 //  Medium                                                                  //
 ///------------------------------------------------------------------------///
@@ -105,6 +151,11 @@
         .logo
             +pad($grid--m, left 3)
             position: relative
+
+        .slogan
+            font-size: 2.9rem
+            margin-left: 17.2rem
+            margin-top: 1.3rem
 
 
     section
