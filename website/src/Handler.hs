@@ -40,7 +40,11 @@ getPrivacyR = defaultLayoutNew $ do
     $(widgetFile "page/privacy")
 
 getTermsR :: Handler Html
-getTermsR = $(widget "page/terms" "Terms of Service")
+getTermsR = do
+    loggedIn <- isJust <$> maybeAuth
+    defaultLayoutNew $ do
+        setTitle "Terms of Service"
+        $(widgetFile "page/terms")
 
 getProjectsR :: Handler Html
 getProjectsR = do
