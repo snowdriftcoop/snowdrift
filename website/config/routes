@@ -27,10 +27,12 @@
 
 /discourse/sso DiscourseR GET
 
+-- Redirect /p to /projects
+/p PR GET
+
 -- ## Backward compatibility routes
 
--- Prevents breakage of external links to the old wiki. See
--- https://tree.taiga.io/project/snowdrift/us/359
+-- Prevents breakage of external links to the old wiki.
 /p/snowdrift/w SnowdriftWikiR GET
 /p/snowdrift/w/#Text SnowdriftWikiSearchR GET
 /p/snowdrift/w/en/#Text SnowdriftWikiEnSearchR GET

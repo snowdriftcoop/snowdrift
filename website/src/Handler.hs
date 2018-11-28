@@ -47,6 +47,10 @@ getProjectsR = do
         setTitle "Projects"
         $(widgetFile "page/projects")
 
+-- Redirect /p to /projects
+getPR :: Handler Html
+getPR = redirect ProjectsR
+
 getTrademarksR :: Handler Html
 getTrademarksR = $(widget "page/trademarks" "Trademarks")
 
@@ -77,9 +81,7 @@ getSnowdriftLegacyBlogR slug =
 getSnowdriftWikiR :: Handler Html
 getSnowdriftWikiR = redirect ("https://wiki.snowdrift.coop/" :: Text)
 
--- | Prevents breakage of external links to the old wiki. See
--- https://tree.taiga.io/project/snowdrift/us/359 and
--- https://tree.taiga.io/project/snowdrift/task/446
+-- | Prevents breakage of external links to the old wiki
 getSnowdriftWikiSearchR :: Text -> Handler Html
 getSnowdriftWikiSearchR slug =
     redirect $
@@ -130,4 +132,4 @@ getLegacyWhoR = redirect ("https://wiki.snowdrift.coop/community/team" :: Text)
 -- Redirect /u/3 to community/team
 getLegacyWolftuneR :: Handler Html
 getLegacyWolftuneR =
-    redirect ("https://wiki.snowdrift.coop/community/team/wolftune" :: Text)
+    redirect ("https://wiki.snowdrift.coop/community/team#wolftune" :: Text)
