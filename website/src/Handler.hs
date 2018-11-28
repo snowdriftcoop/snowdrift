@@ -133,7 +133,7 @@ getSnowdriftWikiEnSearchR = getSnowdriftWikiSearchR
 getLegacyWhoR :: Handler Html
 getLegacyWhoR = redirect ("https://wiki.snowdrift.coop/community/team" :: Text)
 
--- Redirect /u/3 to community/team
+-- Redirect /u/3 to wiki.sn.../community/people/wolftune
 getLegacyWolftuneR :: Handler Html
 getLegacyWolftuneR =
-    redirect ("https://wiki.snowdrift.coop/community/team#wolftune" :: Text)
+    redirect ("https://wiki.snowdrift.coop/community/people/wolftune" :: Text)
