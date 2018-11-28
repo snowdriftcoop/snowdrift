@@ -42,4 +42,5 @@
 /u/3 LegacyWolftuneR GET
 
 -- Prevents breakage of external links to the old blog.
+/p/snowdrift/blog SnowdriftLegacyBlogBaseR GET
 /p/snowdrift/blog/#Text SnowdriftLegacyBlogR GET
