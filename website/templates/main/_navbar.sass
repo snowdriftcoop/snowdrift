@@ -252,27 +252,29 @@ $navbar-l3-item: 100%
             color: $dark-blue
 
 
+/* A drop-down displays its items when its label is hovered over. It remains
+    open until neither the label nor the items are hovered over. */
 =dropdown--m
-    position: absolute
     display: none
-    flex-direction: column
-    background: $white
-    box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
-    +pad($grid--m, top 2)
-    padding-bottom: 0.6rem
-    border-radius: 0 0 0.5rem 0.5rem
 
-    &-toggle
-        position: absolute
-        opacity: 0
-        cursor: pointer
+    &-label
+        cursor: default
 
-    &-toggle:hover + &-label,
-    &-toggle:checked + &-label
+    &-label:hover
         color: $dark-blue
 
-    &-toggle:checked + &-label + &,
-        display: flex
+    &-label:hover + &,
+    &:hover
+        display: block
+
+    & .item
+        background: $white
+        display: block
+
+    & .item:last-child
+        +pad($grid--m, height 2.2)
+        border-radius: 0 0 0.5rem 0.5rem
+        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
 
 
 +respond("m")
@@ -290,7 +292,9 @@ $navbar-l3-item: 100%
 
     /* Hide unused menu toggles */
     .nav-menu-toggle,
-    .nav-menu-label
+    .nav-menu-label,
+    .nav-about-toggle,
+    .nav-user-toggle
         display: none
 
     /* Indicate active page and disable link */
@@ -317,15 +321,3 @@ $navbar-l3-item: 100%
 
     .nav-user
         +dropdown--m
-
-    .nav-about-toggle
-        width: 9.1rem
-        height: 6rem
-
-    .nav-user
-        min-width: 14.5rem
-
-        &-toggle
-            width: 14.5rem
-            height: 6rem
-
