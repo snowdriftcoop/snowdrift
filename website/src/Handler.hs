@@ -35,7 +35,9 @@ getHowItWorksR = do
         $(widgetFile "page/how-it-works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = $(widget "page/privacy" "Privacy Policy")
+getPrivacyR = defaultLayoutNew $ do
+    setTitle "Privacy Policy"
+    $(widgetFile "page/privacy")
 
 getTermsR :: Handler Html
 getTermsR = $(widget "page/terms" "Terms of Service")
