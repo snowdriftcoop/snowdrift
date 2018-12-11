@@ -1,257 +1,261 @@
-<h1 #snowdrift-coop-privacy-policy>
-  Snowdrift.coop Privacy Policy
-<p>
-  <strong>
-    <em>
-      Version 0.6 effective June 7, 2018
-<p>
-  <strong>
-    Snowdrift.coop maintains utmost respect for user privacy.
-  We collect, store, and process personal data <em>only</em> in the ways
-  described below. Aside from any legal obligations, we do not share your data
-  with any party not directly involved with our operations.
+<h1 .header .m--tilt #snowdrift-coop-privacy-policy>
+  Snowdrift.coop Privacy&nbsp;Policy
 
-<h2 #contents>Contents
+<section>
+  <p>
+    <strong>
+      <em>
+        Version 0.6 effective June 7, 2018
+  <p>
+    <strong>
+      Snowdrift.coop maintains utmost respect for user privacy.
+    We collect, store, and process personal data <em>only</em> in the ways
+    described below. Aside from any legal obligations, we do not share your data
+    with any party not directly involved with our operations.
 
-<ol>
-  <li>
-    <a href="#definition">Definition of personal data
-  <li>
-    <a href="#data-collection">When and what personal data do we collect?
-  <li>
-    <a href="#data-uses">What do we do with your data?
-  <li>
-    <a href="#data-sharing">When do we share your data?
-  <li>
-    <a href="#data-storage-protection">Storage and protection of data
-  <li>
-    <a href="#data-deletion-etc">Getting, correcting, or deleting your data
-  <li>
-    <a href="#discourse-privacy">Specific privacy issues for our Discourse forum
+  <h2 #contents>Contents
+
+  <ol .contents-list>
+    <li>
+      <a href="#definition">Definition of personal data
+    <li>
+      <a href="#data-collection">When and what personal data do we collect?
+    <li>
+      <a href="#data-uses">What do we do with your data?
+    <li>
+      <a href="#data-sharing">When do we share your data?
+    <li>
+      <a href="#data-storage-protection">Storage and protection of data
+    <li>
+      <a href="#data-deletion-etc">Getting, correcting, or deleting your data
+    <li>
+      <a href="#discourse-privacy">Specific privacy issues for our Discourse forum
+      <ul>
+        <li>
+          <a href="#discourse-deletion">
+            Correcting, anonymizing, or deleting your data in Discourse
+    <li>
+      <a href="#appendices">Appendices
+      <ul>
+        <li>
+          <a href="#policy-changes">Policy changes
+        <li>
+          <a href="#contact">Contact options
+        <li>
+          <a href="#policy-license">License for this policy
+
+
+  <h2 #definition>Definition of personal data
+  <p>
+    We consider "personal data" to mean any of:
     <ul>
       <li>
-        <a href="#discourse-deletion">
-          Correcting, anonymizing, or deleting your data in Discourse
-  <li>
-    <a href="#appendices">Appendices
-    <ul>
+        information directly identified with you (such as name or email address)
       <li>
-        <a href="#policy-changes">Policy changes
+        several pieces of information that may identify you when combined (even if
+        each piece individually does not)
       <li>
-        <a href="#contact">Contact options
-      <li>
-        <a href="#policy-license">License for this policy
+        any other data specific to an individual user when stored together
+        with personal data
 
 
-<h2 #definition>Definition of personal data
-<p>
-  We consider "personal data" to mean any of:
+  <h2 #data-collection>When and what personal data do we collect?
+
   <ul>
     <li>
-      information directly identified with you (such as name or email address)
+      If you simply view the site, we collect no data beyond server logs (which
+      include IP address, referring site, time, and your browser's user agent).
+      <ul>
+        <li>
+          And we make a good faith effort to retain IP addresses of requests for
+          no more than 90 days.
     <li>
-      several pieces of information that may identify you when combined (even if
-      each piece individually does not)
+      If you create a Snowdrift.coop account, we store your email address and use
+      cookies to keep you logged in.
     <li>
-      any other data specific to an individual user when stored together
-      with personal data
+      If you connect a third-party payment service to your account, their terms
+      apply, and you should read their independent privacy policy.
+      <em>
+        Snowdrift.coop does not directly collect, retain, or process any financial
+        information (such as credit card numbers).
+    <li>
+      If you pledge as a patron to any projects, we keep a record of your
+      transactions, such as your pledges and donation amounts.
+      <ul>
+        <li>
+          This policy does not cover interactions with projects outside of
+          Snowdrift.coop. External project websites may have their own policies.
+    <li>
+      If you are a team leader who submits a project to Snowdrift.coop, we will
+      ask for detailed information including the personal data necessary to
+      validate your identity, your role with the project, and your legal status as
+      a potential recipient of funds.
+    <li>
+      If you give us any further personal data (such as a mailing address for
+      sending a physical gift as thanks for a donation), we may store it in our
+      contacts database
+      <em>with your permission.
+    <li>
+       If we receive personal data about you from a third party (such as a
+       colleague suggesting a business connection), we will make a good faith
+       effort during our initial contact to ask for your permission to continue
+       using or storing your data and to delete it if you do not consent.
 
 
-<h2 #data-collection>When and what personal data do we collect?
+  <h3 #data-uses>What do we do with your data?
+  <div .figure>
+    <img
+      alt="(comic) Mimi: 'I sent $20 to a non-profit. Since then, they've spent $30 sending me junk-mail solicitations. I want a refund.' Eunice: 'But you owe them $10!'"
+      src=@{StaticR img_ME_268_Nonprofit1_png}>
 
-<ul>
-  <li>
-    If you simply view the site, we collect no data beyond server logs (which
-    include IP address, referring site, time, and your browser's user agent).
-    <ul>
-      <li>
-        And we make a good faith effort to retain IP addresses of requests for
-        no more than 90 days.
-  <li>
-    If you create a Snowdrift.coop account, we store your email address and use
-    cookies to keep you logged in.
-  <li>
-    If you connect a third-party payment service to your account, their terms
-    apply, and you should read their independent privacy policy.
+  <p>
+    We may use your data to provide a customized experience with our website and
+    as part of determining non-personal aggregate statistics about the service. We
+    otherwise aim to offer <em>opt-in</em> choices for personal data processing
+    whenever feasible.
+  <p>
+    Besides notifications and announcements that you opt-in to receiving, we will
+    use your email address to send you important policy and security updates.
+
+
+  <h2 #data-sharing>When do we share your data?
+
+  <ul>
+    <li>
+      With your consent, we may publicly display your name or alias along
+      with information about your pledges and other activity in lists of project
+      patrons or similar cases.
+    <li>
+      We may share your data if we are compelled to by law or when it is
+      reasonably necessary to do so to protect the rights, property, or safety of
+      you, our other users, Snowdrift.coop, or the public.
+      <ul>
+        <li>
+          Whenever we receive legal requests for your data, we will notify you
+          unless we are legally prohibited from doing so or circumstances require
+          otherwise. Nothing in this policy is intended to limit any legal
+          defenses or objections that you may have to a third party's request to
+          disclose your data.
+    <li>
+      We otherwise only share your data with those employees, contractors, and
+      service providers who have contractually promised to use it only for
+      specified purposes in line with the rest of this privacy policy.
+    <li>
+      If our corporate structure or status changes (e.g., if we restructure, are
+      acquired, or go bankrupt), we will notify all users so that you may choose
+      to anonymize or delete your private data before we pass on any data to a
+      successor or affiliate.
+
+
+  <h2 #data-storage-protection>Storage and protection of data
+  <p>
+    We make concerted efforts to follow the best security practices. But if we
+    discover a security breach, we'll make concerted efforts to let you know as
+    soon as possible.
+
+  <p>
+    Unless we are legally required to retain it, we make a good faith effort to
+    delete personal data when no longer needed.
+
+  <h2 #data-deletion-etc>Getting, correcting, or deleting your data
+  <p>
+    If you want to download your personal data or have it edited, anonymized, or
+    deleted, please email privacy@snowdrift.coop.
+
+
+  <h2 #discourse-privacy>Specific privacy issues for our Discourse forum
+
+  <p>
+    At community.snowdrift.coop, we run an instance of Discourse, a
+    free/libre/open forum program.
+  <p>
+    Discourse tracks users in order to customize the experience, award badges,
+    calculate a "trust level" for each user, provide stats about usage, determine
+    when to send notification emails, and prevent spam.
+  <p>
+    We make no use of this data outside of Discourse. Within available settings,
+    we turn off unnecessary tracking where we can. We also advocate at
+    <a href="https://meta.discourse.org">Discourse's own community forum
+    for stronger privacy options.
+
+  <p>
+    We know that Discourse collects at least the following data:
+  <ul>
+    <li>
+      If you visit any posts, Discourse tracks which posts have focus in your
+      browser and for how long.
+    <li>
+      If you click links in Discourse (whether external or internal), Discourse
+      tracks those clicks.
+    <li>
+     If you arrive at Discourse from an outside link, Discourse logs referer
+     information.
+    <li>
+      When you first sign in and when you post, Discourse records your IP address.
+      <ul>
+        <li>
+          But we make a good faith effort to retain the IP addresses associated
+          with users for no more than 5 years.
+    <li>
+      Discourse uses cookies to save some preferences and state of visitors and to
+      compile aggregate data about site traffic and site interaction.
+
+  <h3 #discourse-deletion>Correcting, anonymizing, or deleting your data in Discourse
+
+  <ul>
+    <li>
+      You can see the data Discourse stores with your account by visiting your
+      account page on the forum.
+    <li>
+      Your Discourse account page also lists your posts and other activity on the
+      forum.
+    <li>
+      Your account activity page also includes a link to download all of your
+      activity in standard
+      <a href="https://en.wikipedia.org/wiki/Comma-separated_values">comma-separated values
+      format.
+    <li>
+      You can change your Discourse account data at any time by visiting the
+      profile settings page for your account.
+    <li>
+      If you think your trust level has been set incorrectly, contact an
+      administrator.
+    <li>
+      Depending on the settings available, you may also be able to edit,
+      anonymize, or erase your posts.
+      <ul>
+        <li>
+          Note that when you edit posts, Discourse keeps all versions of your
+          posts, and forum administrators can view old versions of posts and
+          optionally make them visible to other forum visitors.
+
+  <hr>
+
+  <h2 #appendices>Appendices
+
+  <h3 #policy-changes>Policy changes
+  <p>
+    We may sometimes change this privacy policy. When we do, we'll post a notice
+    about the change on Snowdrift.coop and email anyone who we have on record as
+    accepting the previous policy version. When feasible, we will post proposed
+    changes in advance and offer a reasonable comment period before they become
+    effective. Once official, we will ask users to accept the updated policy.
+
+  <h3 #contact>Contact options
+  <p>
+  <ul>
+    <li>
+      In addition to requests for data correction, deletion etc (mentioned above),
+      you may contact privacy@snowdrift.coop with any other personal concerns.
+    <li>
+      For general questions or comments about this policy, consider posting at
+      our <a href="https://community.snowdrift.coop">community forum</a>.
+
+  <h3 #policy-license>License for this policy
+  <p>
     <em>
-      Snowdrift.coop does not directly collect, retain, or process any financial
-      information (such as credit card numbers).
-  <li>
-    If you pledge as a patron to any projects, we keep a record of your
-    transactions, such as your pledges and donation amounts.
-    <ul>
-      <li>
-        This policy does not cover interactions with projects outside of
-        Snowdrift.coop. External project websites may have their own policies.
-  <li>
-    If you are a team leader who submits a project to Snowdrift.coop, we will
-    ask for detailed information including the personal data necessary to
-    validate your identity, your role with the project, and your legal status as
-    a potential recipient of funds.
-  <li>
-    If you give us any further personal data (such as a mailing address for
-    sending a physical gift as thanks for a donation), we may store it in our
-    contacts database
-    <em>with your permission.
-  <li>
-     If we recieve personal data about you from a third party (such as a
-     colleague suggesting a business connection), we will make a good faith
-     effort during our initial contact to ask for your permission to continue
-     using or storing your data and to delete it if you do not consent.
+      The Snowdrift.coop Privacy Policy is available for free adaptation under the
+      <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA 4.0 International
+      license.
 
 
-<h3 #data-uses>What do we do with your data?
-<div .figure>
-  <img
-    alt="(comic) Mimi: 'I sent $20 to a non-profit. Since then, they've spent $30 sending me junk-mail solicitations. I want a refund.' Eunice: 'But you owe them $10!'"
-    src=@{StaticR img_ME_268_Nonprofit1_png}>
-
-<p>
-  We may use your data to provide a customized experience with our website and
-  as part of determining non-personal aggregate statistics about the service. We
-  otherwise aim to offer <em>opt-in</em> choices for personal data processing
-  whenever feasible.
-<p>
-  Besides notifications and announcements that you opt-in to receiving, we will
-  use your email address to send you important policy and security updates.
-
-
-<h2 #data-sharing>When do we share your data?
-
-<ul>
-  <li>
-    With your consent, we may publicly display your name or alias along
-    with information about your pledges and other activity in lists of project
-    patrons or similar cases.
-  <li>
-    We may share your data if we are compelled to by law or when it is
-    reasonably necessary to do so to protect the rights, property, or safety of
-    you, our other users, Snowdrift.coop, or the public.
-    <ul>
-      <li>
-        Whenever we receive legal requests for your data, we will notify you
-        unless we are legally prohibited from doing so or circumstances require
-        otherwise. Nothing in this policy is intended to limit any legal
-        defenses or objections that you may have to a third party's request to
-        disclose your data.
-  <li>
-    We otherwise only share your data with those employees, contractors, and
-    service providers who have contractually promised to use it only for
-    specified purposes in line with the rest of this privacy policy.
-  <li>
-    If our corporate structure or status changes (e.g., if we restructure, are
-    acquired, or go bankrupt), we will notify all users so that you may choose
-    to anonymize or delete your private data before we pass on any data to a
-    successor or affiliate.
-
-
-<h2 #data-storage-protection>Storage and protection of data
-<p>
-  We make concerted efforts to follow the best security practices. But if we
-  discover a security breach, we'll make concerted efforts to let you know as
-  soon as possible.
-
-<p>
-  Unless we are legally required to retain it, we make a good faith effort to
-  delete personal data when no longer needed.
-
-<h2 #data-deletion-etc>Getting, correcting, or deleting your data
-<p>
-  If you want to download your personal data or have it edited, anonymized, or
-  deleted, please email privacy@snowdrift.coop.
-
-
-<h2 #discourse-privacy>Specific privacy issues for our Discourse forum
-
-<p>
-  At community.snowdrift.coop, we run an instance of Discourse, a
-  free/libre/open forum program.
-<p>
-  Discourse tracks users in order to customize the experience, award badges,
-  calculate a "trust level" for each user, provide stats about usage, determine
-  when to send notification emails, and prevent spam.
-<p>
-  We make no use of this data outside of Discourse. Within available settings,
-  we turn off unecessary tracking where we can. We also advocate at
-  <a href="https://meta.discourse.org">Discourse's own community forum
-  for stronger privacy options.
-
-<p>
-  We know that Discourse collects at least the following data:
-<ul>
-  <li>
-    If you visit any posts, Discourse tracks which posts have focus in your
-    browser and for how long.
-  <li>
-    If you click links in Discourse (whether external or internal), Discourse
-    tracks those clicks.
-  <li>
-   If you arrive at Discourse from an outside link, Discourse logs referer
-   information.
-  <li>
-    When you first sign in and when you post, Discourse records your IP address.
-    <ul>
-      <li>
-        But we make a good faith effort to retain the IP addresses associated
-        with users for no more than 5 years.
-  <li>
-    Discourse uses cookies to save some preferences and state of visitors and to
-    compile aggregate data about site traffic and site interaction.
-
-<h3 #discourse-deletion>Correcting, anonymizing, or deleting your data in Discourse
-
-<ul>
-  <li>
-    You can see the data Discourse stores with your account by visiting your
-    account page on the forum.
-  <li>
-    Your Discourse account page also lists your posts and other activity on the
-    forum.
-  <li>
-    Your account activity page also includes a link to download all of your
-    activity in standard
-    <a href="https://en.wikipedia.org/wiki/Comma-separated_values">comma-separated values
-    format.
-  <li>
-    You can change your Discourse account data at any time by visiting the
-    profile settings page for your account.
-  <li>
-    If you think your trust level has been set incorrectly, contact an
-    administrator.
-  <li>
-    Depending on the settings available, you may also be able to edit,
-    anonymize, or erase your posts.
-    <ul>
-      <li>
-        Note that when you edit posts, Discourse keeps all versions of your
-        posts, and forum administrators can view old versions of posts and
-        optionally make them visible to other forum visitors.
-
-<hr>
-
-<h2 #appendices>Appendices
-
-<h3 #policy-changes>Policy changes
-<p>
-  We may sometimes change this privacy policy. When we do, we'll post a notice
-  about the change on Snowdrift.coop and email anyone who we have on record as
-  accepting the previous policy version. When feasible, we will post proposed
-  changes in advance and offer a reasonable comment period before they become
-  effective. Once official, we will ask users to accept the updated policy.
-
-<h3 #contact>Contact options
-<p>
-<ul>
-  <li>
-    In addition to requests for data correction, deletion etc (mentioned above),
-    you may contact privacy@snowdrift.coop with any other personal concerns.
-  <li>
-    For general questions or comments about this policy, consider posting at
-    our <a href="https://community.snowdrift.coop">community forum</a>.
-
-<h3 #policy-license>License for this policy
-<p>
-  <em>
-    The Snowdrift.coop Privacy Policy is available for free adaptation under the
-    <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA 4.0 International
-    license.

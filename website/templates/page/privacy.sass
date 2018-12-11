@@ -1,15 +1,84 @@
-.privacy
-  max-width: 72rem
-  margin: auto
-h2
-  font-weight: 700
-  font-size: 2.9rem
-  margin: 1.5em 0 1em
-  border-bottom: 1px solid #ddd
-h3
-  font-weight: 700
-  font-size: 2.2rem
-  margin: 1em 0
-p, li
-  font-size: 1.7rem
-  margin: 5px 0
+@import ../main/main
+
+
+section
+    +text--body
+    color: $dark-blue
+
+    .contents-list
+        list-style-type: decimal
+
+    ul
+        list-style: outside disc
+
+    h2
+        +text--headline
+        border-bottom: 1px solid #ddd
+
+    h3
+        +text--headline
+        /* Shrink headline size */
+        font-size: 2.4rem
+
+    a
+        +text--link
+        font-style: inherit
+
+    strong
+        font-weight: 700
+
+
+///------------------------------------------------------------------------///
+//  Common layout                                                           //
+///------------------------------------------------------------------------///
+
+section
+    .contents-list
+        margin: 1.5rem 3rem 4.5rem 3rem
+
+        li
+            margin: 0.5rem
+
+    ul
+        margin: 1.5rem 0 4.5rem 3rem
+
+        li
+            margin: 1rem
+
+    h2
+        margin: 4.5rem 0 1.5rem
+
+    h3
+        margin: 3rem 0 1.5rem
+
+    p
+        margin: 1.5rem 0 3rem
+
+    .figure img
+        width: 100%
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
+=home--s
+    section
+        +span($grid--s, 4 max-pct auto)
+
+
++respond("xs")
+    +home--s
+
+
++respond("s")
+    +home--s
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    section
+        +span($grid--m, 8 max auto)
