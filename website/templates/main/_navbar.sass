@@ -242,7 +242,7 @@ $navbar-l3-item: 100%
     .navbar .item,
     .nav-about-label,
     .nav-user-label
-        font: 700 2.1rem/1.33 Nunito
+        font: 700 2.1rem/6rem Nunito
         color: $green-shade
         text-decoration: none
 
@@ -250,6 +250,31 @@ $navbar-l3-item: 100%
         cursor: pointer
         &:hover
             color: $dark-blue
+
+
+/* A drop-down displays its items when its label is hovered over. It remains
+    open until neither the label nor the items are hovered over. */
+=dropdown--m
+    display: none
+
+    &-label
+        cursor: default
+
+    &-label:hover
+        color: $dark-blue
+
+    &-label:hover + &,
+    &:hover
+        display: block
+
+    & .item
+        background: $white
+        display: block
+
+    & .item:last-child
+        +pad($grid--m, height 2.2)
+        border-radius: 0 0 0.5rem 0.5rem
+        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
 
 
 +respond("m")
@@ -267,7 +292,9 @@ $navbar-l3-item: 100%
 
     /* Hide unused menu toggles */
     .nav-menu-toggle,
-    .nav-menu-label
+    .nav-menu-label,
+    .nav-about-toggle,
+    .nav-user-toggle
         display: none
 
     /* Indicate active page and disable link */
@@ -289,41 +316,8 @@ $navbar-l3-item: 100%
     .nav-about-dropdown
         flex: 1
 
-    .nav-about,
-    .nav-user
-        position: absolute
-        display: none
-        flex-direction: column
-        background: $white
-        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
-        +pad($grid--m, top 2)
-        padding-bottom: 0.6rem
-        border-radius: 0 0 0.5rem 0.5rem
-
-        &-toggle
-            position: absolute
-            opacity: 0
-            cursor: pointer
-
-        &-toggle:hover + &-label,
-        &-toggle:checked + &-label
-            color: $dark-blue
-
-        & .item
-            +pad($grid--m, height 2)
-            padding: 1.9rem 1.5rem
-
-        &-toggle:checked + &-label + &,
-            display: flex
-
-    .nav-about-toggle
-        width: 9.1rem
-        height: 2.8rem
+    .nav-about
+        +dropdown--m
 
     .nav-user
-        min-width: 14.5rem
-
-        &-toggle
-            width: 14.5rem
-            height: 2.8rem
-
+        +dropdown--m
