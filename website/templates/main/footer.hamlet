@@ -3,7 +3,7 @@
     <div .logo>
   $# Begin footer nav
   <nav>
-    <ul .menu .m--1-2>
+    <ul .menu>
       <li .item>
         <a .link href=@{HowItWorksR}>
           How it works
@@ -16,7 +16,7 @@
       <li .item>
         <a .link href=@{ContactR}>
           Contact
-    <ul .menu .m--2-2>
+    <ul .menu>
       <li .item>
         <a .link href=@{AboutR}>
           About
@@ -26,6 +26,7 @@
       <li .item>
         <a .link href=@{SponsorsR}>
           Our Sponsors
+    <ul .menu>
       <li .item>
         <a .link href=@{PrivacyR}>
           Privacy Policy
