@@ -6,11 +6,11 @@
   <div .nav-menu-label>
     Menu
   <div .nav-menu>
-    <a .item .m--left href=@{WelcomeR} :active WelcomeR:.active>
+    <a .item .m--left href=@{WelcomeR} :active WelcomeR:.m--active>
       Home
-    <a .item href=@{HowItWorksR} :active HowItWorksR:.active>
+    <a .item href=@{HowItWorksR} :active HowItWorksR:.m--active>
       How it works
-    <a .item .m--left href=@{ProjectsR} :active ProjectsR:.active>
+    <a .item .m--left href=@{ProjectsR} :active ProjectsR:.m--active>
       Projects
     $# Begin L3 about menu
     <div .nav-about-dropdown>
@@ -34,7 +34,7 @@
           My Account
           <div .arrow>
         <div .nav-user>
-          <a .item href=@{DashboardR} :active DashboardR:.active>
+          <a .item href=@{DashboardR} :active DashboardR:.m--active>
             Dashboard
           <a .item .m--last href=@{AuthR LogoutR}>
             Sign out
