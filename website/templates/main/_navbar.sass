@@ -29,6 +29,10 @@ $navbar--shadow: transparentize($navbar-menu--bg, 0.6)
     +image($navbar-logo, 3.8rem 4rem, center/contain)
     margin: auto
 
+/* Disable link to active page */
+.nav-menu .m--active
+    pointer-events: none
+
 
 ///------------------------------------------------------------------------///
 //  Small                                                                   //
@@ -297,10 +301,9 @@ $navbar-l3-item: 100%
     .nav-user-toggle
         display: none
 
-    /* Indicate active page and disable link */
+    /* Indicate active page */
     .nav-menu .m--active
         color: $dark-blue
-        pointer-events: none
 
     /* Menu links and about menu label */
     .navbar .item,
