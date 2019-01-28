@@ -98,11 +98,5 @@ $view--m-1: num-string((map-get($grid--m, "container") - 0.1), "px")
 //  Development mode                                                        //
 ///------------------------------------------------------------------------///
 
-/// Skip this section for production.
-
-/// Grid overlay settings
-$dev--s: (grid: $grid--s, show: equal)
-$dev--m: (grid: $grid--m, show: equal)
-
-+show-grid($dev--s)
-+show-grid($dev--m)
++show-grid((grid: $grid--s, opacity: 0.33, colors: blue green, show: equal))
++show-grid((grid: $grid--m, opacity: 0.33, colors: blue green, show: equal))
