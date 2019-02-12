@@ -174,30 +174,7 @@ $navbar-l3-item: 100%
             background: transparentize($white, 0.7)
 
 
-    /* Level 3 menus */
-    .nav-about
-        +navbar-l3
-        position: absolute
-        left: 0
-        +pad($grid--s, top 4)
-
-        &-dropdown
-            width: $navbar-l2-item
-
-        /* When toggle is triggered, make room for the 3 elements of
-            nav-about */
-        &-toggle:checked + &-label
-            +pad($grid--s, margin 0 0 6)
-
-        /* Toggle is the same size as other level 2 items */
-        &-toggle
-            width: $navbar-l2-item
-            +pad($grid--s, top 2)
-
-        /* Arrow is on top of nav-about */
-        &-label .arrow
-            z-index: 1
-
+    /* Level 3 menu */
     .nav-user
         +navbar-l3
 
@@ -244,7 +221,6 @@ $navbar-l3-item: 100%
 +respond("m")
     /* Menu link appearance */
     .navbar .item,
-    .nav-about-label,
     .nav-user-label
         font: 700 2.1rem/6rem Nunito
         color: $green-shade
@@ -262,6 +238,7 @@ $navbar-l3-item: 100%
     display: none
 
     &-label
+        +pad($grid--m, pad 0 0.5)
         cursor: default
 
     &-label:hover
@@ -297,7 +274,6 @@ $navbar-l3-item: 100%
     /* Hide unused menu toggles */
     .nav-menu-toggle,
     .nav-menu-label,
-    .nav-about-toggle,
     .nav-user-toggle
         display: none
 
@@ -305,22 +281,14 @@ $navbar-l3-item: 100%
     .nav-menu .m--active
         color: $dark-blue
 
-    /* Menu links and about menu label */
+    /* Menu links */
     .navbar .item,
-    .nav-about-label,
         +pad($grid--m, pad 0 0.5)
 
-    /* Sign in link and user menu label */
+    /* Float to the right */
     .navbar .m--last,
-    .nav-user-label
-        +pad($grid--m, pad 0 0.5 0 0.5)
-
-    /* Fill remaining space until the last item */
-    .nav-about-dropdown
-        flex: 1
-
-    .nav-about
-        +dropdown--m
+    .nav-user-dropdown
+        margin-left: auto
 
     .nav-user
         +dropdown--m

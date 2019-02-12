@@ -12,20 +12,8 @@
       How it works
     <a .item .m--left href=@{ProjectsR} :active ProjectsR:.m--active>
       Projects
-    $# Begin L3 about menu
-    <div .nav-about-dropdown>
-      <input .nav-about-toggle name="navbar-menu" type="radio">
-      <div .nav-about-label>
-        About
-        <div .arrow>
-      <div .nav-about>
-        <a .item href="https://community.snowdrift.coop/groups/team">
-          Team
-        <a .item href=@{ContactR}>
-          Contact
-        <a .item href="https://community.snowdrift.coop">
-          Community
-    $# End L3 about menu
+    <a .item href=@{AboutR} :active AboutR:.m--active>
+      About
     $maybe Entity _ _ <- maybeUser
       $# Begin L3 user menu
       <div .nav-user-dropdown>
