@@ -19,7 +19,7 @@ section.**
 Install Git, PostgreSQL and Make with needed libraries:
 
     sudo apt-get update
-    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev make
+    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev zlib1g-dev make
 
 Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
