@@ -10,11 +10,11 @@ synopsis:      Infrastructure for the Snowdrift.coop fundraising site.
 category:      Web
 stability:     Experimental
 homepage:      https://snowdrift.coop
-bug-reports:   https://git.snowdrift.coop/sd/snowdrift/issues
+bug-reports:   https://gitlab.com/snowdrift/snowdrift/issues
 
 source-repository head
   type:     git
-  location: https://git.snowdrift.coop/sd/snowdrift.git
+  location: https://gitlab.com/snowdrift/snowdrift.git
 
 Flag dev
     Description: Turn on development settings, like auto-reload templates.

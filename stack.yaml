@@ -7,9 +7,9 @@ packages:
   - crowdmatch
   - run-persist
   # This is patched to use UTCTime instead of Localtime (needs to get moved
-  # upstream: see https://git.snowdrift.coop/sd/snowdrift/issues/8)
+  # upstream: see https://gitlab.com/snowdrift/snowdrift/issues/8)
   - location:
-     git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
+     git: https://gitlab.com/snowdrift/postgresql-simple-migration-patches.git
      commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
     extra-dep: true
   - location:

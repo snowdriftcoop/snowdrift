@@ -114,13 +114,11 @@ alternative working.
 
 ## Get the Snowdrift code
 
-Our primary repository is at [git.snowdrift.coop/sd/snowdrift], and our
-instructions assume that repository. For convenience and redundancy, we also
-mirror at [GitHub].
+Our primary repository is at [GitLab], and our instructions assume that repository. For convenience and redundancy, we also mirror at [GitHub].
 
 From within your preferred directory, get the code with:
 
-    git clone https://git.snowdrift.coop/sd/snowdrift.git
+    git clone https://gitlab.com/snowdrift/snowdrift.git
 
 Change to the new snowdrift directory:
 
@@ -236,9 +234,9 @@ about technical development.
 [brew]: http://brew.sh/
 [Contributing Guide]: CONTRIBUTING.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
-[discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
+[discussion about FreeBSD]: https://gitlab.com/snowdrift/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads
-[git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
+[GitLab]: https://gitlab.com/snowdrift/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
 [Make]: https://www.gnu.org/software/make/manual/html_node/index.html
