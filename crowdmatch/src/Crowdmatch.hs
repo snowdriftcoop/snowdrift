@@ -78,7 +78,7 @@ import Crowdmatch.Stripe
 import qualified Crowdmatch.Model as Model
 import qualified Crowdmatch.Skeleton as Skeleton
 
--- For doctests:
+-- This is run by the doctests and sets everything up in there:
 --
 -- $setup
 -- >>> import Test.QuickCheck
