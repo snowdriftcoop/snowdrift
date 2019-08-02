@@ -64,7 +64,8 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function (on)
 import Data.Int (Int32)
 import Data.Ratio
-import Data.Time (UTCTime, getCurrentTime, utctDay)
+import Data.Time (UTCTime, getCurrentTime)
+import Data.Time.Calendar (Day)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
 import System.IO
@@ -165,8 +166,9 @@ fetchPatron = runMech . FetchPatronI . (^. from external)
 -- | Execute a crowdmatch event
 crowdmatch
     :: MonadIO env
-    => SqlPersistT env ()
-crowdmatch = runMech CrowdmatchI
+    => Day
+    -> SqlPersistT env ()
+crowdmatch day = runMech $ CrowdmatchI day
 
 -- | Execute a payments event, sending charge commands to Stripe.
 --
@@ -201,7 +203,7 @@ data CrowdmatchI return where
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
-    CrowdmatchI :: CrowdmatchI ()
+    CrowdmatchI Day :: CrowdmatchI ()
     MakePaymentsI :: StripeActions -> CrowdmatchI ()
 
 -- | Executing the actions
@@ -296,12 +298,11 @@ runMech (FetchPatronI pptr) = do
 -- Crowdmatch and MakePayments
 --
 
-runMech CrowdmatchI = do
+runMech (CrowdmatchI date) = do
     active <- Skeleton.activePatrons
     let projectValue = fromIntegral (length active)
-    today <- utctDay <$> liftIO getCurrentTime
     mapM_
-        (recordCrowdmatch (CrowdmatchDay today) (DonationUnits projectValue))
+        (recordCrowdmatch (CrowdmatchDay date) (DonationUnits projectValue))
         active
   where
     recordCrowdmatch day amt (Entity pid _) = do

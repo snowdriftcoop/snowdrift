@@ -16,7 +16,7 @@ import Data.Foldable (traverse_, for_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Time (UTCTime(..), getCurrentTime)
+import Data.Time (UTCTime(..), getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Postgresql
         (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
@@ -250,7 +250,7 @@ unitTests runner = describe "unit tests" $ do
                         (Just (PaymentToken (CustomerId "")))
                         0
                         (Just now))
-                crowdmatch
+                crowdmatch $ utctDay now
                 fetchPatron (HarnessUser pid)
             length (patronCrowdmatches p) `shouldBe` 1
             (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay (utctDay now)
@@ -267,11 +267,11 @@ unitTests runner = describe "unit tests" $ do
                         0
                         (Just now)))
             (thunor', woden') <- runner $ do
-                crowdmatch
+                crowdmatch $ utctDay now
                 deletePledge (HarnessUser woden)
-                crowdmatch
+                crowdmatch $ utctDay now
                 storePledge (HarnessUser woden)
-                crowdmatch
+                crowdmatch $ utctDay now
                 t <- fetchPatron (HarnessUser thunor)
                 w <- fetchPatron (HarnessUser woden)
                 return (t,w)
@@ -344,29 +344,29 @@ unitTests runner = describe "unit tests" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch
+                crowdmatch $ utctDay now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
         it "looks quadratic; 3 patrons = 9 DUs" $ do
             val <- runner $ do
                 mapM_ mkPledge [1..3]
-                crowdmatch
+                crowdmatch $ utctDay now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 9
         it "sums over multiple events" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch
+                crowdmatch $ utctDay now
                 storePledge (HarnessUser 1)
                 -- Now 1 is also active
-                crowdmatch
+                crowdmatch $ utctDay now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 5
         it "creates history" $ do
             u :: [Entity Model.CrowdmatchHistory] <- runner $ do
                 mkPledge 1
-                crowdmatch
+                crowdmatch $ utctDay now
                 selectList [] []
             length u `shouldBe` 1
     describe "make-payments event" $ do
