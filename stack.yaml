@@ -24,6 +24,7 @@ extra-deps:
   - git: https://github.com/aloiscochard/codex.git
     commit: 0d59fe5099136015912e13a4c1ea573c5fd7f2ff
 nix:
+  enable: false
   pure: false
   packages:
     - ncurses
