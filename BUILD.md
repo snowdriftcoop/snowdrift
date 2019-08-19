@@ -5,6 +5,18 @@ Snowdrift has been built successfully on many GNU/Linux distros and on macOS.
 Windows and \*BSD distributions are not currently supported, but we will assist
 any efforts to add such support. See below for partial setup instructions.
 
+## Get the Snowdrift code
+
+Our primary repository is at [GitLab], and our instructions assume that repository. For convenience and redundancy, we also mirror at [GitHub].
+
+From within your preferred directory, get the code with:
+
+    git clone https://gitlab.com/snowdrift/snowdrift.git
+
+Change to the new snowdrift directory:
+
+    cd snowdrift
+
 ## Install System Dependencies
 
 [Git], [PostgreSQL], [Stack], and [Make] are the only dependencies needed at the
@@ -71,16 +83,14 @@ to use a version of ghc that compiles without PIE. We were unable to find a way
 to set this configuration *just* for Snowdrift, however we don't believe making
 this change will cause any issues with compiling other Haskell projects.
 
-### NixOS
+### NixOS or Nix on Linux, MacOS or WSL
 
-Use `nix-shell` to provide Stack and the Yesod executable:
-
-    nix-shell -p stack haskellPackages.yesod-bin
-
-Add the following to `~/.stack/config.yaml`:
+Change `stack.yaml` to enable nix:
 
     nix:
       enable: true
+
+Run `nix-shell` in the root of the project. You will have to build, test and run the server inside the shell. You should also launch your editor from inside the nix-shell.
 
 ### \*BSD
 
@@ -107,22 +117,12 @@ With brew, install the core dependencies:
 
 **Status:** We welcome testing but do not officially support Windows.
 
+A way to get the project built on Windows is by installing Windows Subsystem for Linux (WSL), install Nix in it and then follow the Nix setup from above.
+
 In the past, we have had only partial success running on Windows. We know that
 our development database scripts won't work on Windows because they use UNIX
 sockets. We welcome any patches, feedback, or Postgres-on-Windows help to get an
 alternative working.
-
-## Get the Snowdrift code
-
-Our primary repository is at [GitLab], and our instructions assume that repository. For convenience and redundancy, we also mirror at [GitHub].
-
-From within your preferred directory, get the code with:
-
-    git clone https://gitlab.com/snowdrift/snowdrift.git
-
-Change to the new snowdrift directory:
-
-    cd snowdrift
 
 ## Run the tests
 
