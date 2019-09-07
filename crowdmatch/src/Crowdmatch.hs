@@ -203,7 +203,7 @@ data CrowdmatchI return where
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
-    CrowdmatchI Day :: CrowdmatchI ()
+    CrowdmatchI :: Day -> CrowdmatchI ()
     MakePaymentsI :: StripeActions -> CrowdmatchI ()
 
 -- | Executing the actions
