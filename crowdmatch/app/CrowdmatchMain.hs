@@ -11,7 +11,8 @@ import Text.Read (readMaybe)
 
 usage :: IO a -- exits
 usage = do
-  putStrLn "usage: crowdmatch [YEAR MONTH]\ne.g. crowdmatch 2019 09"
+  putStrLn "usage: crowdmatch [YEAR MONTH]"
+  putStrLn "e.g. crowdmatch 2019 09"
   exitWith $ ExitFailure 2
 
 parseDate :: String -> String -> Maybe Day
