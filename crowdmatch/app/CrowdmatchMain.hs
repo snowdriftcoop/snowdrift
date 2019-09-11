@@ -11,23 +11,24 @@ import Text.Read (readMaybe)
 
 usage :: IO a -- exits
 usage = do
-  putStrLn "usage: crowdmatch [YEAR MONTH]"
-  putStrLn "e.g. crowdmatch 2019 09"
+  putStrLn "usage: crowdmatch [YEAR MONTH DAY]"
+  putStrLn "e.g. crowdmatch 2019 09 01"
   exitWith $ ExitFailure 2
 
-parseDate :: String -> String -> Maybe Day
-parseDate y m = do
+parseDate :: String -> String -> String -> Maybe Day
+parseDate y m d = do
   year <- readMaybe y
   month <- readMaybe m
-  return $ fromGregorian year month 1
+  day <- readMaybe d
+  return $ fromGregorian year month day
 
 -- NB! The string passed to runPersistKeter must match the APPNAME used in
 -- keter.sh to deploy the app. Must fix.
 main :: IO ()
 main = do
   args <- getArgs
-  d <- case args of
+  day <- case args of
     [] -> utctDay <$> getCurrentTime
-    y : m : [] -> maybe usage return $ parseDate y m
+    y : m : d : [] -> maybe usage return $ parseDate y m d
     _ -> usage
-  runPersistKeter "SnowdriftReboot" $ crowdmatch d
+  runPersistKeter "SnowdriftReboot" $ crowdmatch day
