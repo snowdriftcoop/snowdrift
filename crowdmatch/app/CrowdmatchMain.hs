@@ -3,17 +3,30 @@ module Main (main) where
 
 import Crowdmatch
 import RunPersist
-import Data.Time (utctDay, getCurrentTime)
---- Import for a crowdmatch on a particular day, see comment below
--- import Data.Time (fromGregorian)
+
+import Data.Time (Day, fromGregorian, getCurrentTime, utctDay)
+import System.Environment (getArgs)
+import System.Exit (ExitCode(ExitFailure), exitWith)
+import Text.Read (readMaybe)
+
+usage :: IO a -- exits
+usage = do
+  putStrLn "usage: crowdmatch [YEAR MONTH]\ne.g. crowdmatch 2019 09"
+  exitWith $ ExitFailure 2
+
+parseDate :: String -> String -> Maybe Day
+parseDate y m = do
+  year <- readMaybe y
+  month <- readMaybe m
+  return $ fromGregorian year month 1
 
 -- NB! The string passed to runPersistKeter must match the APPNAME used in
 -- keter.sh to deploy the app. Must fix.
 main :: IO ()
 main = do
-  --- Replace the line below with this one in order to manually specify the date
-  --- on which the crowdmatch is to be run.  Otherwise (that's what the line
-  --- below does), the current day (when you run the code) is used.
-  -- d <- return $ fromGregorian 2019 09 01
-  d <- utctDay <$> getCurrentTime
+  args <- getArgs
+  d <- case args of
+    [] -> utctDay <$> getCurrentTime
+    y : m : [] -> maybe usage return $ parseDate y m
+    _ -> usage
   runPersistKeter "SnowdriftReboot" $ crowdmatch d
