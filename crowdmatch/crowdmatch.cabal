@@ -104,6 +104,7 @@ executable crowdmatch
         base
         , run-persist
         , crowdmatch
+        , time
 
 -- -- }}}1
 -- vim: fdm=marker :
