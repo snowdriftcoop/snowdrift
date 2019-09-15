@@ -64,7 +64,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function (on)
 import Data.Int (Int32)
 import Data.Ratio
-import Data.Time (UTCTime, getCurrentTime)
+import Data.Time (UTCTime(..), getCurrentTime)
 import Data.Time.Calendar (Day)
 import Database.Persist
 import Database.Persist.Sql (SqlPersistT)
@@ -299,7 +299,9 @@ runMech (FetchPatronI pptr) = do
 --
 
 runMech (CrowdmatchI date) = do
-    active <- Skeleton.activePatrons
+    -- Active patrons are those who have pledged before midnight (the 0 in the
+    -- line below) of the crowdmatch day
+    active <- Skeleton.activePatrons (UTCTime date 0)
     let projectValue = fromIntegral (length active)
     mapM_
         (recordCrowdmatch (CrowdmatchDay date) (DonationUnits projectValue))

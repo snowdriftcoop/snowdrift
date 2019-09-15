@@ -13,6 +13,7 @@ module Crowdmatch.Skeleton where
 import Control.Error hiding (isNothing)
 import Control.Lens ((%~), _1, _2)
 import Control.Monad.IO.Class (MonadIO)
+import Data.Time (UTCTime)
 import Database.Esqueleto
 
 import Crowdmatch.Model
@@ -32,15 +33,15 @@ projectDonationHistory =
     time = (^. DonationHistoryTime)
     total = sum_ . (^. DonationHistoryAmount)
 
--- | Patrons actively pledged to Snowdrift
-activePatrons :: MonadIO m => SqlPersistT m [Entity Patron]
-activePatrons =
+-- | Patrons actively pledged to Snowdrift since before a given time
+activePatrons :: MonadIO m => UTCTime -> SqlPersistT m [Entity Patron]
+activePatrons t =
     select $
     from $ \p -> do
         where_ (activePatron p)
         return p
   where
-    activePatron = not_ . isNothing . (^. PatronPledgeSince)
+    activePatron p = p ^. PatronPledgeSince <. just (val t)
 
 -- | Patrons with outstanding donation balances.
 patronsReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
