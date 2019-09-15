@@ -10,7 +10,7 @@
 -- in this module (alternate name: Model.Sequestro!)
 module Crowdmatch.Skeleton where
 
-import Control.Error hiding (isNothing)
+import Control.Error hiding (isNothing, just)
 import Control.Lens ((%~), _1, _2)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Time (UTCTime)
