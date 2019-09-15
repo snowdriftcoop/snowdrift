@@ -242,6 +242,7 @@ unitTests runner = describe "unit tests" $ do
         it "includes crowdmatch history" $ do
             let pid = 90
             now <- liftIO getCurrentTime
+            let tomorrow = succ $ utctDay now
             p <- runner $ do
                 insert_
                     (Model.Patron
@@ -250,7 +251,7 @@ unitTests runner = describe "unit tests" $ do
                         (Just (PaymentToken (CustomerId "")))
                         0
                         (Just now))
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 fetchPatron (HarnessUser pid)
             length (patronCrowdmatches p) `shouldBe` 1
             (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay (utctDay now)
@@ -258,6 +259,7 @@ unitTests runner = describe "unit tests" $ do
             let thunor = 0
                 woden = 1
             now <- liftIO getCurrentTime
+            let tomorrow = succ $ utctDay now
             runner $ for_ [thunor, woden] (\p ->
                 insert_
                     (Model.Patron
@@ -267,11 +269,11 @@ unitTests runner = describe "unit tests" $ do
                         0
                         (Just now)))
             (thunor', woden') <- runner $ do
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 deletePledge (HarnessUser woden)
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 storePledge (HarnessUser woden)
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 t <- fetchPatron (HarnessUser thunor)
                 w <- fetchPatron (HarnessUser woden)
                 return (t,w)
@@ -334,7 +336,9 @@ unitTests runner = describe "unit tests" $ do
             projectMonthlyIncome <$> fetchProject
         val `shouldBe` Cents (100 * 1000)
     describe "crowdmatch event" $ do
-        let mkPatron i =
+        now <- runIO getCurrentTime
+        let tomorrow = succ $ utctDay now
+            mkPatron i =
                 void (storePaymentToken dummyStripe (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
@@ -346,29 +350,38 @@ unitTests runner = describe "unit tests" $ do
                 mkPledge 2
                 mkPledge 3
                 deletePledge (HarnessUser 3)
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
+        it "only counts pledges made before the crowdmatch date" $ do
+            val <- runner $ do
+                -- The `mkPledge` creates a pledge with the current timestamp,
+                -- which cannot be *before* the current day, so it will not be
+                -- counted.
+                mkPledge 1
+                crowdmatch $ utctDay now
+                projectDonationReceivable <$> fetchProject
+            val `shouldBe` DonationUnits 0
         it "looks quadratic; 3 patrons = 9 DUs" $ do -- DU = Donation Unit
             val <- runner $ do
                 mapM_ mkPledge [1..3]
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 9
         it "sums over multiple events" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 storePledge (HarnessUser 1)
                 -- Now 1 is also active
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 5
         it "creates history" $ do
             u :: [Entity Model.CrowdmatchHistory] <- runner $ do
                 mkPledge 1
-                crowdmatch $ utctDay now
+                crowdmatch tomorrow
                 selectList [] []
             length u `shouldBe` 1
     describe "make-payments event" $ do
