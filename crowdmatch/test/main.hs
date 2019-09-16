@@ -254,7 +254,7 @@ unitTests runner = describe "unit tests" $ do
                 crowdmatch tomorrow
                 fetchPatron (HarnessUser pid)
             length (patronCrowdmatches p) `shouldBe` 1
-            (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay (utctDay now)
+            (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay tomorrow
         it "includes only relevant crowdmatch history" $ do
             let thunor = 0
                 woden = 1
