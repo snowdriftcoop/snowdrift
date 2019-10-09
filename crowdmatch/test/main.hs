@@ -343,13 +343,19 @@ unitTests runner = describe "unit tests" $ do
             mkPledge i = do
                 mkPatron i
                 storePledge (HarnessUser i)
-        -- Three patrons, one active -> 0.01 payable from the patron
-        it "only counts active patrons" $ do
+        -- Two patrons, one active -> 0.01 payable from the patron
+        it "only counts patrons who have pledged" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                mkPledge 3
-                deletePledge (HarnessUser 3)
+                crowdmatch tomorrow
+                projectDonationReceivable <$> fetchProject
+            val `shouldBe` DonationUnits 1
+        it "only counts patrons who have not unpledged" $ do
+            val <- runner $ do
+                mkPledge 1
+                mkPledge 2
+                deletePledge (HarnessUser 2)
                 crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
