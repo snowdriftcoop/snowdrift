@@ -5,7 +5,7 @@ default:
   image: chreekat2/snowdrift-ci:0.0.1
 
 variables:
-  SD_STACK_ARGS: "--stack-root $PWD/stack-root"
+  SD_STACK_ARGS: "--stack-root ${CI_BUILDS_DIR}/stack-root"
 
 stages:
   - deps
