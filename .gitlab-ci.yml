@@ -7,6 +7,7 @@ default:
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
   LANG: "en_US.UTF-8"
+  LC_ALL: "en_US.UTF-8"
 
 stages:
   - deps
