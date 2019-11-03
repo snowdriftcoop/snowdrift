@@ -29,6 +29,9 @@ deps:
   artifacts:
     paths:
       - .stack-work
+  only:
+    changes:
+      - stack.yaml
 
 # Build for test
 test-build:
