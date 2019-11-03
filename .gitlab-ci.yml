@@ -2,7 +2,7 @@
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
 default:
-  image: chreekat2/snowdrift-ci:0.0.3
+  image: chreekat2/snowdrift-ci:0.0.4
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
