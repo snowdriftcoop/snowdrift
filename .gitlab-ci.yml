@@ -5,7 +5,7 @@ default:
   image: ubuntu:16.04
 
 variables:
-  SD_STACK_ARGS: "--stack-root $(pwd)/stack-root"
+  SD_STACK_ARGS: "--stack-root $PWD/stack-root"
 
 stages:
   - deps
