@@ -6,7 +6,7 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
-  PGUSER: "postgres"
+  SD_PGUSER: "postgres"
 
 stages:
   - deps
@@ -44,7 +44,6 @@ test-build:
 deploy-build:
   stage: build
   script:
-    - adduser postgres
     - DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
   allow_failure: true

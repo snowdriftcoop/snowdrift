@@ -1,5 +1,6 @@
 FROM ubuntu:16.04
 
+# The default is POSIX, which doesn't work for us
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
