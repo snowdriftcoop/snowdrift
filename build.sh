@@ -25,6 +25,11 @@ usage="
 #  Figure out project root from this script's location and make it absolute:
 projRoot=$(cd $(dirname "$0"); git rev-parse --show-toplevel)
 
+# Project-specific override
+stack () {
+    command stack ${SD_STACK_ARGS?-} "$@"
+}
+
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
 export PGDATABASE="snowdrift_development"

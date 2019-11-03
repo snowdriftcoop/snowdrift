@@ -1,6 +1,12 @@
 # This file's semantics are documented at
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
+default:
+  image: docker:16.04
+
+environment:
+  SD_STACK_ARGS: "--stack-root $(pwd)/stack-root"
+
 stages:
   - deps
   - build
@@ -10,51 +16,47 @@ stages:
 
 cache:
   paths:
-    - .stack-work
-    - .stack-test
-    - "*/.stack-work" # subprojects (crowdmatch)
-    - website/.shakespeare-sass
-    - .stack-deploy
-    - SnowdriftReboot.keter
+    ./stack-root
 
-# Don't even try to run for forks. It will fail anyway, because the sole
-# runner is protected. This prevents an ugly stalled CI experience.
-.only_parent: &only_parent
-  only:
-    - branches@sd/snowdrift
+    #- .stack-work
+    #- .stack-test
+    #- "*/.stack-work" # subprojects (crowdmatch)
+    #- website/.shakespeare-sass
+    #- .stack-deploy
+    #- SnowdriftReboot.keter
 
 deps:
-  <<: *only_parent
   stage: deps
-  script:
-    # I did these steps manually on the system, since I'm using the shell
-    # runner for now.
-    #- apt-get --quiet update
-    #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
-    #- curl -sSL https://get.haskellstack.org/ | sh
-    "stack test --no-run-tests --only-dependencies --install-ghc"
+  script: ./ci-support/deps.sh
 
 # Build for test
 test-build:
-  <<: *only_parent
   stage: build
-  script:
-    - "touch website/src/Settings/StaticFiles.hs"
-    - "stack build"
+  script: ./ci-support/build-tests.sh
+  artifacts:
+    paths:
+      - ./.stack-test
 
 test:
-  <<: *only_parent
   stage: test
-  script: "./build.sh test"
+  script: ./build.sh test
+  artifacts:
+    paths:
+      - ./.stack-test
+  dependencies:
+    - test-build
+
 
 # Build for deploy, using --pedantic
 deploy-build:
-  <<: *only_parent
   stage: deploy-build
   script:
     - DEPLOY=false ./s/deploy
   # Don't force pedantry on people.
   allow_failure: true
+  artifacts:
+    paths:
+      - ./.stack-deploy
 
 deploy:
   stage: deploy
@@ -74,3 +76,4 @@ deploy:
   environment:
     name: production
     url: https://snowdrift.coop
+  dependencies: deploy-build
