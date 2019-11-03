@@ -31,7 +31,7 @@ deps:
   script: stack ${SD_STACK_ARGS} test --only-dependencies
   cache:
     paths: [stack-root]
-    policy: push-pull
+    policy: pull-push
   artifacts:
     paths:
       - .stack-work
@@ -54,7 +54,8 @@ deploy-build:
   # Don't force pedantry on people.
   allow_failure: true
   artifacts:
-    - Snowdrift.keter
+    paths:
+      - Snowdrift.keter
 
 test:
   stage: test

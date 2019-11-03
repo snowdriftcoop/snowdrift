@@ -76,7 +76,7 @@ main () {
             with_db snowdrift_test stack test "$@"
             ;;
         cleandb)
-            ${dbmake[*]} clean
+            dbmake clean
             ;;
         *)
             echo "$usage"
