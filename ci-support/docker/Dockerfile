@@ -11,6 +11,7 @@ RUN apt-get -qq update &&\
         libgmp-dev \
         libpq-dev \
         postgresql \
-        sudo
+        sudo \
+        upx-ucl
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
