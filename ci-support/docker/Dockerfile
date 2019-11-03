@@ -15,3 +15,9 @@ RUN apt-get -qq update &&\
         upx-ucl
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
+
+# It might make sense to put this above the stack installation, but I don't feel
+# like waiting for a rebuild right now :|
+RUN useradd snowrunner
+
+USER snowrunner

@@ -42,7 +42,7 @@ stack () {
 }
 
 dbmake () {
-    stack exec -- ${SD_PGUSER+sudo -u $SD_PGUSER} make -f db.makefile "$@"
+    stack exec -- make -f db.makefile "$@"
 }
 
 
