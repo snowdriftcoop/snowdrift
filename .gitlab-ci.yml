@@ -2,7 +2,7 @@
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
 default:
-  image: ubuntu:16.04
+  image: chreekat2/snowdrift-ci:0.0.1
 
 variables:
   SD_STACK_ARGS: "--stack-root $PWD/stack-root"
@@ -27,12 +27,14 @@ cache:
 
 deps:
   stage: deps
-  script: ./ci-support/deps.sh
+  script: stack ${SD_STACK_ARGS} test --only-dependencies
 
 # Build for test
 test-build:
   stage: build
-  script: ./ci-support/build-tests.sh
+  script:
+    - touch website/src/Settings/StaticFiles.hs
+    - stack ${SD_STACK_ARGS} test --no-run-tests --work-dir .stack-test
   artifacts:
     paths:
       - ./.stack-test
