@@ -42,7 +42,7 @@ stack () {
 }
 
 dbmake () {
-    stack exec -- make -f db.makefile "$@"
+    ${DBUSER+sudo -u $DBUSER} stack exec -- make -f db.makefile "$@"
 }
 
 

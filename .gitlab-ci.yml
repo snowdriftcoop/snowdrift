@@ -2,12 +2,11 @@
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
 default:
-  image: chreekat2/snowdrift-ci:0.0.1
+  image: chreekat2/snowdrift-ci:0.0.2
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
-  LANG: "en_US.UTF-8"
-  LC_ALL: "en_US.UTF-8"
+  PGUSER: "postgres"
 
 stages:
   - deps
@@ -45,7 +44,8 @@ test-build:
 deploy-build:
   stage: build
   script:
-    - DEPLOY=false ./s/deploy
+    - adduser postgres
+    - DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
   allow_failure: true
   artifacts:
@@ -63,7 +63,8 @@ test:
 deploy:
   stage: deploy
   script:
-    - BUILD=false ./s/deploy
+    - adduser postgres
+    - BUILD=false ./ci-support/deploy
   only:
     # Only deploy from master.
     #
