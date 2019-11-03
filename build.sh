@@ -37,7 +37,7 @@ export PGDATABASE="snowdrift_development"
 # Using stack ensures postgres exists for Nix users, thanks to stack's Nix
 # support.
 dbmake () {
-    stack exec -- make -s -C "$projRoot" -f db.makefile "$@"
+    ${SD_PGUSER+sudo -u $SD_PGUSER} stack exec -- make -C "$projRoot" -f db.makefile "$@"
 }
 
 run_devel () {
