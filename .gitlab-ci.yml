@@ -6,6 +6,7 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
+  LANG: "en_US.UTF-8"
 
 stages:
   - deps
@@ -18,13 +19,6 @@ cache:
   paths: [stack-root]
   policy: pull
 
-
-    #- .stack-work
-    #- .stack-test
-    #- "*/.stack-work" # subprojects (crowdmatch)
-    #- website/.shakespeare-sass
-    #- .stack-deploy
-    #- SnowdriftReboot.keter
 
 deps:
   stage: deps
