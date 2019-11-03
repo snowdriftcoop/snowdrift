@@ -18,9 +18,6 @@ cache:
   paths: [stack-root]
   policy: pull
 
-artifacts:
-  paths:
-    - .stack-work
 
     #- .stack-work
     #- .stack-test
@@ -35,6 +32,9 @@ deps:
   cache:
     paths: [stack-root]
     policy: push-pull
+  artifacts:
+    paths:
+      - .stack-work
 
 # Build for test
 test-build:
@@ -42,12 +42,9 @@ test-build:
   script:
     - touch website/src/Settings/StaticFiles.hs
     - stack ${SD_STACK_ARGS} test --no-run-tests
-
-test:
-  stage: test
-  script: ./build.sh test
-  dependencies: [test-build]
-
+  artifacts:
+    paths:
+      - .stack-work
 
 # Build for deploy, using --pedantic
 deploy-build:
@@ -58,6 +55,14 @@ deploy-build:
   allow_failure: true
   artifacts:
     - Snowdrift.keter
+
+test:
+  stage: test
+  script: ./build.sh test
+  dependencies: [test-build]
+  artifacts:
+    paths:
+      - .stack-work
 
 deploy:
   stage: deploy
