@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 # Project-specific override
 stack () {
-    command stack ${SD_STACK_ARGS?-} --workdir .stack-deploy "$@"
+    command stack ${SD_STACK_ARGS?-} --work-dir .stack-deploy "$@"
 }
 
 ## System setup
