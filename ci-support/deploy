@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-DEBUG=false
-DEBUG=${KETER_DEBUG+true}
-
-if $DEBUG; then set -x; fi
-
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
 #
@@ -14,16 +9,20 @@ if $DEBUG; then set -x; fi
 # Options
 #
 
-opt_build=${BUILD:=true}
-opt_deploy=${DEPLOY:=true}
+opt_debug=${KETER_DEBUG:-false}
+opt_build=${BUILD:-true}
+opt_deploy=${DEPLOY:-true}
+
 # NB! Whatever name is used here must also be used in the 'crowdmatch' app
 # (crowdmatch/app/crowdmatch.hs), where it is used to pull in postgres
 # configuration. Must fix.
-opt_appname=${APPNAME:=SnowdriftReboot}
+opt_appname=${APPNAME:-SnowdriftReboot}
 
 #
 #
 #
+
+if $opt_debug; then set -x; fi
 
 install_path=./website/dist/bin
 
@@ -99,11 +98,11 @@ main () {
             chmod 600 $keyfile
 
             # Turn off -x to dump secrets
-            if $DEBUG; then set +x; fi
+            if $opt_debug; then set +x; fi
             echo "$PROD_SSH_KEY" > $keyfile
             echo "$PROD_HOST_KEY" > $host_keyfile
             # Turn it back on
-            if $DEBUG; then
+            if $opt_debug; then
                 wc $keyfile $host_keyfile
                 set -x
             fi
