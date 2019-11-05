@@ -79,7 +79,7 @@ main () {
         dbmake
         stack \
             --local-bin-path $install_path \
-            install \
+            install --test \
             --flag Snowdrift:-dev \
             --pedantic
         ) # dbmake stop

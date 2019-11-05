@@ -6,12 +6,17 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
+  POSTGRES_DB: snowdrift_ci
+  POSTGRES_USER: snowman
+  POSTGRES_PASSWORD: "it's cold outside"
+  # Annoying but true
+  PGDATABASE: snowdrift_ci
+  PGUSER: snowman
+  PGPASSWORD: "it's cold outside"
 
 stages:
   - deps
-  - build
-  - test
-  - deploy-build
+  - build and test
   - deploy
 
 cache:
@@ -32,19 +37,16 @@ deps:
     changes:
       - stack.yaml
 
-# Build for test
-test-build:
-  stage: build
+build and test:
+  stage: build and test
+  services:
+    - postgres:9.3
   script:
-    - touch website/src/Settings/StaticFiles.hs
-    - stack ${SD_STACK_ARGS} test --no-run-tests
-  artifacts:
-    paths:
-      - .stack-work
+    - stack ${SD_STACK_ARGS} test
 
 # Build for deploy, using --pedantic
 deploy-build:
-  stage: build
+  stage: build and test
   services:
     - postgres:9.3
   script:
@@ -53,24 +55,14 @@ deploy-build:
   allow_failure: true
   artifacts:
     paths:
-      - Snowdrift.keter
-
-test:
-  stage: test
-  services:
-    - postgres:9.3
-  script:
-    - touch website/src/Settings/StaticFiles.hs
-    - stack ${SD_STACK_ARGS} test
-  dependencies: [test-build]
-  artifacts:
-    paths:
-      - .stack-work
+      - SnowdriftReboot.keter
 
 deploy:
   stage: deploy
+  cache:
+    paths: []
+  dependencies: [deploy-build]
   script:
-    - adduser postgres
     - BUILD=false ./ci-support/deploy
   only:
     # Only deploy from master.
@@ -86,4 +78,3 @@ deploy:
   environment:
     name: production
     url: https://snowdrift.coop
-  dependencies: [deploy-build]
