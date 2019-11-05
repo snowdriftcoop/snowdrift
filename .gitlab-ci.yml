@@ -45,6 +45,8 @@ test-build:
 # Build for deploy, using --pedantic
 deploy-build:
   stage: build
+  services:
+    - postgres:9.3
   script:
     - DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
@@ -55,6 +57,8 @@ deploy-build:
 
 test:
   stage: test
+  services:
+    - postgres:9.3
   script:
     - touch website/src/Settings/StaticFiles.hs
     - stack ${SD_STACK_ARGS} test
