@@ -12,6 +12,8 @@ set -Eeuo pipefail
 opt_debug=${KETER_DEBUG:-false}
 opt_build=${BUILD:-true}
 opt_deploy=${DEPLOY:-true}
+# Assume the DB is already available
+opt_setup_db=${SETUP_DB:-false}
 
 # NB! Whatever name is used here must also be used in the 'crowdmatch' app
 # (crowdmatch/app/crowdmatch.hs), where it is used to pull in postgres
@@ -32,7 +34,9 @@ contents=(
     dist
 )
 
-export PGDATABASE=snowdrift_deploy
+if $opt_setup_db; then
+    export PGDATABASE=snowdrift_deploy
+fi
 
 
 # Project-specific override
@@ -41,7 +45,11 @@ stack () {
 }
 
 dbmake () {
-    stack exec -- make -f db.makefile "$@"
+    if $opt_setup_db; then
+        stack exec -- make -f db.makefile "$@"
+    else
+        echo "Skipping DB step"
+    fi
 }
 
 
