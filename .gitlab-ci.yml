@@ -55,7 +55,9 @@ deploy-build:
 
 test:
   stage: test
-  script: ./build.sh test
+  script:
+    - touch website/src/Settings/StaticFiles.hs
+    - stack ${SD_STACK_ARGS} test
   dependencies: [test-build]
   artifacts:
     paths:
