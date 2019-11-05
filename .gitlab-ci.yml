@@ -13,6 +13,8 @@ variables:
   PGDATABASE: snowdrift_ci
   PGUSER: snowman
   PGPASSWORD: "it's cold outside"
+  # (Not annoying - this one is fine)
+  PGHOST: postgres
 
 stages:
   - deps
