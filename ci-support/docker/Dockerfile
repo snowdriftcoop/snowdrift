@@ -10,14 +10,12 @@ RUN apt-get -qq update &&\
         curl \
         libgmp-dev \
         libpq-dev \
-        postgresql \
         sudo \
         upx-ucl
 
+# If we don't install these, stack does -- and it doesn't use
+# --no-install-recommends.
+RUN apt-get -qq install --no-install-recommends \
+        g++ gcc libffi-dev make xz-utils git netbase
+
 RUN curl -sSL https://get.haskellstack.org/ | sh
-
-# It might make sense to put this above the stack installation, but I don't feel
-# like waiting for a rebuild right now :|
-RUN useradd snowrunner
-
-USER snowrunner
