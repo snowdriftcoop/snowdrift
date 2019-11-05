@@ -13,8 +13,12 @@ variables:
   PGDATABASE: snowdrift_ci
   PGUSER: snowman
   PGPASSWORD: "it's cold outside"
-  # (Not annoying - this one is fine)
-  PGHOST: postgres
+
+.with_database: &with_database
+  services:
+    - postgres:9.3
+  variables:
+    PGHOST: postgres
 
 stages:
   - deps
@@ -41,16 +45,14 @@ deps:
 
 build and test:
   stage: build and test
-  services:
-    - postgres:9.3
+  <<: *with_database
   script:
     - stack ${SD_STACK_ARGS} test
 
 # Build for deploy, using --pedantic
 deploy-build:
   stage: build and test
-  services:
-    - postgres:9.3
+  <<: *with_database
   script:
     - DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
