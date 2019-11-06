@@ -33,7 +33,7 @@ deps:
 
 build and test:
   stage: build and test
-  services: [postgres:9.3]
+  services: ["postgres:9.3"]
   script:
     - apt-get update -qq
     - apt-get install -qq postgresql
@@ -43,7 +43,7 @@ build and test:
 # Build for deploy, using --pedantic
 deploy-build:
   stage: build and test
-  services: [postgres:9.3]
+  services: ["postgres:9.3"]
   script:
     - PGHOST=postgres DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
