@@ -37,5 +37,5 @@ build and test:
   script:
     - apt-get update -qq
     - apt-get install -qq postgresql
-    - psql -U postgres -h postgres "select 'Hello';"
-    # PGHOST=postgres stack ${SD_STACK_ARGS} test
+    - psql -U postgres -h postgres -c "select 'Hello';"
+    - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test
