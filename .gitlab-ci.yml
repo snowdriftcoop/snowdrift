@@ -6,19 +6,7 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
-  POSTGRES_DB: snowdrift_ci
-  POSTGRES_USER: snowman
-  POSTGRES_PASSWORD: "it's cold outside"
-  # Annoying but true
-  PGDATABASE: snowdrift_ci
-  PGUSER: snowman
-  PGPASSWORD: "it's cold outside"
 
-.with_database: &with_database
-  services:
-    - postgres:9.3
-  variables:
-    PGHOST: postgres
 
 stages:
   - deps
@@ -45,16 +33,16 @@ deps:
 
 build and test:
   stage: build and test
-  <<: *with_database
+  services: [postgres:9.3]
   script:
-    - stack ${SD_STACK_ARGS} test
+    - PGHOST=postgres stack ${SD_STACK_ARGS} test
 
 # Build for deploy, using --pedantic
 deploy-build:
   stage: build and test
-  <<: *with_database
+  services: [postgres:9.3]
   script:
-    - DEPLOY=false ./ci-support/deploy
+    - PGHOST=postgres DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
   allow_failure: true
   artifacts:
