@@ -6,7 +6,7 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
-  POSTGRES_DATABASE: snowdrift_test
+  POSTGRES_DB: snowdrift_test
 
 
 stages:
