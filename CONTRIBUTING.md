@@ -281,7 +281,7 @@ here are some resources (nearly all fully-FLO):
 
 *   Git resources:
 
-    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4&ab)
+    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4)
       is an excellent video introduction to the core commands and concepts of
       Git. Consider making a new folder like `git-test` in your `Home` directory
       and following along with the commands in the video if you really want to
