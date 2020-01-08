@@ -223,6 +223,16 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
+## Building for production / deployment
+
+We use Keter (Yesod's deploy tool) to build and deploy the full Snowdrift.coop website.
+The relevant script is at [s/deploy](s/deploy).
+By default, it does all the building and deploying at once,
+and this only works on a system that has permissions to update the live site.
+
+To build the production binary without deploying, run `DEPLOY=false ./s/deploy`
+The build binary SnowdriftReboot.keter will be in the root directory.
+
 ## Getting help, learning, contributing etc.
 
 We welcome any and all feedback on these build instructions, on the site
