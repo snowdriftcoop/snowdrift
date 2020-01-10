@@ -25,32 +25,25 @@ usage="
 #  Figure out project root from this script's location and make it absolute:
 projRoot=$(cd $(dirname "$0"); git rev-parse --show-toplevel)
 
-# Project-specific override
-stack () {
-    command stack ${SD_STACK_ARGS?-} "$@"
-}
-
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
 export PGDATABASE="snowdrift_development"
 
 # Using stack ensures postgres exists for Nix users, thanks to stack's Nix
 # support.
-dbmake () {
-    stack exec -- make -C "$projRoot" -f db.makefile "$@"
-}
+dbmake=(stack exec -- make -s -C "$projRoot" -f db.makefile)
 
 run_devel () {
     cd "$projRoot"/website
-    stack build yesod-bin
-    stack exec yesod devel
+    stack --work-dir .stack-devel build yesod-bin
+    stack --work-dir .stack-devel exec yesod devel
 }
 
 with_db () {
     # Shut down the database on exit
-    ( trap "dbmake stop" EXIT
+    ( trap "${dbmake[*]} stop" EXIT
     # . . . and start it now
-    PGDATABASE="$1" dbmake
+    PGDATABASE="$1" ${dbmake[*]}
     shift
     "$@"
     ) # DB shutdown happens now
@@ -73,10 +66,10 @@ main () {
             ;;
         test)
             touch website/src/Settings/StaticFiles.hs
-            with_db snowdrift_test stack test "$@"
+            with_db snowdrift_test stack --work-dir .stack-test test "$@"
             ;;
         cleandb)
-            dbmake clean
+            ${dbmake[*]} clean
             ;;
         *)
             echo "$usage"
