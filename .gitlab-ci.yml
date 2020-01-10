@@ -6,6 +6,7 @@ default:
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
+  POSTGRES_DB: snowdrift_test
 
 
 stages:
@@ -38,7 +39,7 @@ build and test:
   services:
     - postgres:9.3
   script:
-    - PGHOST=postgres stack ${SD_STACK_ARGS} test
+    - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
 # Build for deploy, using --pedantic
 deploy-build:
