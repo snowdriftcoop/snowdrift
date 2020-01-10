@@ -14,7 +14,8 @@ stages:
   - deploy
 
 cache:
-  paths: [stack-root]
+  paths:
+    - stack-root
   policy: pull
 
 
@@ -22,7 +23,8 @@ deps:
   stage: deps
   script: stack ${SD_STACK_ARGS} test --only-dependencies
   cache:
-    paths: [stack-root]
+    paths: 
+      - stack-root
     policy: pull-push
   artifacts:
     paths:
@@ -33,14 +35,16 @@ deps:
 
 build and test:
   stage: build and test
-  services: [postgres:9.3]
+  services:
+    - postgres:9.3
   script:
     - PGHOST=postgres stack ${SD_STACK_ARGS} test
 
 # Build for deploy, using --pedantic
 deploy-build:
   stage: build and test
-  services: [postgres:9.3]
+  services:
+    - postgres:9.3
   script:
     - PGHOST=postgres DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
@@ -53,7 +57,8 @@ deploy:
   stage: deploy
   cache:
     paths: []
-  dependencies: [deploy-build]
+  dependencies:
+    - deploy-build
   script:
     - BUILD=false ./ci-support/deploy
   only:
