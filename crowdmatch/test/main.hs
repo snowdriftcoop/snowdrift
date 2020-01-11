@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -Wno-missing-fields #-}
 
 import Control.Concurrent (newEmptyMVar, newMVar, MVar, modifyMVar_)
-import Control.Exception.Safe (bracket)
+import Control.Exception.Safe (bracket, catch)
 import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
@@ -431,7 +431,7 @@ withTestDatabase = bracket setup' teardown' . const
     db = "crowdmatch_test"
     ts = "crowdmatch_tests"
     shmLoc = "/dev/shm/crowdmatch_test_tablespace"
-    setup' = do
+    setup' = (do
         createDirectoryIfMissing True shmLoc
         setEnv "PGDATABASE" "template1"
         -- Postgres requires separate queries here
@@ -447,11 +447,20 @@ withTestDatabase = bracket setup' teardown' . const
                 <> " tablespace "
                 <> ts)
         -- Used for the tests
-        setEnv "PGDATABASE" (B.unpack (PG.fromQuery db))
-    teardown' = const $ do
+        setEnv "PGDATABASE" (B.unpack (PG.fromQuery db)))
+        `catch` (\ (ex :: PG.SqlError) -> do
+            putStrLn "Setting up in-memory database failed:"
+            print ex
+            putStrLn "Falling back to PGDATABASE=snowdrift_test."
+            setEnv "PGDATABASE" "snowdrift_test")
+    teardown' = const $ (do
         setEnv "PGDATABASE" "template1"
         pgExecute_ ("drop database " <> db)
-        pgExecute_ ("drop tablespace " <> ts)
+        pgExecute_ ("drop tablespace " <> ts))
+        `catch` (\ (ex :: PG.SqlError) -> do
+            putStrLn "Tearing down in-memory database failed:"
+            print ex
+            putStrLn "Ignoring failure.")
 
 prop_randomHistory :: Runner -> PropertyM IO ()
 prop_randomHistory runner = do
