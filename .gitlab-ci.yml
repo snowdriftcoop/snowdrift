@@ -47,7 +47,7 @@ deploy-build:
   services:
     - postgres:9.3
   script:
-    - PGHOST=postgres DEPLOY=false ./ci-support/deploy
+    - PGUSER=postgres PGHOST=postgres DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
   allow_failure: true
   artifacts:
