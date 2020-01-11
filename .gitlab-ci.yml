@@ -1,65 +1,67 @@
 # This file's semantics are documented at
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
+default:
+  image: snowdriftcoop/snowdrift-ci:0.0.6
+
+variables:
+  SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
+  POSTGRES_DB: snowdrift_test
+
+
 stages:
   - deps
-  - build
-  - test
-  - deploy-build
+  - build and test
   - deploy
 
 cache:
   paths:
-    - .stack-work
-    - .stack-test
-    - "*/.stack-work" # subprojects (crowdmatch)
-    - website/.shakespeare-sass
-    - .stack-deploy
-    - SnowdriftReboot.keter
+    - stack-root
+  policy: pull
 
-# Don't even try to run for forks. It will fail anyway, because the sole
-# runner is protected. This prevents an ugly stalled CI experience.
-.only_parent: &only_parent
-  only:
-    - branches@sd/snowdrift
 
 deps:
-  <<: *only_parent
   stage: deps
-  script:
-    # I did these steps manually on the system, since I'm using the shell
-    # runner for now.
-    #- apt-get --quiet update
-    #- apt-get --quiet --assume-yes install curl postgresql libgmp-dev libpq-dev
-    #- curl -sSL https://get.haskellstack.org/ | sh
-    "stack test --no-run-tests --only-dependencies --install-ghc"
+  script: stack ${SD_STACK_ARGS} test --only-dependencies
+  cache:
+    paths: 
+      - stack-root
+    policy: pull-push
+  artifacts:
+    paths:
+      - .stack-work
+  only:
+    changes:
+      - stack.yaml
 
-# Build for test
-test-build:
-  <<: *only_parent
-  stage: build
+build and test:
+  stage: build and test
+  services:
+    - postgres:9.3
   script:
-    - "touch website/src/Settings/StaticFiles.hs"
-    - "stack build"
-
-test:
-  <<: *only_parent
-  stage: test
-  script: "./build.sh test"
+    - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
 # Build for deploy, using --pedantic
 deploy-build:
-  <<: *only_parent
-  stage: deploy-build
+  stage: build and test
+  services:
+    - postgres:9.3
   script:
-    - DEPLOY=false ./s/deploy
+    - PGUSER=postgres PGHOST=postgres DEPLOY=false ./ci-support/deploy
   # Don't force pedantry on people.
   allow_failure: true
+  artifacts:
+    paths:
+      - SnowdriftReboot.keter
 
 deploy:
   stage: deploy
+  cache:
+    paths: []
+  dependencies:
+    - deploy-build
   script:
-    - BUILD=false ./s/deploy
+    - BUILD=false ./ci-support/deploy
   only:
     # Only deploy from master.
     #

@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-DEBUG=false
-DEBUG=${KETER_DEBUG+true}
-
-if $DEBUG; then set -x; fi
-
 #
 # keter.sh: Like "yesod keter", but works with our split-package project.
 #
@@ -14,16 +9,22 @@ if $DEBUG; then set -x; fi
 # Options
 #
 
-opt_build=${BUILD:=true}
-opt_deploy=${DEPLOY:=true}
+opt_debug=${KETER_DEBUG:-false}
+opt_build=${BUILD:-true}
+opt_deploy=${DEPLOY:-true}
+# Assume the DB is already available
+opt_setup_db=${SETUP_DB:-false}
+
 # NB! Whatever name is used here must also be used in the 'crowdmatch' app
 # (crowdmatch/app/crowdmatch.hs), where it is used to pull in postgres
 # configuration. Must fix.
-opt_appname=${APPNAME:=SnowdriftReboot}
+opt_appname=${APPNAME:-SnowdriftReboot}
 
 #
 #
 #
+
+if $opt_debug; then set -x; fi
 
 install_path=./website/dist/bin
 
@@ -33,9 +34,24 @@ contents=(
     dist
 )
 
-export PGDATABASE=snowdrift_deploy
-stack="stack --work-dir .stack-deploy"
-dbmake="$stack exec -- make -f db.makefile"
+if $opt_setup_db; then
+    export PGDATABASE=snowdrift_deploy
+fi
+
+
+# Project-specific override
+stack () {
+    command stack ${SD_STACK_ARGS?-} "$@"
+}
+
+dbmake () {
+    if $opt_setup_db; then
+        stack exec -- make -f db.makefile "$@"
+    else
+        echo "Skipping DB step"
+    fi
+}
+
 
 hdr () {
     echo -e "\n-- $@"
@@ -51,22 +67,22 @@ main () {
         fi
         rm -rf ${install_path}
         mkdir -p ${install_path}
-        $stack clean
+        stack clean
         # Have to do dependencies without --pedantic, since stack still
         # rebuilds extra-deps specified as git repos after a clean. :(
         # Refer to https://github.com/commercialhaskell/stack/issues/1295
-        $stack \
+        stack \
             build \
             --dependencies-only \
             --install-ghc
-        (trap "$dbmake stop" EXIT
-        $dbmake
-        $stack \
+        (trap "dbmake stop" EXIT
+        dbmake
+        stack \
             --local-bin-path $install_path \
-            install \
+            install --test \
             --flag Snowdrift:-dev \
             --pedantic
-        ) # $dbmake stop
+        ) # dbmake stop
         hdr "Packing executables"
         find ${install_path} -type f -executable | xargs upx
         hdr "Tarballing"
@@ -90,11 +106,11 @@ main () {
             chmod 600 $keyfile
 
             # Turn off -x to dump secrets
-            if $DEBUG; then set +x; fi
+            if $opt_debug; then set +x; fi
             echo "$PROD_SSH_KEY" > $keyfile
             echo "$PROD_HOST_KEY" > $host_keyfile
             # Turn it back on
-            if $DEBUG; then
+            if $opt_debug; then
                 wc $keyfile $host_keyfile
                 set -x
             fi
