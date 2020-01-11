@@ -20,7 +20,7 @@ cache:
   policy: pull
 
 
-deps:
+.deps-common:
   stage: deps
   script: stack ${SD_STACK_ARGS} test --only-dependencies
   cache:
@@ -30,9 +30,19 @@ deps:
   artifacts:
     paths:
       - .stack-work
+
+deps:
+  extends: .deps-common
   only:
     changes:
       - stack.yaml
+
+# deps only needs to be run when stack.yaml changes.  However, in some cases
+# (the cache might have been deleted etc), it needs to be run even without
+# changes to stack.yaml, so we allow it to be run manually.
+deps-manual:
+  extends: .deps-common
+  when: manual
 
 build and test:
   stage: build and test
