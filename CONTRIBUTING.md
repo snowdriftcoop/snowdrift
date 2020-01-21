@@ -235,8 +235,8 @@ code formatter. Besides that, consider:
 As a best practice, we want adequate code review for every merge before it goes
 into the master code.
 
-To help with code review, please choose to *watch* the code repository at
-[] (and perhaps also the [GitHub] mirror if you use GitHub).
+To help with code review, please choose to *watch* the main code repository at
+[Gitlab] (and perhaps also the [GitHub] mirror if you use GitHub).
 Then, you can make general and in-line comments about new code as it is
 committed and before it goes into the master repository.
 
