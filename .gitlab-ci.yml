@@ -70,6 +70,8 @@ deploy-build:
 deploy-build for Ubuntu 14.04:
   extends: .build-common
   image: snowdriftcoop/snowdrift-ci:0.0.6-14.04
+  cache:
+    key: "Ubuntu 14.04"
 
 deploy:
   stage: deploy
