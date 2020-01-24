@@ -8,41 +8,17 @@ variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
   POSTGRES_DB: snowdrift_test
 
-
 stages:
   - deps
   - build and test
   - deploy
 
 cache:
+  key:
+    files:
+      - stack.yaml.lock
   paths:
     - stack-root
-  policy: pull
-
-
-.deps-common:
-  stage: deps
-  script: stack ${SD_STACK_ARGS} test --only-dependencies
-  cache:
-    paths: 
-      - stack-root
-    policy: pull-push
-  artifacts:
-    paths:
-      - .stack-work
-
-deps:
-  extends: .deps-common
-  only:
-    changes:
-      - stack.yaml
-
-# deps only needs to be run when stack.yaml changes.  However, in some cases
-# (the cache might have been deleted etc), it needs to be run even without
-# changes to stack.yaml, so we allow it to be run manually.
-deps-manual:
-  extends: .deps-common
-  when: manual
 
 build and test:
   stage: build and test
@@ -52,7 +28,7 @@ build and test:
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
 # Build for deploy, using --pedantic
-deploy-build:
+.build-common:
   stage: build and test
   services:
     - postgres:9.3
@@ -63,6 +39,18 @@ deploy-build:
   artifacts:
     paths:
       - SnowdriftReboot.keter
+
+deploy-build:
+  extends: .build-common
+
+deploy-build for Ubuntu 14.04:
+  extends: .build-common
+  image: snowdriftcoop/snowdrift-ci:0.0.6-14.04
+  # This job needs its own cache because of differences in libc.
+  cache:
+    key: "Ubuntu 14.04"
+    paths:
+      - stack-root
 
 deploy:
   stage: deploy
