@@ -9,7 +9,6 @@ variables:
   POSTGRES_DB: snowdrift_test
 
 stages:
-  - deps
   - build and test
   - deploy
 
@@ -57,7 +56,7 @@ deploy:
   cache:
     paths: []
   dependencies:
-    - deploy-build
+    - "deploy-build for Ubuntu 14.04"
   script:
     - BUILD=false ./ci-support/deploy
   only:
@@ -66,8 +65,9 @@ deploy:
     # This is not a security measure, since someone could push a branch that
     # changes this line. It's a convenience. Security is maintained by only
     # allowing production secrets to be sent to protected branches.
-    - master@sd/snowdrift
-  # The scheduled runs don't get deployed.
+    - master@snowdrift/snowdrift
+  # The scheduled runs don't get deployed. FIXME: Why do we even have a
+  # scheduled run?
   except:
     - schedules
   when: manual
