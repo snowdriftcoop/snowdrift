@@ -16,7 +16,7 @@ stages:
 cache:
   key:
     files:
-      - stack.yaml
+      - stack.yaml.lock
   paths:
     - stack-root
 
