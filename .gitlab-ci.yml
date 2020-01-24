@@ -8,7 +8,6 @@ variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
   POSTGRES_DB: snowdrift_test
 
-
 stages:
   - deps
   - build and test
@@ -20,29 +19,6 @@ cache:
       - stack.yaml
   paths:
     - stack-root
-  policy: pull
-
-
-.deps-common:
-  stage: deps
-  script: stack ${SD_STACK_ARGS} test --only-dependencies
-  cache:
-    paths:
-      - stack-root
-    policy: pull-push
-
-deps:
-  extends: .deps-common
-  only:
-    changes:
-      - stack.yaml
-
-# deps only needs to be run when stack.yaml changes.  However, in some cases
-# (the cache might have been deleted etc), it needs to be run even without
-# changes to stack.yaml, so we allow it to be run manually.
-deps-manual:
-  extends: .deps-common
-  when: manual
 
 build and test:
   stage: build and test
@@ -73,7 +49,8 @@ deploy-build for Ubuntu 14.04:
   # This job needs its own cache because of differences in libc.
   cache:
     key: "Ubuntu 14.04"
-    policy: pull-push
+    paths:
+      - stack-root
 
 deploy:
   stage: deploy
