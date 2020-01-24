@@ -15,6 +15,9 @@ stages:
   - deploy
 
 cache:
+  key:
+    files:
+      - stack.yaml
   paths:
     - stack-root
   policy: pull
@@ -24,12 +27,9 @@ cache:
   stage: deps
   script: stack ${SD_STACK_ARGS} test --only-dependencies
   cache:
-    paths: 
+    paths:
       - stack-root
     policy: pull-push
-  artifacts:
-    paths:
-      - .stack-work
 
 deps:
   extends: .deps-common
@@ -67,7 +67,7 @@ build and test:
 deploy-build:
   extends: .build-common
 
-deploy-build for old server:
+deploy-build for Ubuntu 14.04:
   extends: .build-common
   image: snowdriftcoop/snowdrift-ci:0.0.6-14.04
 
