@@ -34,10 +34,11 @@
           Terms of Service
     <p .licenses>
       Our free/libre/open licenses:
-      <a .link rel="license"
-        title="Creative Commons Attribution Share-Alike 4.0 International"
-        href="https://creativecommons.org/licenses/by-sa/4.0">
-        CC&nbsp;BY&#8209;SA#
+      <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0">
+        <img .ccbysa
+          alt="Creative Commons Attribution Share-Alike 4.0 International"
+          title="Creative Commons Attribution Share-Alike 4.0 International"
+          src=@{StaticR img_external_cc_by_sa_png}>#
       for content except
       <a .link href="@{TrademarksR}">trademarks#
       \, and
