@@ -53,7 +53,7 @@ deploy-build for Ubuntu 14.04:
 
 deploy:
   stage: deploy
-  image: snowdriftcoop/snowdrift-ci-deploy:0.0.1
+  image: snowdriftcoop/snowdrift-ci-deploy:0.0.2
   cache:
     paths: []
   dependencies:
