@@ -23,7 +23,10 @@ build and test:
   stage: build and test
   services:
     - postgres:9.3
+  # | If this gets much longer, turn it into an external script.
   script:
+    # Make sure stack/ghc picks up changes to template files.
+    - touch website/src/Settings/StaticFiles.hs
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
 # Build for deploy, using --pedantic
