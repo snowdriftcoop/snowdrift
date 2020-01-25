@@ -1,25 +1,94 @@
 @import ../main/main
 
-.terms
-  max-width: 72rem
-  margin: auto
-table, th, td
-  border: solid #ddd
-  border-width: 1px
-  padding: 10px
-  font-size: 1.7rem
-th
-  font-weight: 700
-  background-color: #eee
-h3
-  font-weight: 700
-  font-size: 2.9rem
-  margin: 1.5em 0 1em
-  border-bottom: 1px solid #ddd
-h4
-  font-weight: 700
-  font-size: 2.2rem
-  margin: 1em 0
-p, li
-  font-size: 1.7rem
-  margin: 5px 0
+
+.section
+    +text--body
+    font-size: 1.7rem
+    color: $dark-blue
+    margin: auto
+
+    a
+        +text--link
+        font-size: 1.7rem
+
+    em
+        font-style: italic
+
+    figure img
+        max-width: 100%
+
+    h2, h3, h4
+        +text--headline
+        line-height: 1
+        margin: 6rem 0 3rem
+
+    h2
+        letter-spacing: -0.04rem
+
+    h3
+        font-size: 2.1rem
+
+    h4
+        font-weight: 800
+        font-size: 1.7rem
+
+    hr
+        +hr-tilt
+        margin: 6rem auto
+
+    ol, ul
+        margin: 3rem 0 3rem 2.1rem
+
+    li
+        margin: 3rem 0
+
+    p
+        margin: 3rem 0
+
+    strong
+        font-weight: 700
+
+    table
+        width: 100%
+        text-align: left
+        border-collapse: collapse
+        overflow-x: auto
+        // Offset for table head bottom border
+        margin: -0.9rem 0 0 0
+
+    thead tr
+        border-bottom: 0.3rem solid $bright-blue
+
+    th
+        padding: 0 1.5rem 0.3rem
+
+    tr
+        vertical-align: top
+
+    tr:nth-child(even)
+        background: transparentize($bright-blue, 0.75)
+
+    tr td
+        padding: 1.5rem 3rem 1.5rem 1.5rem
+
+.list--dec
+    list-style-type: decimal
+
+.list--alpha
+    list-style-type: lower-alpha
+
+
+
++respond("xs")
+    .section
+        +span($grid--s, 4 max-pct both)
+
+
++respond("s")
+    .section
+        +span($grid--s, 4 max-pct auto)
+
+
++respond("m")
+    .section
+        +span($grid--m, 8 row auto)
