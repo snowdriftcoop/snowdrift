@@ -55,31 +55,28 @@ Recommended workflow:
 
 The following covers the bare minimum process for those new to Git.
 
-We collaborate via the FLO (Free/Libre/Open) site [git.snowdrift.coop] (running
-GitLab CE). We also mirror on the popular but proprietary site [GitHub], but we
-encourage everyone to use FLO tools, and so the instructions below assume
-git.snowdrift.coop.
+We collaborate on code using [GitLab]. We also mirror on the popular but proprietary site [GitHub] but do not use that regulary.
 
 1. Locally clone the project from the main Snowdrift repo to your computer as
    described in the BUILD guide
-2. Fork the project at git.snowdrift.coop
-    * sign in or create an account on [git.snowdrift.coop](https://git.snowdrift.coop/users/sign_in)
+2. Fork the project at GitLab.com
+    * sign in or create an account on [GitLab.com](https://gitlab.com/users/sign_in)
     * go to the [project repository]
     * click the "Fork" link (toward the top of the page)
     * choose your account for the fork
     * you should end up at your fork (to check, see that the header at the top
       of the page has your account name followed by "/Snowdrift")
-3. Add your git.snowdrift.coop fork as a remote for your local clone
+3. Add your GitLab fork as a remote for your local clone
     * While we recommend SSH, those not comfortable with the full [SSH setup]
       can use HTTPS instead.
     * For HTTPS, choose that instead of SSH from the dropdown menu on the page
-      of your fork at git.snowdrift.coop
+      of your fork at GitLab
     * copy the address (which looks like
-      `https://git.snowdrift.coop/YOURNAME/snowdrift.git` where `YOURNAME` is
-      your git.snowdrift.coop username).
+      `https://gitlab.com/YOURNAME/snowdrift.git` where `YOURNAME` is
+      your GitLab username).
     * using the correct address, enter a modified version of this command in the
         directory of your local clone:
-        `git remote add my-snow https://git.snowdrift.coop/YOURNAME/snowdrift.git`
+        `git remote add my-snow https://gitlab.com/YOURNAME/snowdrift.git`
 
 #### Updating your local code to snowdrift master
 
@@ -149,13 +146,13 @@ same overall update), you have confirmed that everything works as intended, and
 all tests pass, run `git status` to make sure no work is missing and all new
 files were committed.
 
-Next, send your changes to your git.snowdrift.coop account with:
+Next, send your changes to your GitLab account with:
 
     git push -u my-snow some-branch
 
 Changing `some-branch` to the name of the branch where you made the commit(s).
 
-To notify the snowdrift team about your work, visit the git.snowdrift.coop page
+To notify the snowdrift team about your work, visit the GitLab page
 with your fork. You should see a button called **"Create Merge Request"**. Click
 that to bring up a form where you can add further notes about your work
 (especially useful if you are merging multiple commits). You may ignore "Assign
@@ -238,8 +235,8 @@ code formatter. Besides that, consider:
 As a best practice, we want adequate code review for every merge before it goes
 into the master code.
 
-To help with code review, please choose to *watch* the code repository at
-[git.snowdrift.coop] (and perhaps also the [GitHub] mirror if you use GitHub).
+To help with code review, please choose to *watch* the main code repository at
+[Gitlab] (and perhaps also the [GitHub] mirror if you use GitHub).
 Then, you can make general and in-line comments about new code as it is
 committed and before it goes into the master repository.
 
@@ -284,7 +281,7 @@ here are some resources (nearly all fully-FLO):
 
 *   Git resources:
 
-    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4&ab)
+    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4)
       is an excellent video introduction to the core commands and concepts of
       Git. Consider making a new folder like `git-test` in your `Home` directory
       and following along with the commands in the video if you really want to
@@ -318,18 +315,18 @@ here are some resources (nearly all fully-FLO):
 
 [Build guide]: BUILD.md
 [contact options]: https://snowdrift.coop/contact
-[design]: https://git.snowdrift.coop/sd/design
-[git.snowdrift.coop]: https://git.snowdrift.coop/sd/snowdrift
+[design]: https://gitlab.com/snowdrift/design
+[GitLab]: https://gitlab.com/snowdrift/snowdrift
 [GHCJS]: https://github.com/ghcjs/ghcjs
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
-[issues]: https://git.snowdrift.coop/sd/snowdrift/issues?label_name%5B%5D=newcomer-friendly
+[issues]: https://gitlab.com/snowdrift/snowdrift/issues?label_name%5B%5D=newcomer-friendly
 [LibreJS plugin]: https://www.gnu.org/software/librejs/
-[project repository]: https://git.snowdrift.coop/sd/snowdrift
+[project repository]: https://gitlab.com/snowdrift/snowdrift
 [PureScript]: http://www.purescript.org/
 [README]: README.md
 [Sass]: https://sass-lang.com
 [Shakespearean Templates]: https://www.yesodweb.com/book/shakespearean-templates
-[SSH setup]: https://git.snowdrift.coop/help/ssh/README
+[SSH setup]: https://gitlab.com/help/ssh/README
 [TEXTEDITORS.md]: TEXTEDITORS.md
 [Unobtrusive JavaScript]: https://en.wikipedia.org/wiki/Unobtrusive_JavaScript
 [wiki]: https://wiki.snowdrift.coop/

@@ -29,6 +29,10 @@ $navbar--shadow: transparentize($navbar-menu--bg, 0.6)
     +image($navbar-logo, 3.8rem 4rem, center/contain)
     margin: auto
 
+/* Disable link to active page */
+.nav-menu .m--active
+    pointer-events: none
+
 
 ///------------------------------------------------------------------------///
 //  Small                                                                   //
@@ -170,30 +174,7 @@ $navbar-l3-item: 100%
             background: transparentize($white, 0.7)
 
 
-    /* Level 3 menus */
-    .nav-about
-        +navbar-l3
-        position: absolute
-        left: 0
-        +pad($grid--s, top 4)
-
-        &-dropdown
-            width: $navbar-l2-item
-
-        /* When toggle is triggered, make room for the 3 elements of
-            nav-about */
-        &-toggle:checked + &-label
-            +pad($grid--s, margin 0 0 6)
-
-        /* Toggle is the same size as other level 2 items */
-        &-toggle
-            width: $navbar-l2-item
-            +pad($grid--s, top 2)
-
-        /* Arrow is on top of nav-about */
-        &-label .arrow
-            z-index: 1
-
+    /* Level 3 menu */
     .nav-user
         +navbar-l3
 
@@ -240,9 +221,8 @@ $navbar-l3-item: 100%
 +respond("m")
     /* Menu link appearance */
     .navbar .item,
-    .nav-about-label,
     .nav-user-label
-        font: 700 2.1rem/1.33 Nunito
+        font: 700 2.1rem/6rem Nunito
         color: $green-shade
         text-decoration: none
 
@@ -250,6 +230,32 @@ $navbar-l3-item: 100%
         cursor: pointer
         &:hover
             color: $dark-blue
+
+
+/* A drop-down displays its items when its label is hovered over. It remains
+    open until neither the label nor the items are hovered over. */
+=dropdown--m
+    display: none
+
+    &-label
+        +pad($grid--m, pad 0 0.5)
+        cursor: default
+
+    &-label:hover
+        color: $dark-blue
+
+    &-label:hover + &,
+    &:hover
+        display: block
+
+    & .item
+        background: $white
+        display: block
+
+    & .item:last-child
+        +pad($grid--m, height 2.2)
+        border-radius: 0 0 0.5rem 0.5rem
+        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
 
 
 +respond("m")
@@ -267,63 +273,22 @@ $navbar-l3-item: 100%
 
     /* Hide unused menu toggles */
     .nav-menu-toggle,
-    .nav-menu-label
+    .nav-menu-label,
+    .nav-user-toggle
         display: none
 
-    /* Indicate active page and disable link */
-    .nav-menu .active
+    /* Indicate active page */
+    .nav-menu .m--active
         color: $dark-blue
-        pointer-events: none
 
-    /* Menu links and about menu label */
+    /* Menu links */
     .navbar .item,
-    .nav-about-label,
         +pad($grid--m, pad 0 0.5)
 
-    /* Sign in link and user menu label */
+    /* Float to the right */
     .navbar .m--last,
-    .nav-user-label
-        +pad($grid--m, pad 0 0.5 0 0.5)
-
-    /* Fill remaining space until the last item */
-    .nav-about-dropdown
-        flex: 1
-
-    .nav-about,
-    .nav-user
-        position: absolute
-        display: none
-        flex-direction: column
-        background: $white
-        box-shadow: 0rem 1.5rem 1.5rem -1rem $navbar--shadow
-        +pad($grid--m, top 2)
-        padding-bottom: 0.6rem
-        border-radius: 0 0 0.5rem 0.5rem
-
-        &-toggle
-            position: absolute
-            opacity: 0
-            cursor: pointer
-
-        &-toggle:hover + &-label,
-        &-toggle:checked + &-label
-            color: $dark-blue
-
-        & .item
-            +pad($grid--m, height 2)
-            padding: 1.9rem 1.5rem
-
-        &-toggle:checked + &-label + &,
-            display: flex
-
-    .nav-about-toggle
-        width: 9.1rem
-        height: 2.8rem
+    .nav-user-dropdown
+        margin-left: auto
 
     .nav-user
-        min-width: 14.5rem
-
-        &-toggle
-            width: 14.5rem
-            height: 2.8rem
-
+        +dropdown--m

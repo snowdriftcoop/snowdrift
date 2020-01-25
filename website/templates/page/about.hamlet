@@ -1,44 +1,64 @@
-<.about>
-  <h2>About Snowdrift.coop
-  <p>
-    We're building a sustainable funding platform for public goods — those
-    things that everyone can use and share without limitations. Using our
-    innovative crowdmatching pledge, we create a network effect where we all
-    work together to support free/libre/open projects of all sorts.
-  <p>
-    Besides the video on our
-    <a href=@{WelcomeR}>home page
-    and other parts of the main site, our
-    <a href="https://wiki.snowdrift.coop">wiki
-    has all sorts of other details.
-  <h2>News and Activity links
-  <ul>
-    <li .homep-link>
-      <a href="https://blog.snowdrift.coop">Blog
-    <li .homep-link>
-      <a href="https://git.snowdrift.coop/groups/sd/-/activity">
-        Activity feed at git.snowdrift.coop
-    <li .homep-link>
-      <a href="https://community.snowdrift.coop">forum
-    <li .homep-link>
-      <a href="https://kiwiirc.com/client/irc.freenode.net/#snowdrift">
-        #snowdrift IRC channel
-    <li .homep-link>
-      Follow us on Mastodon
-      <a href="https://social.coop/@snowdrift">
-        @snowdrift@social.coop
-      <ul>
-        <li>
-          <small>(or Twitter: @snowdriftcoop)
-  <h2>Volunteer
-  <p>
-    Our core team is supported by a widespread community.
-    <a href="https://wiki.snowdrift.coop/community/how-to-help">Come help
-    with site development, design, community organizing, or other tasks.
-  <h2>Want your project included?
-  <p>
-    We're still in preliminary stages, but if your
-    <a href="https://wiki.snowdrift.coop/project-requirements">free/libre/open
-    project needs funding, please
-    <a href=@{ContactR}>contact&nbsp;us
-    to discuss whether it may fit well for the next stage of live beta testing.
+$newline text
+$# Don't insert newlines after closing tags, so that we can emit HTML like
+$#
+$#   Click <a href="#">here</a>.
+$#
+$# where there is no whitespace between </a> and the following punctuation
+$# mark.
+
+<h1 .header .m--tilt>
+  About Snowdrift.coop
+
+<.section>
+  <.intro>
+    <p>
+      Snowdrift.coop is a nonprofit cooperative run by an international team
+      driven by a common goal:
+    <p .goal>
+      To dramatically improve the ability of ordinary people to fund public
+      goods – things like software, music, journalism, and research – that
+      everyone can use and share without limitations.
+    <p>
+      Our innovative crowdmatching approach is outlined in our
+      <a .link href=@{WelcomeR}>
+        overview video
+      \ and
+      <a .link href=@{HowItWorksR}>
+        How It Works
+      \ page. More detail and updates are available in the following places:
+
+  <ul .links-list>
+    <li .item>
+      <a href="https://wiki.snowdrift.coop">
+        <img .img .wiki src=@{StaticR img_about_wiki_png}>
+      <p .desc>
+        Read about the entire background of the project and find various
+        resources in
+        <a .link href="https://wiki.snowdrift.coop">
+          our wiki
+        .
+    <li .item>
+      <a href="https://community.snowdrift.coop">
+        <img .img .community src=@{StaticR img_about_community_png}>
+      <p .desc>
+        Browse
+        <a .link href="https://community.snowdrift.coop">
+          our forum
+        \ categories to read, comment or post about anything related to
+        Snowdrift.coop.
+    <li .item>
+      <a href="https://gitlab.com/snowdrift/">
+        <img .img .git src=@{StaticR img_about_git_png}>
+      <p .desc>
+        Squash bugs or have a look at how things are evolving in
+        <a .link href="https://gitlab.com/snowdrift/">
+          our git repository
+        .
+    <li .item>
+      <a href="https://blog.snowdrift.coop">
+        <img .img .blog src=@{StaticR img_about_blog_png}>
+      <p .desc>
+        Read occasional
+        <a .link href="https://blog.snowdrift.coop">
+          updates and thoughts
+        \ about Snowdrift.coop.

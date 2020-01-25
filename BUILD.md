@@ -5,6 +5,18 @@ Snowdrift has been built successfully on many GNU/Linux distros and on macOS.
 Windows and \*BSD distributions are not currently supported, but we will assist
 any efforts to add such support. See below for partial setup instructions.
 
+## Get the Snowdrift code
+
+Our primary repository is at [GitLab], and our instructions assume that repository. For convenience and redundancy, we also mirror at [GitHub].
+
+From within your preferred directory, get the code with:
+
+    git clone https://gitlab.com/snowdrift/snowdrift.git
+
+Change to the new snowdrift directory:
+
+    cd snowdrift
+
 ## Install System Dependencies
 
 [Git], [PostgreSQL], [Stack], and [Make] are the only dependencies needed at the
@@ -19,7 +31,7 @@ section.**
 Install Git, PostgreSQL and Make with needed libraries:
 
     sudo apt-get update
-    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev make
+    sudo apt-get install git postgresql libgmp-dev libpq-dev libssl-dev zlib1g-dev make
 
 Then follow the [Debian Stack install] or [Ubuntu Stack install] instructions
 as appropriate.
@@ -71,16 +83,14 @@ to use a version of ghc that compiles without PIE. We were unable to find a way
 to set this configuration *just* for Snowdrift, however we don't believe making
 this change will cause any issues with compiling other Haskell projects.
 
-### NixOS
+### NixOS or Nix on Linux, MacOS or WSL
 
-Use `nix-shell` to provide Stack and the Yesod executable:
-
-    nix-shell -p stack haskellPackages.yesod-bin
-
-Add the following to `~/.stack/config.yaml`:
+Change `stack.yaml` to enable nix:
 
     nix:
       enable: true
+
+Run `nix-shell` in the root of the project. You will have to build, test and run the server inside the shell. You should also launch your editor from inside the nix-shell.
 
 ### \*BSD
 
@@ -107,24 +117,12 @@ With brew, install the core dependencies:
 
 **Status:** We welcome testing but do not officially support Windows.
 
+A way to get the project built on Windows is by installing Windows Subsystem for Linux (WSL), install Nix in it and then follow the Nix setup from above.
+
 In the past, we have had only partial success running on Windows. We know that
 our development database scripts won't work on Windows because they use UNIX
 sockets. We welcome any patches, feedback, or Postgres-on-Windows help to get an
 alternative working.
-
-## Get the Snowdrift code
-
-Our primary repository is at [git.snowdrift.coop/sd/snowdrift], and our
-instructions assume that repository. For convenience and redundancy, we also
-mirror at [GitHub].
-
-From within your preferred directory, get the code with:
-
-    git clone https://git.snowdrift.coop/sd/snowdrift.git
-
-Change to the new snowdrift directory:
-
-    cd snowdrift
 
 ## Run the tests
 
@@ -225,6 +223,16 @@ To make builds recognize changes to the static directory, run:
 
     touch website/src/Settings/StaticFiles.hs
 
+## Building for production / deployment
+
+We use Keter (Yesod's deploy tool) to build and deploy the full Snowdrift.coop website.
+The relevant script is at [s/deploy](s/deploy).
+By default, it does all the building and deploying at once,
+and this only works on a system that has permissions to update the live site.
+
+To build the production binary without deploying, run `DEPLOY=false ./s/deploy`
+The build binary SnowdriftReboot.keter will be in the root directory.
+
 ## Getting help, learning, contributing etc.
 
 We welcome any and all feedback on these build instructions, on the site
@@ -236,9 +244,9 @@ about technical development.
 [brew]: http://brew.sh/
 [Contributing Guide]: CONTRIBUTING.md
 [Debian Stack install]: https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md#debian
-[discussion about FreeBSD]: https://git.snowdrift.coop/sd/snowdrift/issues/67
+[discussion about FreeBSD]: https://gitlab.com/snowdrift/snowdrift/issues/67
 [Git]: http://www.git-scm.com/downloads
-[git.snowdrift.coop/sd/snowdrift]: https://git.snowdrift.coop/sd/snowdrift
+[GitLab]: https://gitlab.com/snowdrift/snowdrift
 [GitHub]: https://github.com/snowdriftcoop/snowdrift
 [instructions on the PostgreSQL wiki]: https://wiki.postgresql.org/wiki/YUM_Installation
 [Make]: https://www.gnu.org/software/make/manual/html_node/index.html

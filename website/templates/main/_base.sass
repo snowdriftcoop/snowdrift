@@ -207,17 +207,6 @@ $link--visited:      $green-shade   // link, visited (unknown)
     sizes, and needs a few more attributes to make a complete button. See the
     other button-- mixins like +button--sml for examples.
 
-/// The buttons should also be used with a min-width attribute in normal and
-    :hover state, for a button resize effect on hover. min-width is not set
-    here, as the value depends on the length of the link text and the parent
-    element width. Example:
-
-/// .link--example
-        +button--sml($white, $green, $green-shade)
-        min-width: 21rem
-        &:hover
-            min-width: 18rem
-
 =button--base($tc, $bc1, $bc2)
     $text-shadow1: 0.1rem 0.1rem 0 transparentize($dark-blue, 0.6)
     $text-shadow2: 0rem 0rem 1rem transparentize($white, 0.5)

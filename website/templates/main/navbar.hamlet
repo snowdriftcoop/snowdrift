@@ -6,26 +6,14 @@
   <div .nav-menu-label>
     Menu
   <div .nav-menu>
-    <a .item .m--left href=@{WelcomeR} :active WelcomeR:.active>
+    <a .item .m--left href=@{WelcomeR} :active WelcomeR:.m--active>
       Home
-    <a .item href=@{HowItWorksR} :active HowItWorksR:.active>
+    <a .item href=@{HowItWorksR} :active HowItWorksR:.m--active>
       How it works
-    <a .item .m--left href=@{ProjectsR} :active ProjectsR:.active>
+    <a .item .m--left href=@{ProjectsR} :active ProjectsR:.m--active>
       Projects
-    $# Begin L3 about menu
-    <div .nav-about-dropdown>
-      <input .nav-about-toggle name="navbar-menu" type="radio">
-      <div .nav-about-label>
-        About
-        <div .arrow>
-      <div .nav-about>
-        <a .item href="https://community.snowdrift.coop/groups/team">
-          Team
-        <a .item href=@{ContactR}>
-          Contact
-        <a .item href="https://community.snowdrift.coop">
-          Community
-    $# End L3 about menu
+    <a .item href=@{AboutR} :active AboutR:.m--active>
+      About
     $maybe Entity _ _ <- maybeUser
       $# Begin L3 user menu
       <div .nav-user-dropdown>
@@ -34,7 +22,7 @@
           My Account
           <div .arrow>
         <div .nav-user>
-          <a .item href=@{DashboardR} :active DashboardR:.active>
+          <a .item href=@{DashboardR} :active DashboardR:.m--active>
             Dashboard
           <a .item .m--last href=@{AuthR LogoutR}>
             Sign out

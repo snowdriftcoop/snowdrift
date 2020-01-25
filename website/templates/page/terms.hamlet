@@ -1,5 +1,5 @@
 <!--
-  This terms.hamlet file was generated from a markdown source file at https://git.snowdrift.coop/sd/legal/blob/master/terms-of-service.md using the following steps:
+  This terms.hamlet file was generated from a markdown source file at https://gitlab.com/snowdrift/legal/blob/master/terms-of-service.md using the following steps:
 
   1. Convert to HTML with `pandoc terms-of-service.md` (don't use too old version of pandoc)
   2. Convert to hamlet with `html2hamlet terms-of-service.html terms.hamlet`
@@ -21,7 +21,7 @@
  <em>
   Version 0.4
  (see our
- <a href="https://git.snowdrift.coop/sd/legal/blob/master/CHANGELOG.md">
+ <a href="https://gitlab.com/snowdrift/legal/blob/master/CHANGELOG.md">
   changelog
  for history)
 <h2 #introduction>
@@ -166,7 +166,7 @@
   We use certain terms with specific meanings throughout the agreement.
 <ol style="list-style-type: decimal">
  <li>
-  The “Agreement” refers, collectively, to all the terms, conditions, notices contained or referenced in this document (the “Terms of Service” or the "Terms") and all other operating rules, policies (including the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>), and procedures that we may publish from time to time on the Website. Most of our site policies are available at our <a .uri href="https://git.snowdrift.coop/sd/legal/">legal repository</a>.
+  The “Agreement” refers, collectively, to all the terms, conditions, notices contained or referenced in this document (the “Terms of Service” or the "Terms") and all other operating rules, policies (including the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>), and procedures that we may publish from time to time on the Website. Most of our site policies are available at our <a .uri href="https://gitlab.com/snowdrift/legal/">legal repository</a>.
  <li>
   The “Service” refers to any services, software, products, and applications provided by Snowdrift.coop.
  <li>
@@ -342,7 +342,7 @@
  Most public writings and images at Snowdrift.coop are free to use and share under CC BY-SA (with attribution credit simply to "Snowdrift.coop"), with the following exceptions and qualifications:
 <ul>
  <li>
-  The Snowdrift.coop website source code is licensed under the terms of the <a href="https://git.snowdrift.coop/sd/snowdrift/blob/master/LICENSE.md">GNU AGPLv3+</a>.
+  The Snowdrift.coop website source code is licensed under the terms of the <a href="https://gitlab.com/snowdrift/snowdrift/blob/master/LICENSE.md">GNU AGPLv3+</a>.
  <li>
   All Snowdrift.coop trademarks belong to Snowdrift.coop, and any use of our trade names, trademarks, service marks, logos, or domain names must be in compliance with both these Terms and with our <a href=@{TrademarksR}>Trademark Policy</a>.
  <li>
@@ -413,10 +413,10 @@
  If you believe that Content anywhere on Snowdrift.coop infringes on a copyright you hold, we encourage you to first reach out informally via one of the methods on our <a href=@{ContactR}>contact page</a>.
 <p>
  To take action under Section 512(c) of the U.S. Digital Millennium Copyright Act of 1998, follow our
- <a href="https://git.snowdrift.coop/sd/legal/blob/master/DMCA/DMCA-guide.md">
+ <a href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-guide.md">
   DMCA Guide
  and the connected
- <a href="https://git.snowdrift.coop/sd/legal/blob/master/DMCA/DMCA-takedowns.md">
+ <a href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-takedowns.md">
   DMCA Takedown Notice Guide
  Pursuant to the DMCA, we will terminate, in appropriate circumstances, the Accounts of repeat infringers.
 <div .figure>
@@ -476,7 +476,7 @@
  1. Project Requirements
 <p>
  To register a Project for listing at Snowdrift.coop, you must meet all of our
- <a href="https://git.snowdrift.coop/sd/legal/blob/master/project-reqs.md">
+ <a href="https://gitlab.com/snowdrift/legal/blob/master/project-reqs.md">
   Project Requirements
 <h4 #receiving-donations>
  2. Receiving donations
@@ -566,7 +566,7 @@
 <h4 #legal-notice-to-snowdrift-coop-must-be-in-writing>
  2. Legal Notice to Snowdrift.coop Must Be in Writing
 <p>
- In any situation where notice is required by contract or any law or regulation, communications made through email or our community forum will not constitute legal notice to Snowdrift.coop or any of its officers, employees, agents, or representatives. Legal notices must be in writing and <a href="https://git.snowdrift.coop/sd/legal/blob/master/legal-requests.md">served on Snowdrift.coop's legal agent</a>.
+ In any situation where notice is required by contract or any law or regulation, communications made through email or our community forum will not constitute legal notice to Snowdrift.coop or any of its officers, employees, agents, or representatives. Legal notices must be in writing and <a href="https://gitlab.com/snowdrift/legal/blob/master/legal-requests.md">served on Snowdrift.coop's legal agent</a>.
 <h3 #l-disclaimer-of-warranties>
  L. Disclaimer of Warranties
 <p>
@@ -629,7 +629,7 @@
  <em>
   We want our users to be informed of important changes to our terms, but we don't want to bother you every time we fix a typo. While we may modify this agreement at any time, we will notify users of any changes that affect your rights. When feasible, we will also offer a comment period before updates are set.
 <p>
- We reserve the right, at our sole discretion, to amend these Terms of Service at any time and will update these Terms of Service in the event of any such amendments. We will notify our Users of material changes to this Agreement at least 30 days prior to the change taking effect by posting a notice on our Website. For non-material modifications, your continued use of the Website constitutes agreement to our revisions of these Terms of Service. You can view all changes to these Terms in the history view of our <a href="https://git.snowdrift.coop/sd/legal/">git repository</a>.
+ We reserve the right, at our sole discretion, to amend these Terms of Service at any time and will update these Terms of Service in the event of any such amendments. We will notify our Users of material changes to this Agreement at least 30 days prior to the change taking effect by posting a notice on our Website. For non-material modifications, your continued use of the Website constitutes agreement to our revisions of these Terms of Service. You can view all changes to these Terms in the history view of our <a href="https://gitlab.com/snowdrift/legal/">git repository</a>.
 <p>
  We reserve the right at any time and from time to time to modify or discontinue, temporarily or permanently, the Website (or any part of it) with or without notice.
 <h3 #p-miscellaneous>

@@ -17,7 +17,7 @@ data StripeMockEffects
         , stripeRet :: Either StripeError (StripeReturn a)
         }
 
-{-# WARNING mockStripe "This does not work. See comments on https://git.snowdrift.coop/sd/snowdrift/merge_requests/21" #-}
+{-# WARNING mockStripe "This does not work. See comments on https://gitlab.com/snowdrift/snowdrift/merge_requests/21" #-}
 -- | Ideally this could be used to mock Stripe effects, but it does not work
 -- yet.
 mockStripe

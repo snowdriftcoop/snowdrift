@@ -64,7 +64,9 @@ getDonateR :: Handler Html
 getDonateR = $(widget "page/donate" "Donate")
 
 getAboutR :: Handler Html
-getAboutR = $(widget "page/about" "About")
+getAboutR = defaultLayoutNew $ do
+    setTitle "About"
+    $(widgetFile "page/about")
 
 getSponsorsR :: Handler Html
 getSponsorsR = $(widget "page/sponsors" "Sponsors")

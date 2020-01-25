@@ -1,6 +1,6 @@
 <h1 id="snowdrift.coop-trademark-policy">Snowdrift.coop Trademark Policy
 <p>
-  <strong>Version 0.3 – Effective December 16, 2015
+  <strong>Version 0.4 – Effective March 19, 2019
 <p>
   We are committed to ensuring the clear and consistent use of our trademarks
   and to protecting the rights of legitimate users.
@@ -15,7 +15,7 @@
     The primary name "Snowdrift" when used in the context of online
     fundraising, creative project support, and/or community building
   <li>Our various identifying #
-    <a href="https://git.snowdrift.coop/sd/design/blob/master/docs/design-guide/readme.md#the-logo">logos
+    <a href="https://gitlab.com/snowdrift/design/wikis/design-guide/readme#the-logo">logos
   <li>
     The term "crowdmatching" when used in the context of fundraising
 <p>
@@ -100,19 +100,21 @@
 
 <h2 id="seeking-permission">Seeking permission
 <p>
-  For any use not expressly permitted by this policy, to report any
-  unauthorized use, or for any clarification of this policy that may be
-  necessary, please
-  <a href=@{ContactR}>contact us<a>.
+  Please
+  <a href=@{ContactR}>contact us
+  to ask about any use not expressly permitted by this policy, to report any
+  unauthorized use, or for any questions about this policy.
   Please include any relevant information about the type and nature of the
   use and any relevant organizational affiliation(s).
 <hr />
 <p>
   <em>
-    Like the rest of the site, The Snowdrift.coop Trademark Policy is licensed
-    under
-    <a href="http://creativecommons.org/licenses/by-sa/4.0/">
-      Creative Commons Attribution/Share-Alike license (CC-BY-SA) v4.0</a>.
+    The Snowdrift.coop Trademark Policy is licensed under
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+      Creative Commons Attribution/Share-Alike (CC-BY-SA) v4.0
+    just like the rest of the non-trademarked parts of our site.
+<p>
+  <em>
     This policy may be periodically revised. Revisions will be dated and posted
     to Snowdrift.coop/trademarks.
 
@@ -124,13 +126,18 @@
       Note that we do
       <em>not
       hold trademarks on the
-      <a href="https://git.snowdrift.coop/sd/design/blob/master/docs/design-guide/readme.md#mimi-eunice">Mimi &amp; Eunice
+      <a href="https://gitlab.com/snowdrift/design/wikis/design-guide/readme#mimi-eunice">
+        Mimi &amp; Eunice
       characters.
-      They are our independent adaptations of artwork by Nina Paley, licensed (like other non-trademarked parts of our site) under
+      They are our
+      <a href="https://wiki.snowdrift.coop/communications/mimi-eunice">
+        independent adaptations
+      of artwork by Nina Paley, licensed under
       <a href="https://creativecommons.org/licenses/by-sa/4.0">
-        CC BY-SA 4.0 International</a>.#
+        CC BY-SA 4.0 International
+      (the same license we use for non-trademarked parts of our site).
       <a href="#fnref1">↩
     <li id="fn2">
       Note: we formally use the name "Snowdrift" for the
-      free/libre/open software that runs the Snowdrift.coop website.#
+      free/libre/open software that runs the Snowdrift.coop website.
       <a href="#fnref2">↩
