@@ -38,7 +38,7 @@
  <a href=@{ContactR}>
   contact us
  if you have any questions or see room for improvements.
-<div .figure>
+<figure .comic-fig>
  <img alt="(Comic) Mimi: &quot;We've become a society ruled by lawyers! A Lawyerarchy!&quot; Eunice: &quot;Lawyertarianism!&quot; Mimi: &quot;I'm not suggesting we eat them.&quot; Eunice: &quot;I am!&quot;" src=@{StaticR img_ME_156_Lawyerarchy_png}>
 <h3 #summary>
  Summary
@@ -47,79 +47,79 @@
   <col>
   <col>
  <thead>
-  <tr .header>
+  <tr>
    <th>
     Section
    <th>
     What can you find there?
  <tbody>
-  <tr .odd>
+  <tr>
    <td>
     <a href="#a-definitions">
      A. Definitions
    <td>
     Key words and phrases used within these terms.
-  <tr .even>
+  <tr>
    <td>
     <a href="#b-account-terms">
      B. Account Terms
    <td>
     The basic requirements of having an Account on Snowdrift.coop.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#c-acceptable-use">
      C. Acceptable Use
    <td>
     The basic rules you must follow when using your Snowdrift.coop Account.
-  <tr .even>
+  <tr>
    <td>
     <a href="#d-copyright-licensing-and-using-content-from-snowdrift-coop">
      D. Copyright Licensing and Using Content from Snowdrift.coop
    <td>
     We use free/libre/open licenses for content at Snowdrift.coop.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#e-user-submitted-content">
      E. User-Submitted Content
    <td>
     Content you post on Snowdrift.coop must be compatible with our free/libre/open licensing.
-  <tr .even>
+  <tr>
    <td>
     <a href="#f-copyright-infringement-and-dmca-policy">
      F. Copyright &amp; DMCA Policy
    <td>
     This section talks about how we handle claims of copyright infringement on Snowdrift.coop.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#g-crowdmatching-pledging-and-financial-transactions">
      G. Crowdmatching, Pledging, and Financial Transactions
    <td>
     This section describes how our fundraising system works and how we handle financial transactions.
-  <tr .even>
+  <tr>
    <td>
     <a href="#h-projects">
      H. Projects
    <td>
     We have a few specific rules for Projects listed at Snowdrift.coop.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#i-volunteers">
      I. Volunteers
    <td>
     Basic legal requirements to volunteer at Snowdrift.coop
-  <tr .even>
+  <tr>
    <td>
     <a href="#j-cancellation-and-termination">
      J. Cancellation and Termination
    <td>
     You may cancel this agreement and close your Account at any time.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#k-legal-communications-with-snowdrift-coop">
      K. Legal Communications with Snowdrift.coop
    <td>
     How we send and recieve legal notices.
-  <tr .even>
+  <tr>
    <td>
     <a href="#l-disclaimer-of-warranties">
      <strong>
@@ -127,7 +127,7 @@
    <td>
     <strong>
      We provide our service as is, and we make no promises or guarantees about this service.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#m-limitation-of-liability">
      <strong>
@@ -135,19 +135,19 @@
    <td>
     <strong>
      We will not be liable for damages or losses arising from your use or inability to use the service or otherwise arising under this agreement.
-  <tr .even>
+  <tr>
    <td>
     <a href="#n-release-and-indemnification">
      N. Release and Indemnification
    <td>
     You will not hold us liable if your use of the service leads to legal action against you.
-  <tr .odd>
+  <tr>
    <td>
     <a href="#o-changes-to-these-terms">
      O. Changes to these Terms of Service
    <td>
     We may modify this agreement, but we will give you 30 days' notice of changes that affect your rights.
-  <tr .even>
+  <tr>
    <td>
     <a href="#p-miscellaneous">
      P. Miscellaneous
@@ -164,7 +164,7 @@
   Short version:
  <em>
   We use certain terms with specific meanings throughout the agreement.
-<ol style="list-style-type: decimal">
+<ol>
  <li>
   The “Agreement” refers, collectively, to all the terms, conditions, notices contained or referenced in this document (the “Terms of Service” or the "Terms") and all other operating rules, policies (including the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>), and procedures that we may publish from time to time on the Website. Most of our site policies are available at our <a .uri href="https://gitlab.com/snowdrift/legal/">legal repository</a>.
  <li>
@@ -419,8 +419,8 @@
  <a href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-takedowns.md">
   DMCA Takedown Notice Guide
  Pursuant to the DMCA, we will terminate, in appropriate circumstances, the Accounts of repeat infringers.
-<div .figure>
- <img alt='(Comic) Eunice: "You artists should be grateful for us lawyers. We protect you!" Mimi: "From what?" Eunice: "Lawyers!"' src=@{StaticR img_ME_323_LawyersProtectArtists_png}>
+<figure .comic-fig>
+ <img alt="(Comic) Eunice: &quot;You artists should be grateful for us lawyers. We protect you!&quot; Mimi: &quot;From what?&quot; Eunice: &quot;Lawyers!&quot;" src=@{StaticR img_ME_323_LawyersProtectArtists_png}>
 <h3 #g-crowdmatching-pledging-and-financial-transactions>
  G. Crowdmatching, Pledging, and Financial Transactions
 <p>
@@ -579,7 +579,7 @@
  Snowdrift.coop provides the Website and the Service “as is” and “as available,” without warranty of any kind. Without limiting this, we expressly disclaim all warranties, whether express, implied or statutory, regarding the Website and the Service including without limitation any warranty of merchantability, fitness for a particular purpose, title, security, accuracy and non-infringement.
 <p>
  Snowdrift.coop does not warrant that the Service will meet your requirements; that the Service will be uninterrupted, timely, secure, or error-free; that the information provided through the Service is accurate, reliable or correct; that any defects or errors will be corrected; that the Service will be available at any particular time or location; or that the Service is free of viruses or other harmful components. You assume full responsibility and risk of loss resulting from your downloading and/or use of files, information, content or other material obtained from the Service.
-<div .figure>
+<figure .comic-fig>
  <img alt="(Comic) Mimi looks scared seeing Eunice carrying an enormous pile of contract forms, cameras, microphones, and weapons (including rockets going off). Eunice says, &quot;What?! I'm just covering my ass!&quot;" src=@{StaticR img_ME_403_CoverYourAss_png}>
 <h3 #m-limitation-of-liability>
  M. Limitation of Liability
@@ -662,7 +662,7 @@
  <ol>
   <li #fn1>
    <p>
-     If you prefer  different but compatible terms, you may specify that in your forum profile or alongside specific submissions. The main CC BY-SA compatible options are the
+     If you prefer different but compatible terms, you may specify that in your forum profile or alongside specific submissions. The main CC BY-SA compatible options are the
      <a href="https://creativecommons.org/licenses/by/4.0/">
        CC BY
      license or waiving your copyright via the <a href="https://creativecommons.org/publicdomain/zero/1.0">CC0 Universal Public Domain Dedication</a>.
