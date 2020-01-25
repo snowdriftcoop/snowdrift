@@ -52,7 +52,6 @@
         width: 100%
         text-align: left
         border-collapse: collapse
-        overflow-x: auto
         // Offset for table head bottom border
         margin: -0.9rem 0 0 0
 
@@ -60,7 +59,7 @@
         border-bottom: 0.3rem solid $bright-blue
 
     th
-        padding: 0 1.5rem 0.3rem
+        padding: 0.3rem 1.5rem 0.3rem
 
     tr
         vertical-align: top
@@ -78,17 +77,38 @@
     list-style-type: lower-alpha
 
 
+///------------------------------------------------------------------------///
+//  Extra small                                                             //
+///------------------------------------------------------------------------///
 
 +respond("xs")
+    // Wrapper fills the screen width with left/right margins
     .section
-        +span($grid--s, 4 max-pct both)
+        max-width: 100%
+        margin: 0 map-get($grid--s, "gutter")
 
+    // Allow tables to scroll horizontally on smaller screens
+    .table-wrap
+        overflow-x: auto
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
 
 +respond("s")
+    // There are no wrappers with margins for each section in the markup.
+    // The content aligns left at the same starting point horizontally,
+    // margins are added to one wrapper that encloses all the page content
+    // except the tilt header.
     .section
-        +span($grid--s, 4 max-pct auto)
+        max-width: map-get($grid--s, "container") - (map-get($grid--s, "gutter") * 2)
 
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
 
 +respond("m")
     .section
-        +span($grid--m, 8 row auto)
+        max-width: map-get($grid--m, "container") - (map-get($grid--m, "gutter") * 2)

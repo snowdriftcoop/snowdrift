@@ -44,123 +44,124 @@
     <img alt="(Comic) Mimi: &quot;We've become a society ruled by lawyers! A Lawyerarchy!&quot; Eunice: &quot;Lawyertarianism!&quot; Mimi: &quot;I'm not suggesting we eat them.&quot; Eunice: &quot;I am!&quot;" src=@{StaticR img_ME_156_Lawyerarchy_png}>
   <h3 #summary>
     Summary
-  <table>
-    <thead>
-      <tr>
-        <th>
-          Section
-        <th>
-          What can you find there?
-    <tbody>
-      <tr>
-        <td>
-          <a href="#a-definitions">
-            A. Definitions
-        <td>
-          Key words and phrases used within these terms.
-      <tr>
-        <td>
-          <a href="#b-account-terms">
-            B. Account Terms
-        <td>
-          The basic requirements of having an Account on Snowdrift.coop.
-      <tr>
-        <td>
-          <a href="#c-acceptable-use">
-            C. Acceptable Use
-        <td>
-          The basic rules you must follow when using your Snowdrift.coop
-          Account.
-      <tr>
-        <td>
-          <a href="#d-copyright-licensing-and-using-content-from-snowdrift-coop">
-            D. Copyright Licensing and Using Content from Snowdrift.coop
-        <td>
-          We use free/libre/open licenses for content at Snowdrift.coop.
-      <tr>
-        <td>
-          <a href="#e-user-submitted-content">
-            E. User-Submitted Content
-        <td>
-          Content you post on Snowdrift.coop must be compatible with our
-          free/libre/open licensing.
-      <tr>
-        <td>
-          <a href="#f-copyright-infringement-and-dmca-policy">
-            F. Copyright &amp; DMCA Policy
-        <td>
-          This section talks about how we handle claims of copyright
-          infringement on Snowdrift.coop.
-      <tr>
-        <td>
-          <a href="#g-crowdmatching-pledging-and-financial-transactions">
-            G. Crowdmatching, Pledging, and Financial Transactions
-        <td>
-          This section describes how our fundraising system works and how we
-          handle financial transactions.
-      <tr>
-        <td>
-          <a href="#h-projects">
-            H. Projects
-        <td>
-          We have a few specific rules for Projects listed at Snowdrift.coop.
-      <tr>
-        <td>
-          <a href="#i-volunteers">
-            I. Volunteers
-        <td>
-          Basic legal requirements to volunteer at Snowdrift.coop
-      <tr>
-        <td>
-          <a href="#j-cancellation-and-termination">
-            J. Cancellation and Termination
-        <td>
-          You may cancel this agreement and close your Account at any time.
-      <tr>
-        <td>
-          <a href="#k-legal-communications-with-snowdrift-coop">
-            K. Legal Communications with Snowdrift.coop
-        <td>
-          How we send and recieve legal notices.
-      <tr>
-        <td>
-          <a href="#l-disclaimer-of-warranties">
+  <.table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Section
+          <th>
+            What can you find there?
+      <tbody>
+        <tr>
+          <td>
+            <a href="#a-definitions">
+              A. Definitions
+          <td>
+            Key words and phrases used within these terms.
+        <tr>
+          <td>
+            <a href="#b-account-terms">
+              B. Account Terms
+          <td>
+            The basic requirements of having an Account on Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#c-acceptable-use">
+              C. Acceptable Use
+          <td>
+            The basic rules you must follow when using your Snowdrift.coop
+            Account.
+        <tr>
+          <td>
+            <a href="#d-copyright-licensing-and-using-content-from-snowdrift-coop">
+              D. Copyright Licensing and Using Content from Snowdrift.coop
+          <td>
+            We use free/libre/open licenses for content at Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#e-user-submitted-content">
+              E. User-Submitted Content
+          <td>
+            Content you post on Snowdrift.coop must be compatible with our
+            free/libre/open licensing.
+        <tr>
+          <td>
+            <a href="#f-copyright-infringement-and-dmca-policy">
+              F. Copyright &amp; DMCA Policy
+          <td>
+            This section talks about how we handle claims of copyright
+            infringement on Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#g-crowdmatching-pledging-and-financial-transactions">
+              G. Crowdmatching, Pledging, and Financial Transactions
+          <td>
+            This section describes how our fundraising system works and how we
+            handle financial transactions.
+        <tr>
+          <td>
+            <a href="#h-projects">
+              H. Projects
+          <td>
+            We have a few specific rules for Projects listed at Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#i-volunteers">
+              I. Volunteers
+          <td>
+            Basic legal requirements to volunteer at Snowdrift.coop
+        <tr>
+          <td>
+            <a href="#j-cancellation-and-termination">
+              J. Cancellation and Termination
+          <td>
+            You may cancel this agreement and close your Account at any time.
+        <tr>
+          <td>
+            <a href="#k-legal-communications-with-snowdrift-coop">
+              K. Legal Communications with Snowdrift.coop
+          <td>
+            How we send and recieve legal notices.
+        <tr>
+          <td>
+            <a href="#l-disclaimer-of-warranties">
+              <strong>
+                L. Disclaimer of Warranties
+          <td>
             <strong>
-              L. Disclaimer of Warranties
-        <td>
-          <strong>
-            We provide our service as is, and we make no promises or guarantees
-            about this service.
-      <tr>
-        <td>
-          <a href="#m-limitation-of-liability">
+              We provide our service as is, and we make no promises or
+              guarantees about this service.
+        <tr>
+          <td>
+            <a href="#m-limitation-of-liability">
+              <strong>
+                M. Limitation of Liability
+          <td>
             <strong>
-              M. Limitation of Liability
-        <td>
-          <strong>
-            We will not be liable for damages or losses arising from your use
-            or inability to use the service or otherwise arising under this
-            agreement.
-      <tr>
-        <td>
-          <a href="#n-release-and-indemnification">
-            N. Release and Indemnification
-        <td>
-          You will not hold us liable if your use of the service leads to legal
-          action against you.
-      <tr>
-        <td>
-          <a href="#o-changes-to-these-terms">
-            O. Changes to these Terms of Service
-        <td>
-          We may modify this agreement, but we will give you 30 days' notice of
-          changes that affect your rights.
-      <tr>
-        <td>
-          <a href="#p-miscellaneous">
-            P. Miscellaneous
-        <td>
-          Further details and legal boilerplate for terms like this.
+              We will not be liable for damages or losses arising from your use
+              or inability to use the service or otherwise arising under this
+              agreement.
+        <tr>
+          <td>
+            <a href="#n-release-and-indemnification">
+              N. Release and Indemnification
+          <td>
+            You will not hold us liable if your use of the service leads to
+            legal action against you.
+        <tr>
+          <td>
+            <a href="#o-changes-to-these-terms">
+              O. Changes to these Terms of Service
+          <td>
+            We may modify this agreement, but we will give you 30 days' notice
+            of changes that affect your rights.
+        <tr>
+          <td>
+            <a href="#p-miscellaneous">
+              P. Miscellaneous
+          <td>
+            Further details and legal boilerplate for terms like this.
   <h2 #the-snowdrift-coop-terms-of-service>
     The Snowdrift.coop Terms of Service
   <p>
