@@ -41,8 +41,6 @@ build and test:
 
 deploy-build:
   extends: .deploy-common
-  cache:
-    policy: pull
 
 deploy-build for Ubuntu 14.04:
   extends: .deploy-common
