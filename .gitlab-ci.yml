@@ -27,7 +27,7 @@ build and test:
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
 # Build for deploy, using --pedantic
-.build-common:
+.deploy-common:
   stage: build and test
   services:
     - postgres:9.3
@@ -40,10 +40,12 @@ build and test:
       - SnowdriftReboot.keter
 
 deploy-build:
-  extends: .build-common
+  extends: .deploy-common
+  cache:
+    policy: pull
 
 deploy-build for Ubuntu 14.04:
-  extends: .build-common
+  extends: .deploy-common
   image: snowdriftcoop/snowdrift-ci:0.0.6-14.04
   # This job needs its own cache because of differences in libc.
   cache:
