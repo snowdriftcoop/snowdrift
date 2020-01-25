@@ -6,22 +6,6 @@ packages:
   - website
   - crowdmatch
   - run-persist
-  # This is patched to use UTCTime instead of Localtime (needs to get moved
-  # upstream: see https://git.snowdrift.coop/sd/snowdrift/issues/8)
-  - location:
-     git: https://git.snowdrift.coop/sd/postgresql-simple-migration-patches.git
-     commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
-    extra-dep: true
-  - location:
-     git: https://notabug.org/fr33domlover/shakespeare-sass.git
-     commit: e25b7f6699096e0ffa619dc71a8ef028940e5bb9
-    extra-dep: true
-  # Please remove this and edit dev-tools/tag.sh once v0.5.1.3 comes out.
-  # We'll then just do `stack install codex`.
-  - location:
-      git: https://github.com/aloiscochard/codex.git
-      commit: 0d59fe5099136015912e13a4c1ea573c5fd7f2ff
-    extra-dep: true
 extra-deps:
   - hashids-1.0.2.3
   - hsass-0.5.0
@@ -29,7 +13,18 @@ extra-deps:
   - stripe-core-2.2.3
   - stripe-haskell-2.2.3
   - stripe-http-streams-2.2.3
+  # This is patched to use UTCTime instead of Localtime (needs to get moved
+  # upstream: see https://gitlab.com/snowdrift/snowdrift/issues/8)
+  - git: https://gitlab.com/snowdrift/postgresql-simple-migration-patches.git
+    commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
+  - git: https://notabug.org/fr33domlover/shakespeare-sass.git
+    commit: e25b7f6699096e0ffa619dc71a8ef028940e5bb9
+  # Please remove this and edit dev-tools/tag.sh once v0.5.1.3 comes out.
+  # We'll then just do `stack install codex`.
+  - git: https://github.com/aloiscochard/codex.git
+    commit: 0d59fe5099136015912e13a4c1ea573c5fd7f2ff
 nix:
+  enable: false
   pure: false
   packages:
     - ncurses

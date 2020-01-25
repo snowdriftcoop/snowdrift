@@ -47,11 +47,11 @@ $# mark.
         \ categories to read, comment or post about anything related to
         Snowdrift.coop.
     <li .item>
-      <a href="https://git.snowdrift.coop/sd">
+      <a href="https://gitlab.com/snowdrift/">
         <img .img .git src=@{StaticR img_about_git_png}>
       <p .desc>
         Squash bugs or have a look at how things are evolving in
-        <a .link href="https://git.snowdrift.coop/sd">
+        <a .link href="https://gitlab.com/snowdrift/">
           our git repository
         .
     <li .item>

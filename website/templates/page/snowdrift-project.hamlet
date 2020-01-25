@@ -40,8 +40,8 @@ $nothing
     <li>
       <a href="https://blog.snowdrift.coop">Blog
     <li>
-      <a href="https://git.snowdrift.coop/groups/sd/-/activity">
-        Code and other activity at git.snowdrift.coop
+      <a href="https://gitlab.com/groups/snowdrift/-/activity">
+        Code and other activity at gitlab.com/snowdrift
     <li>
       Follow us on Mastodon
       <a href="https://social.coop/@snowdrift">
@@ -55,8 +55,8 @@ $nothing
         planning section of our wiki
     <li>
       Specific tasks we're working on are tracked at
-      <a href="https://git.snowdrift.coop/groups/sd/-/issues">
-        git.snowdrift.coop issues
+      <a href="https://gitlab.com/groups/snowdrift/-/issues">
+        GitLab issues
 <.transparency>
   <h2>Financial transparency report
   <p>
