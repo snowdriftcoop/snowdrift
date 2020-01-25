@@ -102,6 +102,14 @@ main () {
         # This uses GitLab's "variable is a temp file" feature.
         keyfile="$PROD_SSH_KEY"
         host_keyfile="$PROD_HOST_KEY"
+
+        # SSH doesn't know our environment is already read-only. Well, better to
+        # say, SSH wisely doesn't trust that our environment is read-only,
+        # because that sort of depends on a lot of things. Here's the facts,
+        # though: I am just as likely to screw this up as GitLab are, so I'll
+        # just live with this.
+        chmod 600 $keyfile
+
         scp -i $keyfile \
             -o "UserKnownHostsFile $host_keyfile" \
             ${opt_appname}.keter \
