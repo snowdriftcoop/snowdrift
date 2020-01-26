@@ -203,6 +203,18 @@ and avoid browser-specific code.
 
 We have a separate [design] repo for design tasks, our design guide and so on.
 
+### Visual grid overlay
+
+The development mode includes a visual grid overlay that appears at viewport
+widths corresponding to the grid widths in design mockups. This can be used to
+compare the production pages with mockups to position elements and maintain
+vertical rhythm.
+
+Currently the grid overlay appears at the following widths:
+
+* 750px: 8-column grid
+* 390px: 4-column grid
+
 ### Code style
 
 We suggest using [brittany](https://hackage.haskell.org/package/brittany) as a
