@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures -fno-warn-orphans -Wno-missing-fields #-}
 
 import Control.Concurrent (newEmptyMVar, newMVar, MVar, modifyMVar_)
-import Control.Exception.Safe (bracket)
+import Control.Exception.Safe (bracket, catch)
 import Control.Monad (void, (<=<))
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader (ask)
@@ -16,7 +16,7 @@ import Data.Foldable (traverse_, for_)
 import Data.List (partition)
 import Data.Monoid ((<>))
 import Data.Text (Text)
-import Data.Time (UTCTime(..), getCurrentTime)
+import Data.Time (UTCTime(..), getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Postgresql
         (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
@@ -242,6 +242,7 @@ unitTests runner = describe "unit tests" $ do
         it "includes crowdmatch history" $ do
             let pid = 90
             now <- liftIO getCurrentTime
+            let tomorrow = succ $ utctDay now
             p <- runner $ do
                 insert_
                     (Model.Patron
@@ -250,14 +251,15 @@ unitTests runner = describe "unit tests" $ do
                         (Just (PaymentToken (CustomerId "")))
                         0
                         (Just now))
-                crowdmatch
+                crowdmatch tomorrow
                 fetchPatron (HarnessUser pid)
             length (patronCrowdmatches p) `shouldBe` 1
-            (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay (utctDay now)
+            (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay tomorrow
         it "includes only relevant crowdmatch history" $ do
             let thunor = 0
                 woden = 1
             now <- liftIO getCurrentTime
+            let tomorrow = succ $ utctDay now
             runner $ for_ [thunor, woden] (\p ->
                 insert_
                     (Model.Patron
@@ -267,11 +269,11 @@ unitTests runner = describe "unit tests" $ do
                         0
                         (Just now)))
             (thunor', woden') <- runner $ do
-                crowdmatch
+                crowdmatch tomorrow
                 deletePledge (HarnessUser woden)
-                crowdmatch
+                crowdmatch tomorrow
                 storePledge (HarnessUser woden)
-                crowdmatch
+                crowdmatch tomorrow
                 t <- fetchPatron (HarnessUser thunor)
                 w <- fetchPatron (HarnessUser woden)
                 return (t,w)
@@ -334,39 +336,58 @@ unitTests runner = describe "unit tests" $ do
             projectMonthlyIncome <$> fetchProject
         val `shouldBe` Cents (100 * 1000)
     describe "crowdmatch event" $ do
-        let mkPatron i =
+        now <- runIO getCurrentTime
+        let tomorrow = succ $ utctDay now
+            mkPatron i =
                 void (storePaymentToken dummyStripe (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
                 storePledge (HarnessUser i)
-        -- 1. Two patrons, one active -> 0.01 payable from the patron
-        it "only counts active patrons" $ do
+        -- Two patrons, one active -> 0.01 payable from the patron
+        it "only counts patrons who have pledged" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
-        it "looks quadratic; 3 patrons = 9 DUs" $ do
+        it "only counts patrons who have not unpledged" $ do
+            val <- runner $ do
+                mkPledge 1
+                mkPledge 2
+                deletePledge (HarnessUser 2)
+                crowdmatch tomorrow
+                projectDonationReceivable <$> fetchProject
+            val `shouldBe` DonationUnits 1
+        it "only counts pledges made before the crowdmatch date" $ do
+            val <- runner $ do
+                -- The `mkPledge` creates a pledge with the current timestamp,
+                -- which cannot be *before* the current day, so it will not be
+                -- counted.
+                mkPledge 1
+                crowdmatch $ utctDay now
+                projectDonationReceivable <$> fetchProject
+            val `shouldBe` DonationUnits 0
+        it "looks quadratic; 3 patrons = 9 DUs" $ do -- DU = Donation Unit
             val <- runner $ do
                 mapM_ mkPledge [1..3]
-                crowdmatch
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 9
         it "sums over multiple events" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch
+                crowdmatch tomorrow
                 storePledge (HarnessUser 1)
                 -- Now 1 is also active
-                crowdmatch
+                crowdmatch tomorrow
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 5
         it "creates history" $ do
             u :: [Entity Model.CrowdmatchHistory] <- runner $ do
                 mkPledge 1
-                crowdmatch
+                crowdmatch tomorrow
                 selectList [] []
             length u `shouldBe` 1
     describe "make-payments event" $ do
@@ -410,7 +431,7 @@ withTestDatabase = bracket setup' teardown' . const
     db = "crowdmatch_test"
     ts = "crowdmatch_tests"
     shmLoc = "/dev/shm/crowdmatch_test_tablespace"
-    setup' = do
+    setup' = (do
         createDirectoryIfMissing True shmLoc
         setEnv "PGDATABASE" "template1"
         -- Postgres requires separate queries here
@@ -426,11 +447,20 @@ withTestDatabase = bracket setup' teardown' . const
                 <> " tablespace "
                 <> ts)
         -- Used for the tests
-        setEnv "PGDATABASE" (B.unpack (PG.fromQuery db))
-    teardown' = const $ do
+        setEnv "PGDATABASE" (B.unpack (PG.fromQuery db)))
+        `catch` (\ (ex :: PG.SqlError) -> do
+            putStrLn "Setting up in-memory database failed:"
+            print ex
+            putStrLn "Falling back to PGDATABASE=snowdrift_test."
+            setEnv "PGDATABASE" "snowdrift_test")
+    teardown' = const $ (do
         setEnv "PGDATABASE" "template1"
         pgExecute_ ("drop database " <> db)
-        pgExecute_ ("drop tablespace " <> ts)
+        pgExecute_ ("drop tablespace " <> ts))
+        `catch` (\ (ex :: PG.SqlError) -> do
+            putStrLn "Tearing down in-memory database failed:"
+            print ex
+            putStrLn "Ignoring failure.")
 
 prop_randomHistory :: Runner -> PropertyM IO ()
 prop_randomHistory runner = do

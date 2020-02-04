@@ -1,13 +1,86 @@
-.about
-  max-width: 700px
-  margin: 0 auto
+@import ../main/main
 
 
-.homepage-section
-    padding: 10px
-    margin-bottom: 10px
-    h2, h3
-        margin: 10px
+.intro
+    +text--body
+    color: $dark-blue
 
-p
-    margin: 1.5rem auto 3rem
+    .goal
+        font-style: italic
+
+    .link
+        +text--link
+
+
+.links-list
+    list-style: none
+
+    .desc
+        +text--body
+        color: $dark-blue
+
+        .link
+            +text--link
+
+    .img
+        vertical-align: bottom
+
+        &.wiki
+            width: 10.5rem
+            height: 5rem
+
+        &.community
+            width: 21.8rem
+            height: 5.6rem
+
+        &.git
+            width: 8.2rem
+            height: 5.2rem
+
+        &.blog
+            width: 11.6rem
+            height: 5rem
+
+
+///------------------------------------------------------------------------///
+//  Common layout                                                           //
+///------------------------------------------------------------------------///
+
+.intro .goal
+    +vr($grid--s, mgn 1)
+    margin-left: 3.5rem
+
+
+.links-list
+    .item
+        +vr($grid--s, mgn 2)
+
+        .desc
+            margin: 1.5rem 0 0 3.5rem
+
+
+///------------------------------------------------------------------------///
+//  Extra small                                                             //
+///------------------------------------------------------------------------///
+
++respond("xs")
+    .section
+        +span($grid--s, 4 max-pct both)
+
+
+///------------------------------------------------------------------------///
+//  Small                                                                   //
+///------------------------------------------------------------------------///
+
++respond("s")
+    .section
+        +span($grid--s, 4 max-pct auto)
+
+
+///------------------------------------------------------------------------///
+//  Medium                                                                  //
+///------------------------------------------------------------------------///
+
++respond("m")
+    .section
+        +span($grid--m, 6 max auto)

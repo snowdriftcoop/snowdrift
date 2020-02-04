@@ -26,7 +26,7 @@ main () {
     if [ ! -d snowdrift ]
     then
         log "Cloning repo"
-        git clone https://git.snowdrift.coop/sd/snowdrift.git
+        git clone https://gitlab.com/snowdrift/snowdrift.git
         cd snowdrift
     else
         cd snowdrift
