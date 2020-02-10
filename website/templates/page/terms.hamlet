@@ -12,7 +12,12 @@
   6. Remove the in-line table and column width restrictions that pandoc added
       - maybe there's an argument to block pandoc from adding those, but removing is trivial
   7. Convert site-internal links to routes (ContactR, PrivacyR, and TrademarksR)
-  8. Add this whole comment block to the top of the file
+  8. Insert CSS classes:
+      - `.header .m--tilt` for h1
+      - `.section` div after h1
+      - `.table-wrap` div before the table of contents
+      - `.list--dec` and `.list--alpha` ol for decimal and alphabetical lists
+  9. Add this whole comment block to the top of the file
 -->
 
 <h1 .header .m--tilt #snowdrift-coop-terms-of-service>
