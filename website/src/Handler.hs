@@ -41,7 +41,6 @@ getPrivacyR = defaultLayoutNew $ do
 
 getTermsR :: Handler Html
 getTermsR = do
-    loggedIn <- isJust <$> maybeAuth
     defaultLayoutNew $ do
         setTitle "Terms of Service"
         $(widgetFile "page/terms")
