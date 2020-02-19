@@ -12,659 +12,987 @@
   6. Remove the in-line table and column width restrictions that pandoc added
       - maybe there's an argument to block pandoc from adding those, but removing is trivial
   7. Convert site-internal links to routes (ContactR, PrivacyR, and TrademarksR)
-  8. Add this whole comment block to the top of the file
+  8. Insert CSS classes:
+      - `.header .m--tilt` for h1
+      - `.section` div after h1
+      - `.table-wrap` div before the table of contents
+      - `.list--dec` and `.list--alpha` ol for decimal and alphabetical lists
+  9. Add this whole comment block to the top of the file
 -->
 
-<h1 #snowdrift-coop-terms-of-service>
- Snowdrift.coop Terms of Service
-<p>
- <em>
-  Version 0.4
- (see our
- <a href="https://gitlab.com/snowdrift/legal/blob/master/CHANGELOG.md">
-  changelog
- for history)
-<h2 #introduction>
- Introduction
-<p>
- Welcome! Snowdrift.coop is a nonprofit cooperative with a
- <a href="https://wiki.snowdrift.coop/about/mission">
-  mission
- to fund and otherwise support public goods projects.
-<p>
- We welcome you to participate in the community. But first, please read and agree to the following Terms of Service.
-<p>
- We've tried to make our terms as ethical and transparent as possible. To that end, we include a non-binding summary table below and non-binding "short version" introductions for each terms section. Please
- <a href=@{ContactR}>
-  contact us
- if you have any questions or see room for improvements.
-<div .figure>
- <img alt="(Comic) Mimi: &quot;We've become a society ruled by lawyers! A Lawyerarchy!&quot; Eunice: &quot;Lawyertarianism!&quot; Mimi: &quot;I'm not suggesting we eat them.&quot; Eunice: &quot;I am!&quot;" src=@{StaticR img_ME_156_Lawyerarchy_png}>
-<h3 #summary>
- Summary
-<table>
- <colgroup>
-  <col>
-  <col>
- <thead>
-  <tr .header>
-   <th>
-    Section
-   <th>
-    What can you find there?
- <tbody>
-  <tr .odd>
-   <td>
-    <a href="#a-definitions">
-     A. Definitions
-   <td>
-    Key words and phrases used within these terms.
-  <tr .even>
-   <td>
-    <a href="#b-account-terms">
-     B. Account Terms
-   <td>
-    The basic requirements of having an Account on Snowdrift.coop.
-  <tr .odd>
-   <td>
-    <a href="#c-acceptable-use">
-     C. Acceptable Use
-   <td>
-    The basic rules you must follow when using your Snowdrift.coop Account.
-  <tr .even>
-   <td>
-    <a href="#d-copyright-licensing-and-using-content-from-snowdrift-coop">
-     D. Copyright Licensing and Using Content from Snowdrift.coop
-   <td>
-    We use free/libre/open licenses for content at Snowdrift.coop.
-  <tr .odd>
-   <td>
-    <a href="#e-user-submitted-content">
-     E. User-Submitted Content
-   <td>
-    Content you post on Snowdrift.coop must be compatible with our free/libre/open licensing.
-  <tr .even>
-   <td>
-    <a href="#f-copyright-infringement-and-dmca-policy">
-     F. Copyright &amp; DMCA Policy
-   <td>
-    This section talks about how we handle claims of copyright infringement on Snowdrift.coop.
-  <tr .odd>
-   <td>
-    <a href="#g-crowdmatching-pledging-and-financial-transactions">
-     G. Crowdmatching, Pledging, and Financial Transactions
-   <td>
-    This section describes how our fundraising system works and how we handle financial transactions.
-  <tr .even>
-   <td>
-    <a href="#h-projects">
-     H. Projects
-   <td>
-    We have a few specific rules for Projects listed at Snowdrift.coop.
-  <tr .odd>
-   <td>
-    <a href="#i-volunteers">
-     I. Volunteers
-   <td>
-    Basic legal requirements to volunteer at Snowdrift.coop
-  <tr .even>
-   <td>
-    <a href="#j-cancellation-and-termination">
-     J. Cancellation and Termination
-   <td>
-    You may cancel this agreement and close your Account at any time.
-  <tr .odd>
-   <td>
-    <a href="#k-legal-communications-with-snowdrift-coop">
-     K. Legal Communications with Snowdrift.coop
-   <td>
-    How we send and recieve legal notices.
-  <tr .even>
-   <td>
-    <a href="#l-disclaimer-of-warranties">
-     <strong>
-      L. Disclaimer of Warranties
-   <td>
+<h1 .header .m--tilt #snowdrift-coop-terms-of-service>
+  Snowdrift.coop Terms of Service
+<.section>
+  <p>
+    <em>
+      Version 0.4
+    (see our
+    <a href="https://gitlab.com/snowdrift/legal/blob/master/CHANGELOG.md">
+      changelog
+    for history)
+  <h2 #introduction>
+    Introduction
+  <p>
+    Welcome! Snowdrift.coop is a nonprofit cooperative with a <a
+    href="https://wiki.snowdrift.coop/about/mission">mission</a> to fund and
+    otherwise support public goods projects.
+  <p>
+    We welcome you to participate in the community. But first, please read and
+    agree to the following Terms of Service.
+  <p>
+    We've tried to make our terms as ethical and transparent as possible. To
+    that end, we include a non-binding summary table below and non-binding
+    "short version" introductions for each terms section. Please <a
+    href=@{ContactR}>contact us</a> if you have any questions or see room for
+    improvements.
+  <figure>
+    <img alt="(Comic) Mimi: &quot;We've become a society ruled by lawyers! A Lawyerarchy!&quot; Eunice: &quot;Lawyertarianism!&quot; Mimi: &quot;I'm not suggesting we eat them.&quot; Eunice: &quot;I am!&quot;" src=@{StaticR img_ME_156_Lawyerarchy_png}>
+  <h3 #summary>
+    Summary
+  <.table-wrap>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Section
+          <th>
+            What can you find there?
+      <tbody>
+        <tr>
+          <td>
+            <a href="#a-definitions">
+              A. Definitions
+          <td>
+            Key words and phrases used within these terms.
+        <tr>
+          <td>
+            <a href="#b-account-terms">
+              B. Account Terms
+          <td>
+            The basic requirements of having an Account on Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#c-acceptable-use">
+              C. Acceptable Use
+          <td>
+            The basic rules you must follow when using your Snowdrift.coop
+            Account.
+        <tr>
+          <td>
+            <a href="#d-copyright-licensing-and-using-content-from-snowdrift-coop">
+              D. Copyright Licensing and Using Content from Snowdrift.coop
+          <td>
+            We use free/libre/open licenses for content at Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#e-user-submitted-content">
+              E. User-Submitted Content
+          <td>
+            Content you post on Snowdrift.coop must be compatible with our
+            free/libre/open licensing.
+        <tr>
+          <td>
+            <a href="#f-copyright-infringement-and-dmca-policy">
+              F. Copyright &amp; DMCA Policy
+          <td>
+            This section talks about how we handle claims of copyright
+            infringement on Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#g-crowdmatching-pledging-and-financial-transactions">
+              G. Crowdmatching, Pledging, and Financial Transactions
+          <td>
+            This section describes how our fundraising system works and how we
+            handle financial transactions.
+        <tr>
+          <td>
+            <a href="#h-projects">
+              H. Projects
+          <td>
+            We have a few specific rules for Projects listed at Snowdrift.coop.
+        <tr>
+          <td>
+            <a href="#i-volunteers">
+              I. Volunteers
+          <td>
+            Basic legal requirements to volunteer at Snowdrift.coop
+        <tr>
+          <td>
+            <a href="#j-cancellation-and-termination">
+              J. Cancellation and Termination
+          <td>
+            You may cancel this agreement and close your Account at any time.
+        <tr>
+          <td>
+            <a href="#k-legal-communications-with-snowdrift-coop">
+              K. Legal Communications with Snowdrift.coop
+          <td>
+            How we send and recieve legal notices.
+        <tr>
+          <td>
+            <a href="#l-disclaimer-of-warranties">
+              <strong>
+                L. Disclaimer of Warranties
+          <td>
+            <strong>
+              We provide our service as is, and we make no promises or
+              guarantees about this service.
+        <tr>
+          <td>
+            <a href="#m-limitation-of-liability">
+              <strong>
+                M. Limitation of Liability
+          <td>
+            <strong>
+              We will not be liable for damages or losses arising from your use
+              or inability to use the service or otherwise arising under this
+              agreement.
+        <tr>
+          <td>
+            <a href="#n-release-and-indemnification">
+              N. Release and Indemnification
+          <td>
+            You will not hold us liable if your use of the service leads to
+            legal action against you.
+        <tr>
+          <td>
+            <a href="#o-changes-to-these-terms">
+              O. Changes to these Terms of Service
+          <td>
+            We may modify this agreement, but we will give you 30 days' notice
+            of changes that affect your rights.
+        <tr>
+          <td>
+            <a href="#p-miscellaneous">
+              P. Miscellaneous
+          <td>
+            Further details and legal boilerplate for terms like this.
+  <h2 #the-snowdrift-coop-terms-of-service>
+    The Snowdrift.coop Terms of Service
+  <p>
+    Effective date: September 10, 2018
+  <h3 #a-definitions>
+    A. Definitions
+  <p>
     <strong>
-     We provide our service as is, and we make no promises or guarantees about this service.
-  <tr .odd>
-   <td>
-    <a href="#m-limitation-of-liability">
-     <strong>
-      M. Limitation of Liability
-   <td>
+      Short version:
+    <em>
+      We use certain terms with specific meanings throughout the agreement.
+  <ol .list--dec>
+    <li>
+      The "Agreement" refers, collectively, to all the terms, conditions,
+      notices contained or referenced in this document (the “Terms of Service”
+      or the "Terms") and all other operating rules, policies (including the <a
+      href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>), and procedures that
+      we may publish from time to time on the Website. Most of our site
+      policies are available at our <a
+      href="https://gitlab.com/snowdrift/legal/">legal repository</a>.
+    <li>
+      The "Service" refers to any services, software, products, and
+      applications provided by Snowdrift.coop.
+    <li>
+      The "Website" refers to content, services, and products that we provide
+      at the snowdrift.coop domain, the naked domain (which is our fundraising
+      platform) as well as subdomains (such as <a
+      href="https://wiki.snowdrift.coop">wiki.snowdrift.coop</a> and our forum
+      at <a
+      href="https://community.snowdrift.coop">community.snowdrift.coop</a>).
+      Occasionally, websites owned by Snowdrift.coop may provide different or
+      additional terms of service. If those additional terms conflict with this
+      Agreement, the more specific terms apply to the relevant page or service.
+      Note that these Terms do
+      <em>
+        not
+      cover your use of third-party services that integrate with or support
+      Snowdrift.coop services, such as payment services (e.g. Stripe) or
+      community and project management tools hosted elsewhere (e.g. GitLab.com,
+      Matrix.org, Freenode.net).
+    <li>
+      "The User," "You," and "Your" refer to the individual person that has
+      visited or is using the Website or Service; that accesses or uses any
+      part of the Account; or that directs the use of the Account in the
+      performance of its functions.
+    <li>
+      "Snowdrift.coop," "We," and "Us" includes our affiliates, directors,
+      subsidiaries, contractors, licensors, officers, agents, and employees.
+    <li>
+      "Content" refers to content featured or displayed through the Website,
+      including without limitation text, data, articles, images, photographs,
+      graphics, software, applications, designs, features, and other materials
+      that are available on the Website or otherwise available through the
+      Service. "Content" also includes Services. "User-Submitted Content" is
+      Content uploaded by our Users.
+    <li>
+      An "Account" represents your legal relationship with Snowdrift.coop. A
+      "User Account" represents an individual User's authorization to log in to
+      and use the Service and serves as a User's identity on Snowdrift.coop.
+    <li>
+      A "Project" is an entity represented by one or more Users that gets
+      listed on the Website in order to use our Crowdmatching fundraising
+      system (see <a
+      href="#g-crowdmatching-pledging-and-financial-transactions">section
+      G</a>) to support their development and maintenance of public goods.
+  <h3 #b-account-terms>
+    B. Account Terms
+  <p>
     <strong>
-     We will not be liable for damages or losses arising from your use or inability to use the service or otherwise arising under this agreement.
-  <tr .even>
-   <td>
-    <a href="#n-release-and-indemnification">
-     N. Release and Indemnification
-   <td>
-    You will not hold us liable if your use of the service leads to legal action against you.
-  <tr .odd>
-   <td>
-    <a href="#o-changes-to-these-terms">
-     O. Changes to these Terms of Service
-   <td>
-    We may modify this agreement, but we will give you 30 days' notice of changes that affect your rights.
-  <tr .even>
-   <td>
-    <a href="#p-miscellaneous">
-     P. Miscellaneous
-   <td>
-    Further details and legal boilerplate for terms like this.
-<h2 #the-snowdrift-coop-terms-of-service>
- The Snowdrift.coop Terms of Service
-<p>
- Effective date: September 10, 2018
-<h3 #a-definitions>
- A. Definitions
-<p>
- <strong>
-  Short version:
- <em>
-  We use certain terms with specific meanings throughout the agreement.
-<ol style="list-style-type: decimal">
- <li>
-  The “Agreement” refers, collectively, to all the terms, conditions, notices contained or referenced in this document (the “Terms of Service” or the "Terms") and all other operating rules, policies (including the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>), and procedures that we may publish from time to time on the Website. Most of our site policies are available at our <a .uri href="https://gitlab.com/snowdrift/legal/">legal repository</a>.
- <li>
-  The “Service” refers to any services, software, products, and applications provided by Snowdrift.coop.
- <li>
-  The “Website” refers to content, services, and products that we provide at the snowdrift.coop domain, the naked domain (which is our fundraising platform) as well as subdomains (such as
-  <a href="https://wiki.snowdrift.coop">wiki.snowdrift.coop
-  and our forum at <a href="https://community.snowdrift.coop">community.snowdrift.coop</a>).
-  Occasionally, websites owned by Snowdrift.coop may provide different or additional terms of service. If those additional terms conflict with this Agreement, the more specific terms apply to the relevant page or service. Note that these Terms do
-  <em>
-   not
-  cover your use of third-party services that integrate with or support Snowdrift.coop services, such as payment services (e.g. Stripe) or community and project management tools hosted elsewhere (e.g. GitLab.com, Matrix.org, Freenode.net).
- <li>
-  “The User,” “You,” and “Your” refer to the individual person that has visited or is using the Website or Service; that accesses or uses any part of the Account; or that directs the use of the Account in the performance of its functions.
- <li>
-  “Snowdrift.coop,” “We,” and “Us” includes our affiliates, directors, subsidiaries, contractors, licensors, officers, agents, and employees.
- <li>
-  “Content” refers to content featured or displayed through the Website, including without limitation text, data, articles, images, photographs, graphics, software, applications, designs, features, and other materials that are available on the Website or otherwise available through the Service. "Content" also includes Services. “User-Submitted Content” is Content uploaded by our Users.
- <li>
-  An "Account" represents your legal relationship with Snowdrift.coop. A “User Account” represents an individual User’s authorization to log in to and use the Service and serves as a User’s identity on Snowdrift.coop.
- <li>
-  A "Project" is an entity represented by one or more Users that gets listed on the Website in order to use our Crowdmatching fundraising system (see <a href="#g-crowdmatching-pledging-and-financial-transactions">section G</a>) to support their development and maintenance of public goods.
-<h3 #b-account-terms>
- B. Account Terms
-<p>
- <strong>
-  Short version:
- <em>
-  To create a User Account, you must be a human age 13 or over; you must provide a valid email address; and you may not have more than one Account. You alone are responsible for your Account and for keeping it secure.
-<h4 #account-controls>
- 1. Account Controls
-<p>
- Subject to these Terms, you retain ultimate administrative control over your User Account and the Content within it.
-<h4 #required-information>
- 2. Required Information
-<p>
- You must provide a valid email address in order to complete the signup process. Any other information requested, such as your real name, is optional (but some additional information may be needed to engage in certain activities, such as pledging financial support to Projects).
-<h4 #account-requirements>
- 3. Account Requirements
-<p>
- We have a few simple rules for User Accounts on Snowdrift.coop's Service.
-<ul>
- <li>
-  You must be a human to create an Account. Accounts registered by "bots" or other automated methods are not permitted.
- <li>
-  One person may maintain no more than one Account
- <li>
-  You must be age 13 or older. While we are thrilled to see young people excited about funding public goods, we comply with applicable laws, such as the U.S. Children's Online Privacy Protection Act. Snowdrift.coop does not target our Service to children, and we do not permit any Users under 13 on our Service. If we learn of any User under the age of 13, we will
-  <a href="#m-cancellation-and-termination">
-   terminate that User’s Account
-  immediately. For Users outside the United States, minimum age may be older; in the European Union, the minimum age for an Account is 16; in all cases, you are responsible for complying with applicable laws.
- <li>
-  Your login may only be used by one person — i.e., a single login may not be shared by multiple people.
-<h4 #user-account-security>
- 4. User Account Security
-<p>
- You are responsible for the security of your Account while you use our Service.
-<ul>
- <li>
-  You are responsible for maintaining the security of your Account and password. Snowdrift.coop cannot and will not be liable for any loss or damage from your failure to comply with this security obligation.
- <li>
-  You will promptly
-  <a href=@{ContactR}>
-   notify Snowdrift.coop
-  if you become aware of any unauthorized use of, or access to, our Service through your Account, including any unauthorized use of your password or Account.
-<h4 #additional-terms>
- 5. Additional Terms
-<p>
- In some situations, third parties' terms may apply to your use of Snowdrift.coop. For example, you must connect your account to a payment service in order to donate or to receive donations. Please be aware that while these Terms are our full agreement with you, other parties' terms govern their relationships with you.
-<h3 #c-acceptable-use>
- C. Acceptable Use
-<p>
- <strong>
-  Short version:
- <em>
-  Snowdrift.coop supports a wide variety of projects from all over the world, bringing together people with diverse backgrounds and interests. We expect everyone to work together in good faith, following these terms and our other community rules. The following Acceptable Use Policy defines some of what content you can post and your conduct on the service.
-<h4 #compliance-with-laws-and-regulations>
- 1. Compliance with Laws and Regulations
-<p>
- Your use of the Website and Service must not violate any applicable laws, including copyright or trademark laws, export control laws, or other laws in your jurisdiction. You are responsible for making sure that your use of the Service is in compliance with laws and any applicable regulations.
-<h4 #content-restrictions>
- 2. Content Restrictions
-<p>
- You agree that you will not under any circumstances upload, post, host, or transmit any content that:
-<ul>
- <li>
-  is unlawful or promotes unlawful activities;
- <li>
-  is or contains sexually obscene content;
- <li>
-  is libelous, defamatory, or fraudulent;
- <li>
-  is bigoted or abusive toward any individual or group;
- <li>
-  contains or installs any active malware or exploits, or uses our platform for exploit delivery (such as part of a command and control system); or
- <li>
-  infringes on any proprietary right of any party, including patent, trademark, trade secret, copyright, right of publicity, or other rights.
-<h4 #conduct-restrictions>
- 3. Conduct Restrictions
-<p>
- We welcome your participation in this community and encourage you to stay civil and constructive in your interactions with others and to make contributions aimed at furthering our mission.
-<p>
- In addition to the restrictions specified here in these Terms, we enforce a more thorough
- <a href="https://wiki.snowdrift.coop/community/conduct">
-  Code of Conduct
- on our forum and any other community spaces.
-<p>
- While using Snowdrift.coop, you agree that you will not under any circumstances:
-<ul>
- <li>
-  harass, abuse, threaten, or incite violence towards any individual or group, including Snowdrift.coop employees, officers, and agents, or other Users;
- <li>
-  use our servers for any form of excessive automated bulk activity (for example, spamming), or relay any other form of unsolicited advertising or solicitation through our servers, such as get-rich-quick schemes;
- <li>
-  attempt to disrupt or tamper with Snowdrift.coop's servers in ways that could harm our Website or Service, or place undue burden on Snowdrift.coop's servers;
- <li>
-  post intentionally false statements or engage in any other fraud, including impersonation of any person or entity (including any of our employees or representatives, including through false association with Snowdrift.coop), or fraudulent misrepresentation of your identity; or
- <li>
-  violate the privacy of any third party, such as by soliciting or posting another person's personal information without consent.
- <li>
-  engage in any other activity that significantly harms our Users.
-<h4 #permission-for-security-research>
- 4. Permission for Security Research
-<p>
- You must not access Snowdrift.coop's Services in ways that exceed your authorization unless the following conditions are met:
-<ul>
- <li>
-  You are undertaking security research that involves probing, scanning, or testing the vulnerability of our technical systems or networks;
- <li>
-  Your actions do not unduly abuse or disrupt our technical systems or networks;
- <li>
-  Your actions are not for personal gain (beyond attribution for your work);
- <li>
-  You report any vulnerabilities to our developers (or fix them yourself); and
- <li>
-  You do not undertake such actions with malicious or destructive intent.
-<h4 #services-usage-limits>
- 4. Services Usage Limits
-<p>
- You agree not to reproduce, duplicate, copy, sell, resell or exploit any portion of the Service, use of the Service, or access to the Service without Snowdrift.coop's express written permission (noting that the public licensing under which we publish on our software and multimedia publications constitutes such permission, following the terms of the relevant licenses).
-<h4 #privacy>
- 5. Privacy
-<p>
- Misuse of Snowdrift.coop Users' Personal Information (as defined in the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>) is prohibited.
-<ul>
- <li>
-  Any person, entity, or service collecting data from Snowdrift.coop must comply with the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>.
- <li>
-  Any Personal Information you collect from Snowdrift.coop Users must be used only for purposes those Users have authorized.
- <li>
-  You agree that you will reasonably secure any Personal Information you have gathered from Snowdrift.coop, and will respond promptly to complaints, removal requests, and "do not contact" requests from Snowdrift.coop or our Users.
-<h4 #scraping>
- 6. Scraping
-<p>
- Scraping refers to extracting data from our Website via an automated process, such as a bot or webcrawler. You may scrape the website for the following reasons:
-<ul>
- <li>
-  Researchers may scrape public, non-personal information from Snowdrift.coop for research purposes, only if any publications resulting from that research are open access.
- <li>
-  Archivists may scrape Snowdrift.coop for public data for archival purposes.
-<p>
- You may not scrape Snowdrift.coop for spamming purposes, including for the purposes of selling Snowdrift.coop users' personal information.
-<h4 #excessive-bandwidth-use>
- 7. Excessive Bandwidth Use
-<p>
- If we determine your bandwidth usage to be significantly excessive in relation to other Users, we reserve the right to take technical measures to reduce your bandwidth consumption and to suspend your Account if necessary.
-<h3 #d-copyright-licensing-and-using-content-from-snowdrift-coop>
- D. Copyright Licensing and Using Content from Snowdrift.coop
-<p>
- <strong>
-  Short version:
- <em>
-  You can use, modify, and share most anything from the Website as long as you follow the applicable FLO license requirements (giving credit, keeping terms for others). There's just a few exceptions such as Trademarks.
-<p>
- Most public writings and images at Snowdrift.coop are free to use and share under CC BY-SA (with attribution credit simply to "Snowdrift.coop"), with the following exceptions and qualifications:
-<ul>
- <li>
-  The Snowdrift.coop website source code is licensed under the terms of the <a href="https://gitlab.com/snowdrift/snowdrift/blob/master/LICENSE.md">GNU AGPLv3+</a>.
- <li>
-  All Snowdrift.coop trademarks belong to Snowdrift.coop, and any use of our trade names, trademarks, service marks, logos, or domain names must be in compliance with both these Terms and with our <a href=@{TrademarksR}>Trademark Policy</a>.
- <li>
-  User-Submitted Content (including Project listings and forum postings) may use different (but usually compatible) terms where explicitly specified. For such Content, you must follow any applicable Trademark policies and give attribution credit to the specific project or user rather than to Snowdrift.coop.
- <li>
-  Any use of private content (such as emails, forum messages, or posts in restricted forum categories) remains All Rights Reserved unless otherwise specified.
-<h3 #e-user-submitted-content>
- E. User-Submitted Content
-<p>
- <strong>
-  Short version:
- <em>
-  Other than Trademarks or unambiguous cases of Fair Use, Content submitted to Snowdrift.coop in public contexts must be compatible with the free/libre/open licensing that we use (CC BY-SA primarily). Users are responsible for submitting within their legal rights and retain any copyrights and moral rights within the free/libre/open license terms. We have the right to remove content as needed.
-<p>
- As per our mission to grow the commons of free knowledge and free culture, all users contributing to projects are required to grant general permissions to re-distribute and re-use their contributions freely, so long as that use is properly attributed and the same freedom to re-use and re-distribute is granted to any derivative works.
-<h4 #responsibility-for-user-submitted-content>
- 1. Responsibility for User-Submitted Content
-<p>
- You may create or upload User-Submitted Content while using the Service. You are solely responsible for the content of, and for any harm resulting from, any User-Submitted Content that you post, upload, link to or otherwise make available via the Service, regardless of the form of that Content. We are not responsible for any public display or misuse of your User-Submitted Content.
-<h4 #snowdrift-coop-may-remove-content>
- 2. Snowdrift.coop May Remove Content
-<p>
- We do not pre-screen User-Submitted Content, but we have the right (though not the obligation) to refuse or remove any User-Submitted Content that, in our sole discretion, violates any Snowdrift.coop terms or policies.
-<h4 #ownership-of-content-right-to-post-and-license-grants>
- 3. Ownership of Content, Right to Post, and License Grants
-<p>
- You agree to only submit Content if you have all necessary legal rights to submit it and follow these requirements:
-<ol style="list-style-type: lower-alpha">
- <li>
-  If you are the sole copyright holder, you agree to apply the following licenses (or a compatible license, specified in writing) to your
-  <em>
-   public
-  submissions:
+      Short version:
+    <em>
+      To create a User Account, you must be a human age 13 or over; you must
+      provide a valid email address; and you may not have more than one
+      Account.  You alone are responsible for your Account and for keeping it
+      secure.
+  <h4 #account-controls>
+    1. Account Controls
+  <p>
+    Subject to these Terms, you retain ultimate administrative control over
+    your User Account and the Content within it.
+  <h4 #required-information>
+    2. Required Information
+  <p>
+    You must provide a valid email address in order to complete the signup
+    process. Any other information requested, such as your real name, is
+    optional (but some additional information may be needed to engage in
+    certain activities, such as pledging financial support to Projects).
+  <h4 #account-requirements>
+    3. Account Requirements
+  <p>
+    We have a few simple rules for User Accounts on Snowdrift.coop's Service.
   <ul>
-   <li>
-    for code submissions, the
-    <a href="https://www.gnu.org/licenses/agpl">
-     GNU AGPLv3+
-    (including the "or later version" clause)
-   <li>
-    for non-code submissions, the
-    <a href="https://creativecommons.org/licenses/by-sa/4.0/">
-     Creative Commons Attribution-ShareAlike 4.0 International License
-    (“CC BY-SA”)
-    <a .footnoteRef href="#fn1" #fnref1>
-     <sup>
-      1
+    <li>
+      You must be a human to create an Account. Accounts registered by "bots"
+      or other automated methods are not permitted.
+    <li>
+      One person may maintain no more than one Account
+    <li>
+      You must be age 13 or older. While we are thrilled to see young people
+      excited about funding public goods, we comply with applicable laws, such
+      as the U.S. Children's Online Privacy Protection Act. Snowdrift.coop does
+      not target our Service to children, and we do not permit any Users under
+      13 on our Service. If we learn of any User under the age of 13, we will
+      <a href="#m-cancellation-and-termination">
+        terminate that User's Account
+      immediately. For Users outside the United States, minimum age
+      may be older; in the European Union, the minimum age for an Account is
+      16; in all cases, you are responsible for complying with applicable laws.
+    <li>
+      Your login may only be used by one person — i.e., a single login may not
+      be shared by multiple people.
+  <h4 #user-account-security>
+    4. User Account Security
   <p>
-   Please note that these licenses allow commercial uses of your contributions (as long as such uses are compliant with all other terms of these licenses).
+    You are responsible for the security of your Account while you use our
+    Service.
+  <ul>
+    <li>
+      You are responsible for maintaining the security of your Account and
+      password. Snowdrift.coop cannot and will not be liable for any loss or
+      damage from your failure to comply with this security obligation.
+    <li>
+      You will promptly <a href=@{ContactR}>notify Snowdrift.coop</a> if you
+      become aware of any unauthorized use of, or access to, our Service
+      through your Account, including any unauthorized use of your password or
+      Account.
+  <h4 #additional-terms>
+    5. Additional Terms
   <p>
-   User Submitted Content in
-   <em>
-    private
-   contexts (such as in forum messages or in restricted categories of the forum) only uses the above licensing if explicitly specified.
-<ol start="2" style="list-style-type: lower-alpha">
- <li>
-  If you do not (solely) own any copyrights, you warrant that the Content is available to you and to us under terms compatible with the licenses above (including Content being Public Domain or unambiguously allowable under recognized Fair Use doctrines), and you must follow the terms (such as indicating attribution) per any applicable license of the Content.
- <li>
-  For Trademarked Content (such as project logos), you must have legal authority to grant usage and agree to grant Snowdrift.coop permission to display the Trademarks where appropriate in reference to the trademarked project, goods, or services.
-<h3 #f-copyright-infringement-and-dmca-policy>
- F. Copyright Infringement and DMCA Policy
-<p>
- <strong>
-  Short version:
- <em>
-  We follow standard legal procedures in handling copyright infringement allegations and aim to inform everyone of their rights.
-<p>
- If you believe that Content anywhere on Snowdrift.coop infringes on a copyright you hold, we encourage you to first reach out informally via one of the methods on our <a href=@{ContactR}>contact page</a>.
-<p>
- To take action under Section 512(c) of the U.S. Digital Millennium Copyright Act of 1998, follow our
- <a href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-guide.md">
-  DMCA Guide
- and the connected
- <a href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-takedowns.md">
-  DMCA Takedown Notice Guide
- Pursuant to the DMCA, we will terminate, in appropriate circumstances, the Accounts of repeat infringers.
-<div .figure>
- <img alt='(Comic) Eunice: "You artists should be grateful for us lawyers. We protect you!" Mimi: "From what?" Eunice: "Lawyers!"' src=@{StaticR img_ME_323_LawyersProtectArtists_png}>
-<h3 #g-crowdmatching-pledging-and-financial-transactions>
- G. Crowdmatching, Pledging, and Financial Transactions
-<p>
- <strong>
-  Short version:
- <em>
-  Crowdmatching involves many Patrons agreeing to donate by matching each other. You participate by pledging to various Projects listed at Snowdrift.coop, and we then bill you monthly through a connected payment service. We combine charges to reduce fees. You can remove pledges at any time, but previous donations are non-refundable.
-<h4 #crowdmatching>
- 1. Crowdmatching
-<p>
- At Snowdrift.coop, we offer a fundraising service called "Crowdmatching". It calculates donation levels using a base amount (denominated in U.S. Dollars) multiplied by the number of Patrons to a Project.
-<h4 #authorizing-a-third-party-payment-service>
- 2. Authorizing a Third-Party Payment Service
-<p>
- To participate in Crowdmatching, you must connect your Account with an approved third-party payment service, accepting their independent terms. By connecting a payment service, you authorize us to have that service charge you on behalf of Projects to which you Pledge your support.
-<h4 #pledging>
- 3. Pledging
-<p>
- You can Pledge to support any number of Projects among those listed on the Website.
-<p>
- By clicking the Pledge button for any specific Project, you:
-<ul>
- <li>
-  agree to be included in the count of Patrons to that Project
- <li>
-  authorize us to bill you variable monthly amounts based on Crowdmatching calculations
-<h4 #billing-schedule-no-refunds>
- 4. Billing Schedule; No Refunds
-<p>
- Donations to Projects are billed on a monthly basis and are non-refundable.
-<h4 #responsibility-for-payment>
- 5. Responsibility for Payment
-<p>
- You are responsible for all fees, including taxes, associated with your use of the Service. If you do not participate in Crowdmatching, you are not required to provide payment information.
-<h4 #combined-charges>
- 6. Combined Charges
-<p>
- In order to reduce third-party payment processing fees, we may combine donations to multiple projects and sometimes multiple months of donations into single charges, processed in arrears.
-<h4 #budget-limits-and-cancelling-pledges>
- 7. Budget Limits and Cancelling Pledges
-<p>
- Your Account includes a setting for a budget limit. If your combined Pledges grow to be higher than your budget limit, Pledges may be suspended (one at a time). You may also manually cancel any Pledges at any time through your Account dashboard on the Website.
-<p>
- When a Pledge is suspended or cancelled, we will no longer include you in the count of Patrons to that Project and will not bill you for any new donations to that Project. We may still process any outstanding, delayed bills from previous months.
-<h3 #h-projects>
- H. Projects
-<p>
- <strong>
-  Short version:
- <em>
-  Snowdrift.coop will only include listings for Projects that publish free/libre/open public goods and meet our other specific requirements. Donations through Crowdmatching come directly from patrons via a supported third-party payment service.
-<h4 #project-requirements>
- 1. Project Requirements
-<p>
- To register a Project for listing at Snowdrift.coop, you must meet all of our
- <a href="https://gitlab.com/snowdrift/legal/blob/master/project-reqs.md">
-  Project Requirements
-<h4 #receiving-donations>
- 2. Receiving donations
-<p>
- Once accepted for listing, a Project will be in good standing and able to accept fundraising after connecting the Project with an account at a supported third-party payment service. Snowdrift.coop does not hold or handle any funds for any other Project. We only instruct an independent payment service (through their API) on when and how much to charge Patrons and which Projects should receive the donations.
-<h4 #project-owners>
- 3. Project Owners
-<p>
- Each Project must have at least one User Account designated as an owner. An "owner" of a Project created under these Terms has access to administrative controls for the Project's listing. If you are an owner of a Project under these Terms, we consider you responsible for the actions that are performed on or through that Project.
-<h4 #project-termination>
- 4. Project Termination
-<p>
- In case of any violation of our requirements or community norms, we reserve the right to remove any Project from listing at Snowdrift.coop or to temporarily suspend fundraising for any Project.
-<p>
- Any Project may request to be unlisted or fully removed at any time.
-<p>
- When we remove a Project, we will retain historic information for our records.
-<h3 #i-volunteers>
- I. Volunteers
-<p>
- <strong>
-  Short version:
- <em>
-  We welcome volunteers to help develop and run the Website as long as they accept some basic responsibilities.
-
-<p>
- Volunteers assist with many aspects of our Service, including but not limited to providing technical support, creating Content, performing site administration duties, providing expert advice, research, technical writing, reviewing, categorizing, and other duties as necessary.
-<p>
- If you volunteer, you agree that:
-<ul>
- <li>
-  You are of legal age or volunteering with the consent of a legal parent or guardian
- <li>
-  Any work created as a result of your volunteer service shall be licensed under the free/libre/open terms specified in the "Copyright Licensing" section and that any Attribution requirements may be fulfilled by attributing "Snowdrift.coop".
- <li>
-  You are providing your work with no expectation of pay or future consideration by Snowdrift.coop.
- <li>
-  You have taken reasonable diligence to ensure that your work is correct, accurate, and free of defect.
- <li>
-  You will not disclose or share any proprietary or confidential information that you can access or are provided with in the course of your volunteer work.
-<h3 #j-cancellation-and-termination>
- J. Cancellation and Termination
-<p>
- <strong>
-  Short version:
- <em>
-  You may close your Account at any time through an email request. If you do, we'll delete or otherwise anonymize your information as much as we can legally and technically. Also, while we have the right to unilaterally terminate Accounts or refuse service, we will only do so with great care and hope the need never arises.
-<h4 #account-cancellation>
- 1. Account Cancellation
-<p>
- You can request that We cancel your Account by sending an email to admin@snowdrift.coop from the same email as the Account (or with adequate proof of Account ownership). Within 30 days of recieving your cancellation request, we will remove all data and Content associated with your Account and cancel any active Pledges, with the following exceptions:
-<ul>
- <li>
-  We may make one final charge of any outstanding balance from past bills
- <li>
-  We will adhere to any legal requirements for data retention
- <li>
-  We will retain anonymized statistical data (e.g. records of pledges and donations)
- <li>
-  We may retain some anonymized Content (e.g. posts on our forum with identifying names and references removed)
- <li>
-  Some data may remain in encrypted backups
-<p>
- As specified in our <a href=@{PrivacyR}>Privacy Policy</a>, you can request a copy of your lawful, non-infringing Account contents. We will make a reasonable effort to provide you with all the personal data we can access and legally provide. Please make such requests prior to or in conjunction with any cancellation request. Once removed, We cannot recover data.
-<h4 #snowdrift-coop-may-terminate>
- 3. Snowdrift.coop May Terminate
-<p>
- We have the right to suspend or terminate your access to all or any part of the Website at any time, with or without cause, with or without notice, effective immediately. If we cancel your Account, you may not open a new Account without our explicit permission. We reserve the right to refuse service to anyone for any reason at any time.
-<h4 #survival>
- 4. Survival
-<p>
- All provisions of this Agreement which, by their nature, should survive termination
- <em>
-  will
- survive termination — including, without limitation: ownership provisions, warranty disclaimers, indemnity, and limitations of liability.
-<h3 #k-legal-communications-with-snowdrift-coop>
- K. Legal Communications with Snowdrift.coop
-<p>
- <strong>
-  Short version:
- <em>
-  We send legal communications to you via electronic methods. We have separate instructions for sending legal communications to us.
-<h4 #electronic-communication-required>
- 1. Electronic Communication Required
-<p>
- For contractual purposes, you (1) consent to receive communications from us in an electronic form via the email address you have submitted or via the Service; and (2) agree that all Terms of Service, agreements, notices, disclosures, and other communications that we provide to you electronically satisfy any legal requirement that those communications would satisfy if they were on paper. This section does not affect your non-waivable rights.
-<h4 #legal-notice-to-snowdrift-coop-must-be-in-writing>
- 2. Legal Notice to Snowdrift.coop Must Be in Writing
-<p>
- In any situation where notice is required by contract or any law or regulation, communications made through email or our community forum will not constitute legal notice to Snowdrift.coop or any of its officers, employees, agents, or representatives. Legal notices must be in writing and <a href="https://gitlab.com/snowdrift/legal/blob/master/legal-requests.md">served on Snowdrift.coop's legal agent</a>.
-<h3 #l-disclaimer-of-warranties>
- L. Disclaimer of Warranties
-<p>
- <strong>
-  Short version:
- <strong>
+    In some situations, third parties' terms may apply to your use of
+    Snowdrift.coop. For example, you must connect your account to a payment
+    service in order to donate or to receive donations. Please be aware that
+    while these Terms are our full agreement with you, other parties' terms
+    govern their relationships with you.
+  <h3 #c-acceptable-use>
+    C. Acceptable Use
+  <p>
+    <strong>
+      Short version:
+    <em>
+      Snowdrift.coop supports a wide variety of projects from all over the
+      world, bringing together people with diverse backgrounds and interests.
+      We expect everyone to work together in good faith, following these terms
+      and our other community rules. The following Acceptable Use Policy
+      defines some of what content you can post and your conduct on the
+      service.
+  <h4 #compliance-with-laws-and-regulations>
+    1. Compliance with Laws and Regulations
+  <p>
+    Your use of the Website and Service must not violate any applicable laws,
+    including copyright or trademark laws, export control laws, or other laws
+    in your jurisdiction. You are responsible for making sure that your use of
+    the Service is in compliance with laws and any applicable regulations.
+  <h4 #content-restrictions>
+    2. Content Restrictions
+  <p>
+    You agree that you will not under any circumstances upload, post, host, or
+    transmit any content that:
+  <ul>
+    <li>
+      is unlawful or promotes unlawful activities;
+    <li>
+      is or contains sexually obscene content;
+    <li>
+      is libelous, defamatory, or fraudulent;
+    <li>
+      is bigoted or abusive toward any individual or group;
+    <li>
+      contains or installs any active malware or exploits, or uses our platform
+      for exploit delivery (such as part of a command and control system); or
+    <li>
+      infringes on any proprietary right of any party, including patent,
+      trademark, trade secret, copyright, right of publicity, or other rights.
+  <h4 #conduct-restrictions>
+    3. Conduct Restrictions
+  <p>
+    We welcome your participation in this community and encourage you to stay
+    civil and constructive in your interactions with others and to make
+    contributions aimed at furthering our mission.
+  <p>
+    In addition to the restrictions specified here in these Terms, we enforce a
+    more thorough <a href="https://wiki.snowdrift.coop/community/conduct">Code
+    of Conduct</a> on our forum and any other community spaces.
+  <p>
+    While using Snowdrift.coop, you agree that you will not under any
+    circumstances:
+  <ul>
+    <li>
+      harass, abuse, threaten, or incite violence towards any individual or
+      group, including Snowdrift.coop employees, officers, and agents, or other
+      Users;
+    <li>
+      use our servers for any form of excessive automated bulk activity (for
+      example, spamming), or relay any other form of unsolicited advertising or
+      solicitation through our servers, such as get-rich-quick schemes;
+    <li>
+      attempt to disrupt or tamper with Snowdrift.coop's servers in ways that
+      could harm our Website or Service, or place undue burden on
+      Snowdrift.coop's servers;
+    <li>
+      post intentionally false statements or engage in any other fraud,
+      including impersonation of any person or entity (including any of our
+      employees or representatives, including through false association with
+      Snowdrift.coop), or fraudulent misrepresentation of your identity; or
+    <li>
+      violate the privacy of any third party, such as by soliciting or posting
+      another person's personal information without consent.
+  <li>
+      engage in any other activity that significantly harms our Users.
+  <h4 #permission-for-security-research>
+    4. Permission for Security Research
+  <p>
+    You must not access Snowdrift.coop's Services in ways that exceed your
+    authorization unless the following conditions are met:
+  <ul>
+    <li>
+      You are undertaking security research that involves probing, scanning, or
+      testing the vulnerability of our technical systems or networks;
+    <li>
+      Your actions do not unduly abuse or disrupt our technical systems or
+      networks;
+    <li>
+      Your actions are not for personal gain (beyond attribution for your
+      work);
+    <li>
+      You report any vulnerabilities to our developers (or fix them yourself);
+      and
+  <li>
+      You do not undertake such actions with malicious or destructive intent.
+  <h4 #services-usage-limits>
+    4. Services Usage Limits
+  <p>
+    You agree not to reproduce, duplicate, copy, sell, resell or exploit any
+    portion of the Service, use of the Service, or access to the Service
+    without Snowdrift.coop's express written permission (noting that the public
+    licensing under which we publish on our software and multimedia
+    publications constitutes such permission, following the terms of the
+    relevant licenses).
+  <h4 #privacy>
+    5. Privacy
+  <p>
+    Misuse of Snowdrift.coop Users' Personal Information (as defined in the <a
+    href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>) is prohibited.
+  <ul>
+    <li>
+      Any person, entity, or service collecting data from Snowdrift.coop must
+      comply with the <a href=@{PrivacyR}>Snowdrift.coop Privacy Policy</a>.
+    <li>
+      Any Personal Information you collect from Snowdrift.coop Users must be
+      used only for purposes those Users have authorized.
+    <li>
+      You agree that you will reasonably secure any Personal Information you
+      have gathered from Snowdrift.coop, and will respond promptly to
+      complaints, removal requests, and "do not contact" requests from
+      Snowdrift.coop or our Users.
+  <h4 #scraping>
+    6. Scraping
+  <p>
+    Scraping refers to extracting data from our Website via an automated
+    process, such as a bot or webcrawler. You may scrape the website for the
+    following
+    reasons:
+  <ul>
+    <li>
+      Researchers may scrape public, non-personal information from
+      Snowdrift.coop for research purposes, only if any publications resulting
+      from that research are open access.
+    <li>
+      Archivists may scrape Snowdrift.coop for public data for archival
+      purposes.
+  <p>
+    You may not scrape Snowdrift.coop for spamming purposes, including for the
+    purposes of selling Snowdrift.coop users' personal information.
+  <h4 #excessive-bandwidth-use>
+    7. Excessive Bandwidth Use
+  <p>
+    If we determine your bandwidth usage to be significantly excessive in
+    relation to other Users, we reserve the right to take technical measures to
+    reduce your bandwidth consumption and to suspend your Account if necessary.
+  <h3 #d-copyright-licensing-and-using-content-from-snowdrift-coop>
+    D. Copyright Licensing and Using Content from Snowdrift.coop
+  <p>
+    <strong>
+      Short version:
   <em>
-   We provide our service as is, and we make no promises or guarantees about this service.
-<p>
- Snowdrift.coop provides the Website and the Service “as is” and “as available,” without warranty of any kind. Without limiting this, we expressly disclaim all warranties, whether express, implied or statutory, regarding the Website and the Service including without limitation any warranty of merchantability, fitness for a particular purpose, title, security, accuracy and non-infringement.
-<p>
- Snowdrift.coop does not warrant that the Service will meet your requirements; that the Service will be uninterrupted, timely, secure, or error-free; that the information provided through the Service is accurate, reliable or correct; that any defects or errors will be corrected; that the Service will be available at any particular time or location; or that the Service is free of viruses or other harmful components. You assume full responsibility and risk of loss resulting from your downloading and/or use of files, information, content or other material obtained from the Service.
-<div .figure>
- <img alt="(Comic) Mimi looks scared seeing Eunice carrying an enormous pile of contract forms, cameras, microphones, and weapons (including rockets going off). Eunice says, &quot;What?! I'm just covering my ass!&quot;" src=@{StaticR img_ME_403_CoverYourAss_png}>
-<h3 #m-limitation-of-liability>
- M. Limitation of Liability
-<p>
- <strong>
-  Short version:
- <strong>
-  <em>
-   This section limits our obligations to you. We will not be liable for damages or losses arising from your use or inability to use the service or otherwise arising under this agreement.
-<p>
- You understand and agree that we will not be liable to you or any third party for any loss of profits, use, goodwill, or data, or for any incidental, indirect, special, consequential or exemplary damages, however arising, that result from:
-<ul>
- <li>
-  the use, disclosure, or display of your User-Generated Content;
- <li>
-  your use or inability to use the Service;
- <li>
-  any modification, price change, suspension or discontinuance of the Service;
- <li>
-  the Service generally or the software or systems that make the Service available;
- <li>
-  unauthorized access to or alterations of your transmissions or data;
- <li>
-  statements or conduct of any third party on the Service;
- <li>
-  any other user interactions that you input or receive through your use of the Service; or
- <li>
-  any other matter relating to the Service.
-<p>
- Our liability is limited whether or not we have been informed of the possibility of such damages, and even if a remedy set forth in this Agreement is found to have failed of its essential purpose. We will have no liability for any failure or delay due to matters beyond our reasonable control.
-<h3 #n-release-and-indemnification>
- N. Release and Indemnification
-<p>
- <strong>
-  Short version:
- <em>
-  You are responsible for your use of the service. If you harm someone else or get into a dispute with someone else, we have no legal obligation to get involved (but we may still offer to help if we have the capacity to do so).
-<p>
- If you have a dispute with one or more Users, you agree to release Snowdrift.coop from any and all claims, demands and damages (actual and consequential) of every kind and nature, known and unknown, arising out of or in any way connected with such disputes.
-<p>
- You agree to indemnify us, defend us, and hold us harmless from and against any and all claims, liabilities, and expenses, including attorneys’ fees, arising out of your use of the Website and the Service, including but not limited to your violation of this Agreement, provided that Snowdrift.coop (1) promptly gives you written notice of the claim, demand, suit or proceeding; (2) gives you sole control of the defense and settlement of the claim, demand, suit or proceeding (provided that you may not settle any claim, demand, suit or proceeding unless the settlement unconditionally releases Snowdrift.coop of all liability); and (3) provides to you all reasonable assistance, at your expense.
-<h3 #o-changes-to-these-terms>
- O. Changes to These Terms
-<p>
- <strong>
-  Short version:
- <em>
-  We want our users to be informed of important changes to our terms, but we don't want to bother you every time we fix a typo. While we may modify this agreement at any time, we will notify users of any changes that affect your rights. When feasible, we will also offer a comment period before updates are set.
-<p>
- We reserve the right, at our sole discretion, to amend these Terms of Service at any time and will update these Terms of Service in the event of any such amendments. We will notify our Users of material changes to this Agreement at least 30 days prior to the change taking effect by posting a notice on our Website. For non-material modifications, your continued use of the Website constitutes agreement to our revisions of these Terms of Service. You can view all changes to these Terms in the history view of our <a href="https://gitlab.com/snowdrift/legal/">git repository</a>.
-<p>
- We reserve the right at any time and from time to time to modify or discontinue, temporarily or permanently, the Website (or any part of it) with or without notice.
-<h3 #p-miscellaneous>
- P. Miscellaneous
-<h4 #governing-law>
- 1. Governing Law
-<p>
- Except to the extent applicable law provides otherwise, this Agreement between you and Snowdrift.coop and any access to or use of the Website or the Service are governed by the federal laws of the United States of America and the laws of the State of Michigan, without regard to conflict of law provisions. You and Snowdrift.coop agree to submit to the exclusive jurisdiction and venue of the courts located in the City and County of Grosse Point Park, Michigan.
-<h4 #non-assignability>
- 2. Non-Assignability
-<p>
- You may not assign or delegate any rights or obligations under the Terms of Service or Privacy Policy without our prior written consent, and any unauthorized assignment and delegation by you is void.
-<h4 #section-headings-summaries-and-images>
- 3. Section Headings, Summaries, and Images
-<p>
- Throughout this Agreement, each section includes titles and brief summaries of the following terms and conditions. We have also included images of some short comic strips to bring levity and break up the dense legal text. These section titles, brief summaries, and images are not legally binding.
-<h4 #severability-no-waiver-and-survival>
- 4. Severability, No Waiver, and Survival
-<p>
- If any part of this Agreement is held invalid or unenforceable, that portion of the Agreement will be construed to reflect the parties’ original intent. The remaining portions will remain in full force and effect. Any failure on the part of Snowdrift.coop to enforce any provision of this Agreement will not be considered a waiver of our right to enforce such provision. Our rights under this Agreement will survive any termination of this Agreement.
-<h4 #complete-agreement>
- 5. Complete Agreement
-<p>
- These Terms of Service, together with the Snowdrift.coop <a href=@{PrivacyR}>Privacy Policy</a>, represent the complete and exclusive statement of the agreement between you and us. This Agreement supersedes any proposal or prior agreement oral or written, and any other communications between you and Snowdrift.coop relating to the subject matter of these terms.
-<hr>
-<p>
- The Snowdrift.coop Terms of Service are made available by us in their entirety under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 International</a>. These Terms were derived significantly from the May 25, 2018 version of the GitHub Terms of Service (which are public domain via CC0). Some sections were derived from Wikimedia Terms of Use and DreamWidth Terms of Service.
-<div .footnotes>
- <hr>
- <ol>
-  <li #fn1>
-   <p>
-     If you prefer  different but compatible terms, you may specify that in your forum profile or alongside specific submissions. The main CC BY-SA compatible options are the
-     <a href="https://creativecommons.org/licenses/by/4.0/">
-       CC BY
-     license or waiving your copyright via the <a href="https://creativecommons.org/publicdomain/zero/1.0">CC0 Universal Public Domain Dedication</a>.
-      <a href="#fnref1">
-       ↩
+      You can use, modify, and share most anything from the Website as long as
+      you follow the applicable FLO license requirements (giving credit,
+      keeping terms for others). There's just a few exceptions such as
+      Trademarks.
+  <p>
+    Most public writings and images at Snowdrift.coop are free to use and share
+    under CC BY-SA (with attribution credit simply to "Snowdrift.coop"), with
+    the following exceptions and qualifications:
+  <ul>
+    <li>
+      The Snowdrift.coop website source code is licensed under the terms of the
+      <a href="https://gitlab.com/snowdrift/snowdrift/blob/master/LICENSE.md">
+        GNU AGPLv3+
+      .
+    <li>
+      All Snowdrift.coop trademarks belong to Snowdrift.coop, and any use of
+      our trade names, trademarks, service marks, logos, or domain names must
+      be in compliance with both these Terms and with our <a
+      href=@{TrademarksR}>Trademark Policy</a>.
+    <li>
+      User-Submitted Content (including Project listings and forum postings)
+      may use different (but usually compatible) terms where explicitly
+      specified.  For such Content, you must follow any applicable Trademark
+      policies and give attribution credit to the specific project or user
+      rather than to Snowdrift.coop.
+    <li>
+      Any use of private content (such as emails, forum messages, or posts in
+      restricted forum categories) remains All Rights Reserved unless otherwise
+      specified.
+  <h3 #e-user-submitted-content>
+    E. User-Submitted Content
+  <p>
+    <strong>
+      Short version:
+    <em>
+      Other than Trademarks or unambiguous cases of Fair Use, Content submitted
+      to Snowdrift.coop in public contexts must be compatible with the
+      free/libre/open licensing that we use (CC BY-SA primarily). Users are
+      responsible for submitting within their legal rights and retain any
+      copyrights and moral rights within the free/libre/open license terms. We
+      have the right to remove content as needed.
+  <p>
+    As per our mission to grow the commons of free knowledge and free culture,
+    all users contributing to projects are required to grant general
+    permissions to re-distribute and re-use their contributions freely, so long
+    as that use is properly attributed and the same freedom to re-use and
+    re-distribute is granted to any derivative works.
+  <h4 #responsibility-for-user-submitted-content>
+    1. Responsibility for User-Submitted Content
+  <p>
+    You may create or upload User-Submitted Content while using the Service.
+    You are solely responsible for the content of, and for any harm resulting
+    from, any User-Submitted Content that you post, upload, link to or
+    otherwise make available via the Service, regardless of the form of that
+    Content. We are not responsible for any public display or misuse of your
+    User-Submitted Content.
+  <h4 #snowdrift-coop-may-remove-content>
+    2. Snowdrift.coop May Remove Content
+  <p>
+    We do not pre-screen User-Submitted Content, but we have the right (though
+    not the obligation) to refuse or remove any User-Submitted Content that, in
+    our sole discretion, violates any Snowdrift.coop terms or policies.
+  <h4 #ownership-of-content-right-to-post-and-license-grants>
+    3. Ownership of Content, Right to Post, and License Grants
+  <p>
+    You agree to only submit Content if you have all necessary legal rights to
+    submit it and follow these requirements:
+  <ol .list--alpha>
+    <li>
+      If you are the sole copyright holder, you agree to apply the following
+      licenses (or a compatible license, specified in writing) to your
+      <em>
+        public
+      submissions:
+    <ul>
+      <li>
+        for code submissions, the
+        <a href="https://www.gnu.org/licenses/agpl">
+          GNU AGPLv3+
+        (including the "or later version" clause)
+      <li>
+        for non-code submissions, the
+        <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+          Creative Commons Attribution-ShareAlike 4.0 International License
+        ("CC BY-SA")
+        <a .footnoteRef href="#fn1" #fnref1>
+          <sup>
+            1
+  <p>
+    Please note that these licenses allow commercial uses of your contributions
+    (as long as such uses are compliant with all other terms of these
+    licenses).
+  <p>
+    User Submitted Content in
+    <em>
+      private
+    contexts (such as in forum messages or in restricted categories of the
+    forum) only uses the above licensing if explicitly specified.
+  <ol .list--alpha>
+    <li>
+      If you do not (solely) own any copyrights, you warrant that the Content
+      is available to you and to us under terms compatible with the licenses
+      above (including Content being Public Domain or unambiguously allowable
+      under recognized Fair Use doctrines), and you must follow the terms (such
+      as indicating attribution) per any applicable license of the Content.
+    <li>
+      For Trademarked Content (such as project logos), you must have legal
+      authority to grant usage and agree to grant Snowdrift.coop permission to
+      display the Trademarks where appropriate in reference to the trademarked
+      project, goods, or services.
+  <h3 #f-copyright-infringement-and-dmca-policy>
+    F. Copyright Infringement and DMCA Policy
+  <p>
+    <strong>
+      Short version:
+    <em>
+      We follow standard legal procedures in handling copyright infringement
+      allegations and aim to inform everyone of their rights.
+  <p>
+    If you believe that Content anywhere on Snowdrift.coop infringes on a
+    copyright you hold, we encourage you to first reach out informally via one
+    of the methods on our <a href=@{ContactR}>contact page</a>.
+  <p>
+    To take action under Section 512(c) of the U.S. Digital Millennium
+    Copyright Act of 1998, follow our <a
+    href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-guide.md">
+    DMCA Guide</a> and the connected <a
+    href="https://gitlab.com/snowdrift/legal/blob/master/DMCA/DMCA-takedowns.md">
+    DMCA Takedown Notice Guide</a>.
+    Pursuant to the DMCA, we will terminate, in appropriate circumstances, the
+    Accounts of repeat infringers.
+  <figure>
+    <img alt="(Comic) Eunice: &quot;You artists should be grateful for us lawyers. We protect you!&quot; Mimi: &quot;From what?&quot; Eunice: &quot;Lawyers!&quot;" src=@{StaticR img_ME_323_LawyersProtectArtists_png}>
+  <h3 #g-crowdmatching-pledging-and-financial-transactions>
+    G. Crowdmatching, Pledging, and Financial Transactions
+  <p>
+    <strong>
+      Short version:
+    <em>
+      Crowdmatching involves many Patrons agreeing to donate by matching each
+      other. You participate by pledging to various Projects listed at
+      Snowdrift.coop, and we then bill you monthly through a connected payment
+      service. We combine charges to reduce fees. You can remove pledges at any
+      time, but previous donations are non-refundable.
+  <h4 #crowdmatching>
+    1. Crowdmatching
+  <p>
+    At Snowdrift.coop, we offer a fundraising service called "Crowdmatching".
+    It calculates donation levels using a base amount (denominated in U.S.
+    Dollars) multiplied by the number of Patrons to a Project.
+  <h4 #authorizing-a-third-party-payment-service>
+    2. Authorizing a Third-Party Payment Service
+  <p>
+    To participate in Crowdmatching, you must connect your Account with an
+    approved third-party payment service, accepting their independent terms. By
+    connecting a payment service, you authorize us to have that service charge
+    you on behalf of Projects to which you Pledge your support.
+  <h4 #pledging>
+    3. Pledging
+  <p>
+    You can Pledge to support any number of Projects among those listed on the
+    Website.
+  <p>
+    By clicking the Pledge button for any specific Project, you:
+  <ul>
+    <li>
+      agree to be included in the count of Patrons to that Project
+    <li>
+      authorize us to bill you variable monthly amounts based on Crowdmatching
+      calculations
+  <h4 #billing-schedule-no-refunds>
+    4. Billing Schedule; No Refunds
+  <p>
+    Donations to Projects are billed on a monthly basis and are non-refundable.
+  <h4 #responsibility-for-payment>
+    5. Responsibility for Payment
+  <p>
+    You are responsible for all fees, including taxes, associated with your use
+    of the Service. If you do not participate in Crowdmatching, you are not
+    required to provide payment information.
+  <h4 #combined-charges>
+    6. Combined Charges
+  <p>
+    In order to reduce third-party payment processing fees, we may combine
+    donations to multiple projects and sometimes multiple months of donations
+    into single charges, processed in arrears.
+  <h4 #budget-limits-and-cancelling-pledges>
+    7. Budget Limits and Cancelling Pledges
+  <p>
+    Your Account includes a setting for a budget limit. If your combined
+    Pledges grow to be higher than your budget limit, Pledges may be suspended
+    (one at a time). You may also manually cancel any Pledges at any time
+    through your Account dashboard on the Website.
+  <p>
+    When a Pledge is suspended or cancelled, we will no longer include you in
+    the count of Patrons to that Project and will not bill you for any new
+    donations to that Project. We may still process any outstanding, delayed
+    bills from previous months.
+  <h3 #h-projects>
+    H. Projects
+  <p>
+    <strong>
+      Short version:
+    <em>
+      Snowdrift.coop will only include listings for Projects that publish
+      free/libre/open public goods and meet our other specific requirements.
+      Donations through Crowdmatching come directly from patrons via a
+      supported third-party payment service.
+  <h4 #project-requirements>
+    1. Project Requirements
+  <p>
+    To register a Project for listing at Snowdrift.coop, you must meet all of
+    our <a
+    href="https://gitlab.com/snowdrift/legal/blob/master/project-reqs.md">Project
+    Requirements</a>.
+  <h4 #receiving-donations>
+    2. Receiving donations
+  <p>
+    Once accepted for listing, a Project will be in good standing and able to
+    accept fundraising after connecting the Project with an account at a
+    supported third-party payment service. Snowdrift.coop does not hold or
+    handle any funds for any other Project. We only instruct an independent
+    payment service (through their API) on when and how much to charge Patrons
+    and which Projects should receive the donations.
+  <h4 #project-owners>
+    3. Project Owners
+  <p>
+    Each Project must have at least one User Account designated as an owner. An
+    "owner" of a Project created under these Terms has access to administrative
+    controls for the Project's listing. If you are an owner of a Project under
+    these Terms, we consider you responsible for the actions that are performed
+    on or through that Project.
+  <h4 #project-termination>
+  4. Project Termination
+  <p>
+    In case of any violation of our requirements or community norms, we reserve
+    the right to remove any Project from listing at Snowdrift.coop or to
+    temporarily suspend fundraising for any Project.
+  <p>
+    Any Project may request to be unlisted or fully removed at any time.
+  <p>
+    When we remove a Project, we will retain historic information for our
+    records.
+  <h3 #i-volunteers>
+    I. Volunteers
+  <p>
+    <strong>
+      Short version:
+    <em>
+      We welcome volunteers to help develop and run the Website as long as they
+      accept some basic responsibilities.
+  <p>
+    Volunteers assist with many aspects of our Service, including but not
+    limited to providing technical support, creating Content, performing site
+    administration duties, providing expert advice, research, technical
+    writing, reviewing, categorizing, and other duties as necessary.
+  <p>
+    If you volunteer, you agree that:
+  <ul>
+    <li>
+      You are of legal age or volunteering with the consent of a legal parent
+      or guardian.
+    <li>
+      Any work created as a result of your volunteer service shall be licensed
+      under the free/libre/open terms specified in the "Copyright Licensing"
+      section and that any Attribution requirements may be fulfilled by
+      attributing "Snowdrift.coop".
+    <li>
+      You are providing your work with no expectation of pay or future
+      consideration by Snowdrift.coop.
+    <li>
+      You have taken reasonable diligence to ensure that your work is correct,
+      accurate, and free of defect.
+    <li>
+      You will not disclose or share any proprietary or confidential
+      information that you can access or are provided with in the course of
+      your volunteer work.
+  <h3 #j-cancellation-and-termination>
+    J. Cancellation and Termination
+  <p>
+    <strong>
+      Short version:
+    <em>
+      You may close your Account at any time through an email request. If you
+      do, we'll delete or otherwise anonymize your information as much as we
+      can legally and technically. Also, while we have the right to
+      unilaterally terminate Accounts or refuse service, we will only do so
+      with great care and hope the need never arises.
+  <h4 #account-cancellation>
+    1. Account Cancellation
+  <p>
+    You can request that We cancel your Account by sending an email to
+    admin@snowdrift.coop from the same email as the Account (or with adequate
+    proof of Account ownership). Within 30 days of recieving your cancellation
+    request, we will remove all data and Content associated with your Account
+    and cancel any active Pledges, with the following exceptions:
+  <ul>
+    <li>
+      We may make one final charge of any outstanding balance from past bills
+    <li>
+      We will adhere to any legal requirements for data retention
+    <li>
+      We will retain anonymized statistical data (e.g. records of pledges and
+      donations)
+    <li>
+      We may retain some anonymized Content (e.g. posts on our forum with
+      identifying names and references removed)
+    <li>
+      Some data may remain in encrypted backups
+  <p>
+    As specified in our <a href=@{PrivacyR}>Privacy Policy</a>, you can request
+    a copy of your lawful, non-infringing Account contents. We will make a
+    reasonable effort to provide you with all the personal data we can access
+    and legally provide. Please make such requests prior to or in conjunction
+    with any cancellation request. Once removed, We cannot recover data.
+  <h4 #snowdrift-coop-may-terminate>
+    3. Snowdrift.coop May Terminate
+  <p>
+    We have the right to suspend or terminate your access to all or any part of
+    the Website at any time, with or without cause, with or without notice,
+    effective immediately. If we cancel your Account, you may not open a new
+    Account without our explicit permission. We reserve the right to refuse
+    service to anyone for any reason at any time.
+  <h4 #survival>
+  4. Survival
+  <p>
+    All provisions of this Agreement which, by their nature, should survive
+    termination
+    <em>
+      will
+    survive termination — including, without limitation: ownership provisions,
+    warranty disclaimers, indemnity, and limitations of liability.
+  <h3 #k-legal-communications-with-snowdrift-coop>
+    K. Legal Communications with Snowdrift.coop
+  <p>
+    <strong>
+      Short version:
+    <em>
+      We send legal communications to you via electronic methods. We have
+      separate instructions for sending legal communications to us.
+  <h4 #electronic-communication-required>
+    1. Electronic Communication Required
+  <p>
+    For contractual purposes, you (1) consent to receive communications from us
+    in an electronic form via the email address you have submitted or via the
+    Service; and (2) agree that all Terms of Service, agreements, notices,
+    disclosures, and other communications that we provide to you electronically
+    satisfy any legal requirement that those communications would satisfy if
+    they were on paper. This section does not affect your non-waivable rights.
+  <h4 #legal-notice-to-snowdrift-coop-must-be-in-writing>
+    2. Legal Notice to Snowdrift.coop Must Be in Writing
+  <p>
+    In any situation where notice is required by contract or any law or
+    regulation, communications made through email or our community forum will
+    not constitute legal notice to Snowdrift.coop or any of its officers,
+    employees, agents, or representatives. Legal notices must be in writing and
+    <a href="https://gitlab.com/snowdrift/legal/blob/master/legal-requests.md">
+      served on Snowdrift.coop's legal agent
+    \.
+  <h3 #l-disclaimer-of-warranties>
+    L. Disclaimer of Warranties
+  <p>
+    <strong>
+      Short version:
+    <strong>
+      <em>
+        We provide our service as is, and we make no promises or guarantees
+        about this service.
+  <p>
+    Snowdrift.coop provides the Website and the Service “as is” and “as
+    available,” without warranty of any kind. Without limiting this, we
+    expressly disclaim all warranties, whether express, implied or statutory,
+    regarding the Website and the Service including without limitation any
+    warranty of merchantability, fitness for a particular purpose, title,
+    security, accuracy and non-infringement.
+  <p>
+    Snowdrift.coop does not warrant that the Service will meet your
+    requirements; that the Service will be uninterrupted, timely, secure, or
+    error-free; that the information provided through the Service is accurate,
+    reliable or correct; that any defects or errors will be corrected; that the
+    Service will be available at any particular time or location; or that the
+    Service is free of viruses or other harmful components. You assume full
+    responsibility and risk of loss resulting from your downloading and/or use
+    of files, information, content or other material obtained from the Service.
+  <figure>
+    <img alt="(Comic) Mimi looks scared seeing Eunice carrying an enormous pile of contract forms, cameras, microphones, and weapons (including rockets going off). Eunice says, &quot;What?! I'm just covering my ass!&quot;" src=@{StaticR img_ME_403_CoverYourAss_png}>
+  <h3 #m-limitation-of-liability>
+    M. Limitation of Liability
+  <p>
+    <strong>
+      Short version:
+    <strong>
+      <em>
+        This section limits our obligations to you. We will not be liable for
+        damages or losses arising from your use or inability to use the service
+        or otherwise arising under this agreement.
+  <p>
+    You understand and agree that we will not be liable to you or any third
+    party for any loss of profits, use, goodwill, or data, or for any
+    incidental, indirect, special, consequential or exemplary damages, however
+    arising, that result from:
+  <ul>
+    <li>
+      the use, disclosure, or display of your User-Generated Content;
+    <li>
+      your use or inability to use the Service;
+    <li>
+      any modification, price change, suspension or discontinuance of the
+      Service;
+    <li>
+      the Service generally or the software or systems that make the Service
+      available;
+    <li>
+      unauthorized access to or alterations of your transmissions or data;
+    <li>
+      statements or conduct of any third party on the Service;
+    <li>
+      any other user interactions that you input or receive through your use of
+      the Service; or
+    <li>
+      any other matter relating to the Service.
+  <p>
+    Our liability is limited whether or not we have been informed of the
+    possibility of such damages, and even if a remedy set forth in this
+    Agreement is found to have failed of its essential purpose. We will have no
+    liability for any failure or delay due to matters beyond our reasonable
+    control.
+  <h3 #n-release-and-indemnification>
+    N. Release and Indemnification
+  <p>
+    <strong>
+      Short version:
+    <em>
+      You are responsible for your use of the service. If you harm someone else
+      or get into a dispute with someone else, we have no legal obligation to
+      get involved (but we may still offer to help if we have the capacity to
+      do so).
+  <p>
+    If you have a dispute with one or more Users, you agree to release
+    Snowdrift.coop from any and all claims, demands and damages (actual and
+    consequential) of every kind and nature, known and unknown, arising out of
+    or in any way connected with such disputes.
+  <p>
+    You agree to indemnify us, defend us, and hold us harmless from and against
+    any and all claims, liabilities, and expenses, including attorneys’ fees,
+    arising out of your use of the Website and the Service, including but not
+    limited to your violation of this Agreement, provided that Snowdrift.coop
+    (1) promptly gives you written notice of the claim, demand, suit or
+    proceeding; (2) gives you sole control of the defense and settlement of the
+    claim, demand, suit or proceeding (provided that you may not settle any
+    claim, demand, suit or proceeding unless the settlement unconditionally
+    releases Snowdrift.coop of all liability); and (3) provides to you all
+    reasonable assistance, at your expense.
+  <h3 #o-changes-to-these-terms>
+    O. Changes to These Terms
+  <p>
+    <strong>
+      Short version:
+    <em>
+      We want our users to be informed of important changes to our terms, but
+      we don't want to bother you every time we fix a typo. While we may modify
+      this agreement at any time, we will notify users of any changes that
+      affect your rights. When feasible, we will also offer a comment period
+      before updates are set.
+  <p>
+    We reserve the right, at our sole discretion, to amend these Terms of
+    Service at any time and will update these Terms of Service in the event of
+    any such amendments. We will notify our Users of material changes to this
+    Agreement at least 30 days prior to the change taking effect by posting a
+    notice on our Website. For non-material modifications, your continued use
+    of the Website constitutes agreement to our revisions of these Terms of
+    Service. You can view all changes to these Terms in the history view of
+    our <a href="https://gitlab.com/snowdrift/legal/">git repository</a>.
+  <p>
+    We reserve the right at any time and from time to time to modify or
+    discontinue, temporarily or permanently, the Website (or any part of it)
+    with or without notice.
+  <h3 #p-miscellaneous>
+    P. Miscellaneous
+  <h4 #governing-law>
+    1. Governing Law
+  <p>
+    Except to the extent applicable law provides otherwise, this Agreement
+    between you and Snowdrift.coop and any access to or use of the Website or
+    the Service are governed by the federal laws of the United States of
+    America and the laws of the State of Michigan, without regard to conflict
+    of law provisions. You and Snowdrift.coop agree to submit to the exclusive
+    jurisdiction and venue of the courts located in the City and County of
+    Grosse Point Park, Michigan.
+  <h4 #non-assignability>
+    2. Non-Assignability
+  <p>
+    You may not assign or delegate any rights or obligations under the Terms of
+    Service or Privacy Policy without our prior written consent, and any
+    unauthorized assignment and delegation by you is void.
+  <h4 #section-headings-summaries-and-images>
+    3. Section Headings, Summaries, and Images
+  <p>
+    Throughout this Agreement, each section includes titles and brief summaries
+    of the following terms and conditions. We have also included images of some
+    short comic strips to bring levity and break up the dense legal text. These
+    section titles, brief summaries, and images are not legally binding.
+  <h4 #severability-no-waiver-and-survival>
+    4. Severability, No Waiver, and Survival
+  <p>
+    If any part of this Agreement is held invalid or unenforceable, that
+    portion of the Agreement will be construed to reflect the parties’ original
+    intent.  The remaining portions will remain in full force and effect. Any
+    failure on the part of Snowdrift.coop to enforce any provision of this
+    Agreement will not be considered a waiver of our right to enforce such
+    provision. Our rights under this Agreement will survive any termination of
+    this Agreement.
+  <h4 #complete-agreement>
+    5. Complete Agreement
+  <p>
+    These Terms of Service, together with the Snowdrift.coop <a
+    href=@{PrivacyR}>Privacy Policy</a>, represent the complete and exclusive
+    statement of the agreement between you and us. This Agreement supersedes
+    any proposal or prior agreement oral or written, and any other
+    communications between you and Snowdrift.coop relating to the subject
+    matter of these terms.
+  <hr>
+  <p>
+    The Snowdrift.coop Terms of Service are made available by us in their
+    entirety under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC
+    BY-SA 4.0 International</a>. These Terms were derived significantly from
+    the May 25, 2018 version of the GitHub Terms of Service (which are public
+    domain via CC0). Some sections were derived from Wikimedia Terms of Use and
+    DreamWidth Terms of Service.
+  <div .footnotes>
+    <hr>
+    <ol>
+      <li #fn1>
+        <p>
+          If you prefer different but compatible terms, you may specify that in
+          your forum profile or alongside specific submissions. The main CC
+          BY-SA compatible options are the
+          <a href="https://creativecommons.org/licenses/by/4.0/">
+            CC BY
+          license or waiving your copyright via the <a
+          href="https://creativecommons.org/publicdomain/zero/1.0">CC0
+          Universal Public Domain Dedication</a>.
+          <a href="#fnref1">
+            ↩
