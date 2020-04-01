@@ -14,6 +14,12 @@
         <a .link href="https://community.snowdrift.coop">
           Forum
       <li .item>
+        <a .link href="https://gitlab.com/snowdrift" target="_blank">
+          Git
+      <li .item>
+        <a .link href="https://wiki.snowdrift.coop/">
+          Wiki
+      <li .item>
         <a .link href=@{ContactR}>
           Contact
     <ul .menu .m--2-2>
