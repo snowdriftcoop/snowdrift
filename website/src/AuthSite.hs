@@ -262,7 +262,7 @@ checkCredentials Credentials{..} = do
 -- only ever be checked once.
 checkDestroyToken :: MonadIO m => AuthToken -> SqlPersistT m (Maybe VerifiedUser)
 checkDestroyToken (AuthToken t) = runMaybeT $ do
-    Entity pid ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken t)
+    Entity pid ProvisionalUser{..} <- MaybeT $ getBy (UniqueToken $ T.strip t)
     _ <- lift (delete pid)
     now <- liftIO getCurrentTime
     if addUTCTime timeout provisionalUserCreationTime > now

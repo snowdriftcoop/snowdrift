@@ -256,6 +256,13 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
                 fillTokenForm v
                 setUrl (AuthSub VerifyAccountR)
             get (UserR "alice@example.com") >> bodyContains "alice@example.com"
+        it "creates an account with a good token with surrounding whitespace" $ do
+            v <- bypassProvisionalAA
+            get (AuthSub VerifyAccountR)
+            request $ do
+                fillTokenForm (v ++ "   ")
+                setUrl (AuthSub VerifyAccountR)
+            get (UserR "alice@example.com") >> bodyContains "alice@example.com"
         it "doesn't add something it shouldn't" $ do
             v <- bypassProvisionalAA
             get (AuthSub VerifyAccountR)
@@ -269,6 +276,20 @@ mainSpecs = withTestAuth Nothing $ withBob $ do
             get (AuthSub VerifyAccountR)
             request $ do
                 fillTokenForm v
+                setUrl (AuthSub VerifyAccountR)
+            [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
+
+            assertEq "ID changed" b1 b2
+            liftIO (assertBool "Pass update time did not change"
+                               (((/=) `on` _userPassUpdated) bob1 bob2))
+            liftIO (assertBool "Passphrases did not change"
+                               (((/=) `on` _userDigest) bob1 bob2))
+        it "updates a passphrase with a good token with surrounding whitespace" $ do
+            [Entity b1 bob1] :: [Entity User] <- harnessDB (selectList [] [])
+            v <- bypassProvisionalBob
+            get (AuthSub VerifyAccountR)
+            request $ do
+                fillTokenForm (v ++ "   ")
                 setUrl (AuthSub VerifyAccountR)
             [Entity b2 bob2] :: [Entity User] <- harnessDB (selectList [] [])
 
