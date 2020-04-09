@@ -132,14 +132,13 @@ Run the tests to fetch and build all Haskell dependencies:
 
 This will take a while!
 
-## Running the site
+## Running the site locally
 
 Run the site in development mode with
 
     ./build.sh
 
-This will automatically rebuild and rerun the site whenever it detects
-changes to the code.
+Then, you can access the site in your browser at <http://localhost:3000>
 
 To stop the site, type `quit` in the terminal, then press Enter.
 
@@ -148,17 +147,11 @@ To stop the site, type `quit` in the terminal, then press Enter.
 If `./build.sh` commands fail in any way, try running `./build.sh cleandb` and
 then building again.
 
-## Connecting to the local database
+### Automatic rebuild
 
-The script `./s/dev_psql` will spawn a psql shell that is connected to the dev
-database. Refer to [Postgres' psql
-documentation](https://www.postgresql.org/docs/9.6/app-psql.html).
+`./build.sh` will automatically rebuild and rerun the site whenever it detects changes to the code. Unfortunately this does not work for changes in the static directory. To make it recognize those, run:
 
-## Using the local site
-
-### View in your browser
-
-Access the site in your browser at <http://localhost:3000>
+    touch website/src/Settings/StaticFiles.hs
 
 ### Using auth in development
 
@@ -217,11 +210,11 @@ export STRIPE_SECRET_KEY=your_stripe_sec_key
 
 8. Click "Register" to submit the form and complete the setup.
 
-#### Updating static files
+### Connecting to the local database
 
-To make builds recognize changes to the static directory, run:
-
-    touch website/src/Settings/StaticFiles.hs
+The script `./s/dev_psql` will spawn a psql shell that is connected to the dev
+database. Refer to [Postgres' psql
+documentation](https://www.postgresql.org/docs/9.6/app-psql.html).
 
 ## Building for production / deployment
 
