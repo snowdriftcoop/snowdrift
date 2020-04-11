@@ -55,7 +55,7 @@ Recommended workflow:
 
 The following covers the bare minimum process for those new to Git.
 
-We collaborate on code using [GitLab]. We also mirror on the popular but proprietary site [GitHub] but do not use that regulary.
+We collaborate on code using [GitLab]. We also mirror on the popular but proprietary site [GitHub] but do not use that regularly.
 
 1. Locally clone the project from the main Snowdrift repo to your computer as
    described in the BUILD guide
