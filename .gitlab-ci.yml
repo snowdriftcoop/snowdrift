@@ -2,6 +2,7 @@
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
 default:
+  # Source: ci-support/docker/image-build/Dockerfile
   image: snowdriftcoop/snowdrift-ci:0.0.6
 
 variables:
@@ -56,6 +57,7 @@ deploy-build for Ubuntu 14.04:
 
 deploy:
   stage: deploy
+  # Source: ci-support/docker/image-deploy/Dockerfile
   image: snowdriftcoop/snowdrift-ci-deploy:0.0.2
   cache:
     paths: []
