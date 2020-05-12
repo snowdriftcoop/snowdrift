@@ -1,9 +1,13 @@
 # This file's semantics are documented at
 # https://docs.gitlab.com/ce/ci/yaml/README.html
 
+include:
+  # This is the source of image variables used below.
+  - local: '/ci-support/docker/images.yml'
+
 default:
-  # Source: ci-support/docker/image-build/Dockerfile
-  image: snowdriftcoop/snowdrift-ci:0.0.6
+  # Source: ci-support/docker/image-build-centos-7
+  image: "${image_build_centos_7}"
 
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
@@ -13,14 +17,14 @@ stages:
   - build and test
   - deploy
 
-cache:
-  key:
-    files:
-      - stack.yaml.lock
-  paths:
-    - stack-root
-
 build and test:
+  cache:
+    key:
+      prefix: "Centos 7"
+      files:
+        - stack.yaml.lock
+    paths:
+      - stack-root
   stage: build and test
   services:
     - postgres:9.3
@@ -43,22 +47,31 @@ build and test:
     paths:
       - SnowdriftReboot.keter
 
-deploy-build:
+deploy-build for Centos 7:
   extends: .deploy-common
+  cache:
+    paths:
+      - stack-root
+    key:
+      files:
+        - stack.yaml.lock
+      prefix: "Centos 7"
 
 deploy-build for Ubuntu 14.04:
   extends: .deploy-common
-  image: snowdriftcoop/snowdrift-ci:0.0.6-14.04
-  # This job needs its own cache because of differences in libc.
+  image: "${image_build_ubuntu_14_04}"
   cache:
-    key: "Ubuntu 14.04"
     paths:
       - stack-root
+    key:
+      files:
+        - stack.yaml.lock
+      prefix: "Ubuntu 14.04"
 
 deploy:
   stage: deploy
   # Source: ci-support/docker/image-deploy/Dockerfile
-  image: snowdriftcoop/snowdrift-ci-deploy:0.0.2
+  image: "${image_deploy}"
   cache:
     paths: []
   dependencies:
