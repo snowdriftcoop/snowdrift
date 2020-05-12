@@ -83,8 +83,7 @@ main () {
             --flag Snowdrift:-dev \
             --pedantic
         ) # dbmake stop
-        hdr "Packing executables"
-        find ${install_path} -type f -executable | xargs upx
+
         hdr "Tarballing"
         rm -rf website/static/tmp/*
         # This forces regeneration of the client session key, which will reset

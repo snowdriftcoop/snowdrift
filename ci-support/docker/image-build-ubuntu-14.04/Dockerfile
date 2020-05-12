@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:14.04
 
 # The default is POSIX, which doesn't work for us
 ENV LANG=C.UTF-8
@@ -10,8 +10,7 @@ RUN apt-get -qq update &&\
         curl \
         libgmp-dev \
         libpq-dev \
-        sudo \
-        upx-ucl
+        sudo
 
 # If we don't install these, stack does -- and it doesn't use
 # --no-install-recommends.
