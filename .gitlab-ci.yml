@@ -5,10 +5,6 @@ include:
   # This is the source of image variables used below.
   - local: '/ci-support/docker/images.yml'
 
-default:
-  # Source: ci-support/docker/image-build-centos-7
-  image: "${image_build_centos_7}"
-
 variables:
   SD_STACK_ARGS: "--stack-root ${CI_PROJECT_DIR}/stack-root"
   POSTGRES_DB: snowdrift_test
@@ -17,15 +13,22 @@ stages:
   - build and test
   - deploy
 
-build and test:
+.build-and-test:
+  stage: build and test
   cache:
     key:
-      prefix: "Centos 7"
       files:
         - stack.yaml.lock
     paths:
       - stack-root
-  stage: build and test
+
+build and test:
+  extends: .build-and-test
+  image: "${image_build_centos_7}"
+  # Source: ci-support/docker/image-build-centos-7
+  cache:
+    key:
+      prefix: "Centos 7"
   services:
     - postgres:9.3
   # | If this gets much longer, turn it into an external script.
@@ -34,41 +37,37 @@ build and test:
     - touch website/src/Settings/StaticFiles.hs
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
-# Build for deploy, using --pedantic
-.deploy-common:
-  stage: build and test
+.deploy-build-common:
+  extends: .build-and-test
   services:
     - postgres:9.3
   script:
+    # Build for deploy, using --pedantic
     - PGUSER=postgres PGHOST=postgres DEPLOY=false ./ci-support/deploy
-  # Don't force pedantry on people.
+    - stack ${SD_STACK_ARGS} build --copy-bins --local-bin-path keter-bin keter
+  # ... but don't force pedantry on people submitting MRs.
   allow_failure: true
+  dependencies: []
   artifacts:
     paths:
       - SnowdriftReboot.keter
+      - keter-bin/keter
 
 deploy-build for Centos 7:
-  extends: .deploy-common
+  extends: .deploy-build-common
+  image: "${image_build_centos_7}"
   cache:
-    paths:
-      - stack-root
     key:
-      files:
-        - stack.yaml.lock
       prefix: "Centos 7"
 
 deploy-build for Ubuntu 14.04:
-  extends: .deploy-common
+  extends: .deploy-build-common
   image: "${image_build_ubuntu_14_04}"
   cache:
-    paths:
-      - stack-root
     key:
-      files:
-        - stack.yaml.lock
       prefix: "Ubuntu 14.04"
 
-deploy:
+deploy to Ubuntu 14.04:
   stage: deploy
   # Source: ci-support/docker/image-deploy/Dockerfile
   image: "${image_deploy}"
