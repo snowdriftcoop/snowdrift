@@ -26,14 +26,14 @@ in the [README]). Other compatible licensing can work with special notice.
       Snowdrift on Windows, our [Build guide] has some notes about that.
 * Basic ability to use terminal command-line-interface (CLI)
 
-## Installing
+## Working on the code
+
+### Installing
 
 **Follow the [Build guide]** to get Snowdrift going on your computer.
 
-## Working on the code
-
 **All the following assumes you have done the initial clone and install
-according to the instructions linked above.**
+according to these instructions.**
 
 ### Text-editors and settings
 
@@ -45,121 +45,16 @@ and settings.
 
 Recommended workflow:
 
-* Keep local master synced to the upstream main project master
-* Do all work on new branches
-* Use separate branches for independent work
-* Once branches have been published and merge-requests opened, please retain the
+- Keep local master synced to the upstream main project master
+- Do all work on new branches
+- Use separate branches for independent work
+- Once branches have been published and merge-requests opened, please retain the
   full list of commits and only rebase when requested.
+- After you submit the merge request, someone should comment on your submission
+  soon (hopefully within a few hours, maybe a day or two depending on timing).
 
-#### Basic Git setup for collaboration
-
-The following covers the bare minimum process for those new to Git.
-
-We collaborate on code using [GitLab]. We also mirror on the popular but proprietary site [GitHub] but do not use that regularly.
-
-1. Locally clone the project from the main Snowdrift repo to your computer as
-   described in the BUILD guide
-2. Fork the project at GitLab.com
-    * sign in or create an account on [GitLab.com](https://gitlab.com/users/sign_in)
-    * go to the [project repository]
-    * click the "Fork" link (toward the top of the page)
-    * choose your account for the fork
-    * you should end up at your fork (to check, see that the header at the top
-      of the page has your account name followed by "/Snowdrift")
-3. Add your GitLab fork as a remote for your local clone
-    * While we recommend SSH, those not comfortable with the full [SSH setup]
-      can use HTTPS instead.
-    * For HTTPS, choose that instead of SSH from the dropdown menu on the page
-      of your fork at GitLab
-    * copy the address (which looks like
-      `https://gitlab.com/YOURNAME/snowdrift.git` where `YOURNAME` is
-      your GitLab username).
-    * using the correct address, enter a modified version of this command in the
-        directory of your local clone:
-        `git remote add my-snow https://gitlab.com/YOURNAME/snowdrift.git`
-
-#### Updating your local code to snowdrift master
-
-Whenever you begin new work, you should first get the latest master code from
-the Snowdrift project:
-
-* In your local snowdrift project directory,
-* assuming you have the main snowdrift code as your "origin" (verify with
-  `git remote -v`),
-* with the master branch checked out (`git checkout master`),
-* run `git pull`
-
-You should have no conflicts because this is the only situation where you
-should ever change your local master. **Work should be done on other branches.**
-
-#### Starting a new branch
-
-From the master branch, having pulled the latest updates, create a new branch:
-
-    git checkout -b some-branch
-
-Replace `some-branch` with a short descriptive name (with hyphens, not spaces)
-for your planned changes. For example, when fixing a problem in the header, a
-good branch name could be `header-fix`.
-
-#### Working on the code
-
-On a working branch, you can make your edits/additions etc. to the code files.
-
-To review the status and save important points in your progress, learn about the
-staging process and commands like `git add`, `git status`, and `git diff`. See
-the links at the end of this file for learning resources.
-
-#### Building your updates
-
-To check your work and see the results on the running site, follow the
-instructions in the [Build guide] for running the site.
-
-#### Running the tests
-
-When you are happy with your work, it compiles, and looks right, run the tests:
-
-    ./build.sh test
-
-If there are any failures either when compiling or testing, and you don't know
-how to fix the issue or don't understand the error, contact us for help.
-
-#### Committing your changes
-
-When your updates all compile, tests pass, and you are ready to submit to the
-main Snowdrift project, *commit* your changes.
-
-Though it isn't best practice, the simplest command for beginners to commit all
-changes (though any *new* files need `git add` first) is:
-
-    git commit -a
-
-An editor will show asking you to summarize your changes. On the first line,
-write a short commit title that will be meaningful to people skimming all the
-commits in the future. Add any further comments about the work on additional
-lines below the title. Then save and close the editor.
-
-#### Getting your changes merged
-
-When you are ready to share your work (one or more commits all relevant to the
-same overall update), you have confirmed that everything works as intended, and
-all tests pass, run `git status` to make sure no work is missing and all new
-files were committed.
-
-Next, send your changes to your GitLab account with:
-
-    git push -u my-snow some-branch
-
-Changing `some-branch` to the name of the branch where you made the commit(s).
-
-To notify the snowdrift team about your work, visit the GitLab page
-with your fork. You should see a button called **"Create Merge Request"**. Click
-that to bring up a form where you can add further notes about your work
-(especially useful if you are merging multiple commits). You may ignore "Assign
-to", "Milestone", and "Labels" at this point.
-
-After you submit the merge request, someone should comment on your submission
-soon (hopefully within a few hours, maybe a day or two depending on timing).
+If you're not comfortable in git and that doesn't make sense to you, see
+[GIT-BASICS.md] for a more thorough explanation.
 
 ## Choosing what to work on
 
@@ -340,6 +235,7 @@ here are some resources (nearly all fully-FLO):
 [Shakespearean Templates]: https://www.yesodweb.com/book/shakespearean-templates
 [SSH setup]: https://gitlab.com/help/ssh/README
 [TEXTEDITORS.md]: TEXTEDITORS.md
+[GIT-BASICS.md]: GIT-BASICS.md
 [Unobtrusive JavaScript]: https://en.wikipedia.org/wiki/Unobtrusive_JavaScript
 [wiki]: https://wiki.snowdrift.coop/
 [Yesod JavaScript Options]: https://github.com/yesodweb/yesod/wiki/JavaScript-Options
