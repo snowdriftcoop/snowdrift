@@ -177,30 +177,12 @@ here are some resources (nearly all fully-FLO):
       is a practical overview of command-line and Unix basics.
     * [SQL Wikibook](https://en.wikibooks.org/wiki/Structured_Query_Language)
       is a good general overview
-    * [Git Wikibook](https://en.wikibooks.org/wiki/Git)
-      is an incomplete book but has some useful bits.
     * [HTML Wikibook](https://en.wikibooks.org/wiki/HyperText_Markup_Language)
       is a workable but dated intro (of course, countless HTML guides exist)
     * [CSS Wikibook](https://en.wikibooks.org/wiki/Cascading_Style_Sheets)
       is pretty thorough though needs updating.
     * [JavaScript Wikibook](https://en.wikibooks.org/wiki/JavaScript)
       is incomplete, but seems a decent intro.
-
-*   Git resources:
-
-    * [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4)
-      is an excellent video introduction to the core commands and concepts of
-      Git. Consider making a new folder like `git-test` in your `Home` directory
-      and following along with the commands in the video if you really want to
-      accelerate your proficiency with Git.
-
-    * [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
-      is a fully-FLO book written in a more narrative style.
-
-    * The [Git Docs](https://git-scm.com/doc/) page includes many links, an
-      online version of the core Git manuals, and the full Pro Git book which
-      uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
-      unfortunately.
 
 *   [CanIUse.com](https://caniuse.com/) is a reference website to check that all
     web features you use are compatible with various browsers and standards.

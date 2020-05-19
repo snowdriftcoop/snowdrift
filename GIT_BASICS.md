@@ -108,3 +108,23 @@ with your fork. You should see a button called **"Create Merge Request"**. Click
 that to bring up a form where you can add further notes about your work
 (especially useful if you are merging multiple commits). You may ignore "Assign
 to", "Milestone", and "Labels" at this point.
+
+## Further reading
+
+Some Git resources we suggest:
+
+* [Git Wikibook](https://en.wikibooks.org/wiki/Git) is incomplete but has some useful bits.
+
+* [Git for Ages 4 and Up](https://www.youtube.com/watch?v=1ffBJ4sVUb4)
+  is an excellent video introduction to the core commands and concepts of
+  Git. Consider making a new folder like `git-test` in your `Home` directory
+  and following along with the commands in the video if you really want to
+  accelerate your proficiency with Git.
+
+* [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
+  is a fully-FLO book written in a more narrative style.
+
+* The [Git Docs](https://git-scm.com/doc/) page includes many links, an
+  online version of the core Git manuals, and the full Pro Git book which
+  uses the CC-BY-NC-SA license, so it is shareable but not fully FLO,
+  unfortunately.
