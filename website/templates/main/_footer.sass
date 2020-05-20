@@ -49,7 +49,7 @@ $p: ".footer"
 
 /* Partner links: opacity change on hover */
 #{$p} .link
-    &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+    &.m--osi, &.m--qco, &.m--oin, &.m--cfi, &.m--osl 
         opacity: 0.7
         &:hover
             opacity: 1.0
@@ -66,6 +66,10 @@ $p: ".footer"
 
 #{$p} .cfi
     +image($partner-cfi, 100% 6rem, center/contain)
+
+#{$p} .osl
+    +image($partner-osl, 100% 6rem, center/contain)
+
 
 
 ///------------------------------------------------------------------------///
@@ -95,7 +99,7 @@ $p: ".footer"
         +pad($grid--s, mgn 1 auto)
 
     #{$p} .link
-        &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+        &.m--osi, &.m--qco, &.m--oin, &.m--cfi, &.m--osl 
             +span($grid--s, 3 max auto)
             +vr($grid--s, 1)
 
@@ -146,6 +150,9 @@ $p: ".footer"
         &.m--qco, &.m--cfi
             +span($grid--s, 2 auto right)
 
+        &.m--osl
+            +span($grid--s, 1)
+
 
 ///------------------------------------------------------------------------///
 //  Medium                                                                  //
@@ -185,6 +192,7 @@ $p: ".footer"
 
     #{$p} .partners .row
         display: flex
+        flex-wrap: wrap;
 
         &.m--1-2
             +span($grid--m, 4 auto both)
@@ -192,10 +200,13 @@ $p: ".footer"
         &.m--2-2
             +span($grid--m, 4 auto right)
 
+        &.m--1-3
+            +span($grid--m, 4 auto both)
+            padding-top: 50px;
+
     #{$p} .link
-        &.m--osi, &.m--qco, &.m--oin, &.m--cfi
+        &.m--osi, &.m--qco, &.m--oin, &.m--cfi, &.m--osl 
             +span($grid--m, 2)
-            flex: auto
 
         &.m--osi, &.m--oin
             +span($grid--m, 2 auto right)

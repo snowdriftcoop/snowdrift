@@ -63,11 +63,16 @@
     <div .row .m--1-2>
       <a .link .m--div .m--osi href="https://opensource.org/">
         <div .osi>
-      <a .link .m--div .m--qco href="http://questioncopyright.org/">
+      <a .link .m--div .m--qco href="https://questioncopyright.org/">
         <div .qco>
     <div .row .m--2-2>
       <a .link .m--div .m--oin href="https://www.openinventionnetwork.com/">
         <div .oin>
       <a .link .m--div .m--cfi href="http://copyfree.org/">
         <div .cfi>
+    <div .row .break>
+    <div .row .m--1-3>
+      <a .link .m--div .m--osl href="https://osuosl.org/">
+        <div .osl>
+    <div  .row .m--2-2>
   $# End partners
