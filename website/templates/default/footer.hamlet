@@ -55,8 +55,11 @@
           <a .osi href=https://opensource.org/>
             Open Source Initiative
         <li>
-          <a .qco href=http://questioncopyright.org/>
+          <a .qco href=https://questioncopyright.org/>
             QuestionCopyright.org
         <li>
           <a .oin href=https://www.openinventionnetwork.com>
             Open Invention Network
+        <li>
+          <a .osl href=https://osuosl.org/>
+            OSU Open Source Labs

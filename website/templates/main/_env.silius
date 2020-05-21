@@ -45,6 +45,7 @@ $partner_osi: @{StaticR img_main_partner_osi_png}
 $partner_qco: @{StaticR img_main_partner_qco_png}
 $partner_oin: @{StaticR img_main_partner_oin_png}
 $partner_cfi: @{StaticR img_main_partner_cfi_png}
+$partner_osl: @{StaticR img_main_partner_osl_png}
 
 /// Images: projects
 $project_logo: @{StaticR img_projects_project_logo_png}
