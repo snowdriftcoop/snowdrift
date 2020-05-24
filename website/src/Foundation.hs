@@ -210,12 +210,12 @@ defaultLayoutNew widget = do
     active <- maybe (const False) (==) <$> getCurrentRoute
 
     let navbar :: Widget
-        navbar = $(widgetFile "main/navbar")
+        navbar = $(widgetFile "default-v2/navbar")
 
     -- This should catch only main.hamlet, because _main.sass is already
     -- @import-ed in page SASS and we don't need to load it here
-    pc <- widgetToPageContent $(widgetFile "main/main")
-    withUrlRenderer $(hamletFile "templates/main/main-wrapper.hamlet")
+    pc <- widgetToPageContent $(widgetFile "default-v2/main")
+    withUrlRenderer $(hamletFile "templates/default-v2/main-wrapper.hamlet")
   where
     footer :: Widget
-    footer = $(widgetFile "main/footer")
+    footer = $(widgetFile "default-v2/footer")
