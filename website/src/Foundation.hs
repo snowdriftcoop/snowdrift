@@ -203,8 +203,8 @@ navbarLayout pageName widget = do
             . List.tail
             . T.splitOn "/"
 
-defaultLayoutNew :: Widget -> Handler Html
-defaultLayoutNew widget = do
+defaultLayoutV2 :: Widget -> Handler Html
+defaultLayoutV2 widget = do
     maybeUser <- maybeAuth
 
     active <- maybe (const False) (==) <$> getCurrentRoute

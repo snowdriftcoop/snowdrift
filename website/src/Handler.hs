@@ -27,32 +27,32 @@ getMatrixR = return $ TypedContent typePlain
 getWelcomeR :: Handler Html
 getWelcomeR = do
     loggedIn <- isJust <$> maybeAuth
-    defaultLayoutNew $ do
+    defaultLayoutV2 $ do
         setTitle "Crowdmatching for Public Goods"
         $(widgetFile "page/welcome")
 
 getHowItWorksR :: Handler Html
 getHowItWorksR = do
     loggedIn <- isJust <$> maybeAuth
-    defaultLayoutNew $ do
+    defaultLayoutV2 $ do
         setTitle "How it Works"
         $(widgetFile "page/how-it-works")
 
 getPrivacyR :: Handler Html
-getPrivacyR = defaultLayoutNew $ do
+getPrivacyR = defaultLayoutV2 $ do
     setTitle "Privacy Policy"
     $(widgetFile "page/privacy")
 
 getTermsR :: Handler Html
 getTermsR = do
-    defaultLayoutNew $ do
+    defaultLayoutV2 $ do
         setTitle "Terms of Service"
         $(widgetFile "page/terms")
 
 getProjectsR :: Handler Html
 getProjectsR = do
     loggedIn <- isJust <$> maybeAuth
-    defaultLayoutNew $ do
+    defaultLayoutV2 $ do
         setTitle "Projects"
         $(widgetFile "page/projects")
 
@@ -67,7 +67,7 @@ getDonateR :: Handler Html
 getDonateR = $(widget "page/donate" "Donate")
 
 getAboutR :: Handler Html
-getAboutR = defaultLayoutNew $ do
+getAboutR = defaultLayoutV2 $ do
     setTitle "About"
     $(widgetFile "page/about")
 
