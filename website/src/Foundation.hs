@@ -185,17 +185,17 @@ navbarLayout pageName widget = do
     active <- maybe (const False) (==) <$> getCurrentRoute
 
     let navbar, footer :: Widget
-        navbar = $(widgetFile "main/navbar")
-        footer = $(widgetFile "main/footer")
+        navbar = $(widgetFile "default-v2/navbar")
+        footer = $(widgetFile "default-v2/footer")
 
     pc <- widgetToPageContent $ do
-        $(widgetFile "default/reset")
-        $(widgetFile "default/breaks")
-        $(widgetFile "default/fonts")
-        $(widgetFile "default/grid")
-        $(widgetFile "default-layout")
-        $(widgetFile "main/_main")
-    withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
+        $(widgetFile "default-v1/reset")
+        $(widgetFile "default-v1/breaks")
+        $(widgetFile "default-v1/fonts")
+        $(widgetFile "default-v1/grid")
+        $(widgetFile "default-v1/layout")
+        $(widgetFile "default-v2/_main")
+    withUrlRenderer $(hamletFile "templates/default-v1/layout-wrapper.hamlet")
   where
     pageClasses :: (Text, Text)
     pageClasses = ("class", classes pageName)

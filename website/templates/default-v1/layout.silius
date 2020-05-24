@@ -1,4 +1,4 @@
-@import colors
+@import default-v1/colors
 
 /* Used only in development to overlay a design grid */
 html div.grid
