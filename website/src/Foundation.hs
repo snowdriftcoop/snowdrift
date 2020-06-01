@@ -183,20 +183,10 @@ navbarLayout pageName widget = do
     maybeUser  <- maybeAuth
 
     active <- maybe (const False) (==) <$> getCurrentRoute
-    howItWorksActive <- do
-        r <- getCurrentRoute
-        return $ case r of
-            Just HowItWorksR -> True
-            _                -> False
-    authActive <- do
-        r <- getCurrentRoute
-        return $ case r of
-            Just (AuthR _)        -> True
-            _                     -> False
 
     let navbar, footer :: Widget
-        navbar = $(widgetFile "default/navbar")
-        footer = $(widgetFile "default/footer")
+        navbar = $(widgetFile "main/navbar")
+        footer = $(widgetFile "main/footer")
 
     pc <- widgetToPageContent $ do
         $(widgetFile "default/reset")
@@ -204,6 +194,7 @@ navbarLayout pageName widget = do
         $(widgetFile "default/fonts")
         $(widgetFile "default/grid")
         $(widgetFile "default-layout")
+        $(widgetFile "main/_main")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
   where
     pageClasses :: (Text, Text)
