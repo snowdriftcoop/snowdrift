@@ -183,16 +183,6 @@ navbarLayout pageName widget = do
     maybeUser  <- maybeAuth
 
     active <- maybe (const False) (==) <$> getCurrentRoute
-    howItWorksActive <- do
-        r <- getCurrentRoute
-        return $ case r of
-            Just HowItWorksR -> True
-            _                -> False
-    authActive <- do
-        r <- getCurrentRoute
-        return $ case r of
-            Just (AuthR _)        -> True
-            _                     -> False
 
     let navbar, footer :: Widget
         navbar = $(widgetFile "main/navbar")
