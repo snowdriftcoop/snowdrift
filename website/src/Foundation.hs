@@ -195,8 +195,8 @@ navbarLayout pageName widget = do
             _                     -> False
 
     let navbar, footer :: Widget
-        navbar = $(widgetFile "default/navbar")
-        footer = $(widgetFile "default/footer")
+        navbar = $(widgetFile "main/navbar")
+        footer = $(widgetFile "main/footer")
 
     pc <- widgetToPageContent $ do
         $(widgetFile "default/reset")
@@ -204,6 +204,7 @@ navbarLayout pageName widget = do
         $(widgetFile "default/fonts")
         $(widgetFile "default/grid")
         $(widgetFile "default-layout")
+        $(widgetFile "main/_main")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
   where
     pageClasses :: (Text, Text)
