@@ -12,6 +12,7 @@ set -Eeuo pipefail
 opt_debug=${KETER_DEBUG:-false}
 opt_build=${BUILD:-true}
 opt_deploy=${DEPLOY:-true}
+opt_deploy_osuosl=${DEPLOY_OSUOSL:-false}
 # Assume the DB is already available
 opt_setup_db=${SETUP_DB:-false}
 
@@ -91,6 +92,15 @@ main () {
         # behavior of using whatever key is on my system. :|
         # See https://tree.taiga.io/project/snowdrift/issue/401
         rm -f website/config/client_session_key.aes
+
+	# This removes the PGHOST envvar override in the site settings.
+	# OSUOSL uses a remote database server and this override to `localhost`
+	# prevents Keter from connecting.
+	if $opt_deploy_osuosl
+	then
+          sed -i '/PGHOST: localhost/d' website/config/keter.yml
+	fi
+
         tar czf ${opt_appname}.keter -C website ${contents[@]}
     else
         hdr "Not building, as requested"
