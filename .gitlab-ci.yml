@@ -59,6 +59,8 @@ deploy-build for Centos 7:
   cache:
     key:
       prefix: "Centos 7"
+  variables:
+    DEPLOY_OSUOSL: "true"
 
 deploy-build for Ubuntu 14.04:
   extends: .deploy-build-common
