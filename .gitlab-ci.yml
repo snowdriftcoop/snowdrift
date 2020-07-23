@@ -60,7 +60,7 @@ deploy-build for Centos 7:
     key:
       prefix: "Centos 7"
   variables:
-    DEPLOY_OSUOSL: "true"
+    UNSET_PGHOST_VAR: "true"
 
 deploy-build for Ubuntu 14.04:
   extends: .deploy-build-common
