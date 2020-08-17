@@ -1,0 +1,107 @@
+/**
+ * Getting the prototype ready for import to the main site is taking a while.
+ * However, it's important to get the status indicator live sooner than that.
+ * So, here are a bunch of variables and mixins dumped from the prototype in
+ * order to make that work with minimal changes. Having this here is a total
+ * mess and cleaning it out should be our first order of business when we're
+ * ready to start importing pages from the prototype for real.
+ */
+
+///////////////////////
+// Utility functions //
+///////////////////////
+
+@function strip-units($num)
+    @return $num / ($num * 0 + 1)
+
+@function rem-to-px($rem)
+    @return strip-units($rem) * 10px
+
+@function px-to-rem($px)
+    @return strip-units($px) * 1rem / 10
+
+/// Design Guide colors
+$blue:              #47cfec
+$blue-bright:       #c5f1fd
+$blue-dark:         #13628e
+$gold:              #f9ff68
+$gold-bright:       #fdffc7
+$gold-dark:         #8c9100
+$white:             #ffffff
+$green:             #4ebf7a
+$green-dark:        #44a76b
+$red:               #d66a6a
+
+/// Link colors
+$link: $green-dark
+$link--hover: #378756
+$link--visited: $green-dark
+
+/// Blue drop shadow color in varying opacities using transparentize()
+/// e.g. transparentize($drop-shadow, 0.6) -> rba(9, 98, 142, 0.4)
+$drop-shadow:       #09628e
+
+/// Primary font family
+$font-family: Nunito, sans-serif
+
+/// Font weights
+$weight_light: 300
+$weight_normal: 400
+$weight_semi-bold: 600
+$weight_bold: 700
+$weight_ultra-bold: 800
+
+/// Font sizes
+$size_tiny: px-to-rem(13px)
+$size_small: px-to-rem(17px)
+$size_medium: px-to-rem(21px)
+$size_large: px-to-rem(29px)
+$size_huge: px-to-rem(37px)
+
+$fork-awesome-woff2: @{StaticR fonts_fork_awesome_forkawesome_webfont_woff2}
+$fork-awesome-woff:  @{StaticR fonts_fork_awesome_forkawesome_webfont_woff}
+
+// Fork Awesome icons
++font-init("ForkAwesome", 400, normal, $fork-awesome-woff2, $fork-awesome-woff)
+
+=pn__fa($icon, $size)
+    content: "#{$icon}"
+    font-style: normal
+    font-variant: normal
+    font-weight: normal
+    font-size: $size
+    line-height: 1
+    font-family: ForkAwesome
+
+=pn__text--link
+    border-bottom: 0.2rem solid transparent
+    color: $link
+    font-family: $font-family
+    font-weight: $weight_normal
+    text-decoration: none
+
+    &:visited
+        color: $link--visited
+
+    &:hover
+        border-bottom: 0.2rem solid $link--hover
+        color: $link--hover
+
+    &:active
+        color: $link
+
+    &:focus
+        outline: 0
+        border-bottom: 0.2rem solid $link
+
+$grid-width--mini: 28rem
+$grid-width--small: 39rem
+$grid-width--medium: 75rem
+
+=pn__grid-columns--page
+    +respond("xs")
+        grid-template-columns: 1fr $grid-width--mini 1fr
+    +respond("s")
+        grid-template-columns: 1fr $grid-width--small 1fr
+    +respond("m")
+        grid-template-columns: 1fr $grid-width--medium 1fr
