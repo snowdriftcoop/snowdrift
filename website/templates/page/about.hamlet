@@ -42,8 +42,9 @@ $# mark.
             Next major milestone
         <dd .__desc>
           Enabling the first outside projects for active listing
-    <a .__link href="https://wiki.snowdrift.coop/planning">
-      See our roadmap
+    <.__roadmap>
+      <a .__link href="https://wiki.snowdrift.coop/planning">
+        See our roadmap
 
 <.section>
   <.intro>

@@ -157,17 +157,18 @@
         display: inline-block
         vertical-align: middle
 
+    .__roadmap
+        margin: 6rem auto 0
+        text-align: center
+
     .__link
         +pn__text--link
-        display: block
-        max-width: 18.8rem
-        text-align: center
         font-weight: $weight_semi-bold
-        margin: 6rem auto 0
 
     .__link::before
         // Right arrow: fa-arrow-right
         +pn__fa("\f061", 2.1rem)
+        margin-right: 0.5rem
 
     +respond("xs")
         font-size: 1.9rem
