@@ -1,0 +1,56 @@
+/**
+ * See note at the top of _status-box-temp.silius
+ * This ought to go away ASAP when we start migrating prototype styles
+ *
+ * Everything is inlined here since it will be included in every page and we
+ * don't want to leak variables / override them elsewhere, unintentionally
+ */
+
+// Tabbed link under the navbar
+.status-wrap
+    position: absolute
+    top: 6rem
+    right: 0
+    left: 0
+    margin: 0 auto
+    height: 0
+    display: grid
+
+    +respond("xs")
+        width: 280px
+        grid-template-columns: 30px 1fr 30px
+    +respond("s")
+        width: 390px
+        grid-template-columns: 30px 1fr repeat(3, 30px 1fr) 30px
+    +respond("m")
+        width: 750px
+        grid-template-columns: 30px 1fr 30px 1fr repeat(5, 30px 1fr) 30px 1fr 30px
+
+.status-flag
+    $white:             #ffffff
+    $gold-bright:       #fdffc7
+    $gold-dark:         #8c9100
+    $weight_semi-bold: 600
+    $size_small: 17px
+    $font-family: Nunito, sans-serif
+    position: relative
+    grid-column-start: 2
+    top: -6px
+    z-index: 1
+    padding: 3px 14px
+    width: 82px
+    height: 34px
+    border: 2px solid $white
+    border-radius: 6px
+    background: $gold-bright
+    color: $gold-dark
+    text-decoration: none
+    font-weight: $weight_semi-bold
+    font-size: $size_small
+    line-height: 30px
+    font-family: $font-family
+    transform: rotate(-4deg)
+
+    &:hover
+        height: 40px
+        padding: 9px 14px 3px

@@ -18,6 +18,35 @@ $# mark.
       To dramatically improve the ability of ordinary people to fund public
       goods – things like software, music, journalism, and research – that
       everyone can use and share without limitations.
+
+<.main-content>
+  <#status .status-stages>
+    <h2 .__heading>
+      Status
+    <dl .__stages>
+      <.__stage>
+        <dt .__status .--checked>
+          <span .__text>
+            Functioning
+        <dd .__desc>
+          Initial pledging to the platform itself as the first test project
+      <.__stage>
+        <dt .__status>
+          <span .__text>
+            Next steps
+        <dd .__desc>
+          Run a first real charge for active patrons; clean up site design
+      <.__stage>
+        <dt .__status>
+          <span .__text>
+            Next major milestone
+        <dd .__desc>
+          Enabling the first outside projects for active listing
+    <a .__link href="https://wiki.snowdrift.coop/planning">
+      See our roadmap
+
+<.section>
+  <.intro>
     <p>
       Our innovative crowdmatching approach is outlined in our
       <a .link href=@{WelcomeR}>

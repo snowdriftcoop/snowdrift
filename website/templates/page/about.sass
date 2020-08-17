@@ -84,3 +84,115 @@
 +respond("m")
     .section
         +span($grid--m, 6 max auto)
+
+///------------------------------------------------------------------------///
+//  Status box
+///------------------------------------------------------------------------///
+
+
+@import ../status-box-temp
+
+
+.main-content
+    font-weight: $weight_light
+    font-size: $size_medium
+    line-height: 3rem
+    font-family: $font-family
+    display: grid
+    +pn__grid-columns--page
+
+.status-stages
+    grid-column: 2 / -2
+    margin-top: 3rem
+    margin-bottom: 6rem
+    padding: 3rem
+    border-radius: 0.3rem
+    border-bottom: 0.4rem solid $gold-dark
+    box-shadow: 0.2rem 0.9rem 1.5rem 0.1rem transparentize($drop-shadow, 0.8)
+    background: $gold-bright
+    color: $gold-dark
+
+    .__heading
+        line-height: 3rem
+        font-size: $size_large
+        font-weight: $weight_bold
+        // max-width: 100%
+        margin-bottom: 3rem
+
+    // Grid here instead of __stages to make the border styling work with more
+    // semantic html (<dl>/<dt>/<dd> rather than <div>/<hr>s)
+    .__stage
+        display: grid
+        grid-row-gap: 3rem
+        grid-column-gap: 3rem
+        align-items: center
+        align-content: center
+
+    // Borders between stages -- you can't make borders shorter than full width,
+       so we put both borders on a less-than-full-width ::before pseudo-element.
+       This element also serves as the vertical margin between stages.
+    .__stage + .__stage::before
+        content: ""
+        grid-column: 1 / -1
+        border: 0.1rem solid rgba(141, 148, 0, 0.5)
+        margin: 3rem 6rem 0 // 3rem above + 3rem grid gap below = 6rem between stages
+
+    // The square icon has the same height as the check mark, so it appears to
+    // be much larger, rather than looking like a same-sized bullet point. To
+    // offset this, give it a smaller font size. Then, to center with the status
+    // text, make both icon and text inline-block and vertical-align: middle
+    .__status::before
+        +pn__fa("\f0c8", 1.4rem) // Checkbox: fa-square
+        display: inline-block
+        margin-right: 1.5rem
+        vertical-align: middle
+        line-height: 3rem
+
+    .__status.--checked::before
+        content: "\f00c" // Check mark: fa-check
+        font-size: 2.7rem
+
+    .__status > .__text
+        font-weight: $weight_bold
+        display: inline-block
+        vertical-align: middle
+
+    .__link
+        +pn__text--link
+        display: block
+        max-width: 18.8rem
+        text-align: center
+        font-weight: $weight_semi-bold
+        margin: 6rem auto 0
+
+    .__link::before
+        // Right arrow: fa-arrow-right
+        +pn__fa("\f061", 2.1rem)
+
+    +respond("xs")
+        font-size: 1.9rem
+
+        .__heading
+            font-size: 2.7rem
+
+        .__stage + .__stage::before
+            margin-left: 3rem
+            margin-right: 3rem
+
+    +respond("m")
+        .__heading
+            margin: 0.6rem 1rem 0
+
+        .__stage
+            grid-template-columns: 1fr 1fr
+
+        // Consistent width => status text start is horizontally aligned
+           centered => so icon alignment still makes sense
+        .__status::before
+            width: 3rem
+            text-align: center
+            margin-left: 4.5rem
+
+        // Makes text wrap in slightly nicer locations
+        .__desc
+            margin-right: 1rem
