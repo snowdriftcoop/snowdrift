@@ -86,6 +86,7 @@ deploy to Ubuntu 14.04:
     # changes this line. It's a convenience. Security is maintained by only
     # allowing production secrets to be sent to protected branches.
     - master@snowdrift/snowdrift
+    - maintenance-downtime@snowdrift/snowdrift
   # The scheduled runs don't get deployed. FIXME: Why do we even have a
   # scheduled run?
   except:
