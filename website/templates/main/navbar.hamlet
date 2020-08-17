@@ -31,3 +31,7 @@
       <a .item .m--last href=@{AuthR LoginR}>
         Log in
   $# End L2 menu
+
+<.status-wrap>
+  <a .status-flag href=@{AboutR}#status>
+    Status
