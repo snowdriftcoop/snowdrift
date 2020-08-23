@@ -35,7 +35,7 @@ build and test:
     - touch website/src/Settings/StaticFiles.hs
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
-.deploy-build-common:
+deploy-build:
   extends: .build-and-test
   services:
     - postgres:9.3
@@ -50,22 +50,9 @@ build and test:
     paths:
       - SnowdriftReboot.keter
       - keter-bin/keter
-
-deploy-build for Centos 7:
-  extends: .deploy-build-common
   image: "${image_build_centos_7}"
-  cache:
-    key:
-      prefix: "Centos 7"
   variables:
     UNSET_PGHOST_VAR: "true"
-
-deploy-build for Ubuntu 14.04:
-  extends: .deploy-build-common
-  image: "${image_build_ubuntu_14_04}"
-  cache:
-    key:
-      prefix: "Ubuntu 14.04"
 
 deploy to OSUOSL:
   stage: deploy
@@ -74,7 +61,7 @@ deploy to OSUOSL:
   cache:
     paths: []
   needs:
-    - job: "deploy-build for Centos 7"
+    - job: "deploy-build"
       artifacts: true
   script:
     - BUILD=false ./ci-support/deploy
