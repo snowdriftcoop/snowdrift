@@ -45,14 +45,11 @@ deploy-build:
     - stack ${SD_STACK_ARGS} build --copy-bins --local-bin-path keter-bin keter
   # ... but don't force pedantry on people submitting MRs.
   allow_failure: true
-  dependencies: []
   artifacts:
     paths:
       - SnowdriftReboot.keter
       - keter-bin/keter
   image: "${image_build_centos_7}"
-  variables:
-    UNSET_PGHOST_VAR: "true"
 
 deploy to OSUOSL:
   stage: deploy
