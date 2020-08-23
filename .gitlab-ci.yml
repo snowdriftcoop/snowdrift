@@ -13,22 +13,20 @@ stages:
   - build and test
   - deploy
 
+cache:
+  paths:
+    - stack-root
+  key:
+    files:
+      - stack.yaml.lock
+
 .build-and-test:
   stage: build and test
-  cache:
-    key:
-      files:
-        - stack.yaml.lock
-    paths:
-      - stack-root
 
 build and test:
   extends: .build-and-test
   image: "${image_build_centos_7}"
   # Source: ci-support/docker/image-build-centos-7
-  cache:
-    key:
-      prefix: "Centos 7"
   services:
     - postgres:9.3
   # | If this gets much longer, turn it into an external script.
