@@ -57,9 +57,7 @@ deploy to OSUOSL:
   image: "${image_deploy}"
   cache:
     paths: []
-  needs:
-    - job: "deploy-build"
-      artifacts: true
+  needs: ["deploy-build"]
   script:
     - BUILD=false ./ci-support/deploy
   only:
