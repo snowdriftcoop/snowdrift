@@ -13,22 +13,20 @@ stages:
   - build and test
   - deploy
 
+cache:
+  paths:
+    - stack-root
+  key:
+    files:
+      - stack.yaml.lock
+
 .build-and-test:
   stage: build and test
-  cache:
-    key:
-      files:
-        - stack.yaml.lock
-    paths:
-      - stack-root
 
 build and test:
   extends: .build-and-test
   image: "${image_build_centos_7}"
   # Source: ci-support/docker/image-build-centos-7
-  cache:
-    key:
-      prefix: "Centos 7"
   services:
     - postgres:9.3
   # | If this gets much longer, turn it into an external script.
@@ -37,7 +35,7 @@ build and test:
     - touch website/src/Settings/StaticFiles.hs
     - PGUSER=postgres PGHOST=postgres stack ${SD_STACK_ARGS} test --fast
 
-.deploy-build-common:
+deploy-build:
   extends: .build-and-test
   services:
     - postgres:9.3
@@ -47,36 +45,19 @@ build and test:
     - stack ${SD_STACK_ARGS} build --copy-bins --local-bin-path keter-bin keter
   # ... but don't force pedantry on people submitting MRs.
   allow_failure: true
-  dependencies: []
   artifacts:
     paths:
       - SnowdriftReboot.keter
       - keter-bin/keter
-
-deploy-build for Centos 7:
-  extends: .deploy-build-common
   image: "${image_build_centos_7}"
-  cache:
-    key:
-      prefix: "Centos 7"
-  variables:
-    UNSET_PGHOST_VAR: "true"
 
-deploy-build for Ubuntu 14.04:
-  extends: .deploy-build-common
-  image: "${image_build_ubuntu_14_04}"
-  cache:
-    key:
-      prefix: "Ubuntu 14.04"
-
-deploy to Ubuntu 14.04:
+deploy to OSUOSL:
   stage: deploy
   # Source: ci-support/docker/image-deploy/Dockerfile
   image: "${image_deploy}"
   cache:
     paths: []
-  dependencies:
-    - "deploy-build for Ubuntu 14.04"
+  needs: ["deploy-build"]
   script:
     - BUILD=false ./ci-support/deploy
   only:

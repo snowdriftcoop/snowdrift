@@ -7,7 +7,6 @@ stanzas:
       args: []
       env:
           APPROOT: https://snowdrift.coop
-          PGHOST: localhost
           SD_EMAILS: "true"
 plugins:
     postgres: true
