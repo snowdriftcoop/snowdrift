@@ -113,7 +113,7 @@ main () {
         scp -i $keyfile \
             -o "UserKnownHostsFile $host_keyfile" \
             ${opt_appname}.keter \
-            gitlab@${SD_MAIN_INSTANCE_IP}:/opt/keter/incoming
+            gitlab@${SD_MAIN_INSTANCE}:/opt/keter/incoming
     else
         hdr "Not deploying, as requested"
     fi
