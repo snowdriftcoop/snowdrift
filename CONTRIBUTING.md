@@ -147,6 +147,14 @@ To help with code review, please choose to *watch* the main code repository at
 Then, you can make general and in-line comments about new code as it is
 committed and before it goes into the master repository.
 
+### Issue Usage:
+
+* Before creating a new issue, make sure to search for relevant issues to avoid redundancy: 
+  - if there *is* a similar issue, comment if you have suggested additions/changes to the issue 
+  - if trivial changes, can modify issue directly
+    - (changes to issues have no version history so please be very wary of any deletions without author's approval)
+* Issues often need extra grooming (merging, updates, adding labels, etc): make sure label new issues as best you can, which will require getting familiar with existing labels
+
 ### Use of JavaScript
 
 **We generally build with *progressive enhancement* in mind.** The site should
