@@ -9,6 +9,8 @@
       src="https://archive.org/download/snowdrift-dot-coop-intro/snowdrift-dot-coop-intro.mp4">
     <source type="video/ogg"
       src="https://archive.org/download/snowdrift-dot-coop-intro/snowdrift-dot-coop-intro.ogv">
+    <track label="English" kind="subtitles" srclang="en" src="/static/snowdrift-intro-en.vtt">
+    <track label="Français" kind="subtitles" srclang="fr" src="/static/snowdrift-intro-fr.vtt">
 
   $if not loggedIn
     <.signup>
