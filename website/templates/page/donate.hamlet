@@ -1,8 +1,8 @@
 <h1>Donating to Snowdrift.coop
 <h2>The crowdmatch pledge
 <p>
-  Our crowdmatching system is in live testing, so you can donate by
-  <a href=@{SnowdriftProjectR}>pledging within the system itself!
+  Our crowdmatching system is in live testing, so you can #
+  <a href=@{SnowdriftProjectR}>pledge within the system itself!
   To have more impact there, invite others to join the crowd.
 <h2>Volunteering
 <p>
@@ -64,20 +64,17 @@
   Snowdrift.coop is incorporated as a Michigan non-profit cooperative but does
   not have independent federal tax-exempt status.
   We have in the past gotten grants from 501(c)(3) organizations, and that may
-  be possible again. If you are looking to donate that way, please
+  be possible again. If you are looking to donate that way, please #
   <a href=@{ContactR}>contact&nbsp;us
   so that we can discuss the options.
 
-Thank you for your support!
+<hr>
+
+<h3> Thank you for your support!
 
 <ul>
-  <li> We honor donors in our public list of
-       <a href=@{SponsorsR}>launch sponsors
+  <li> We honor donors in our public list of <a href=@{SponsorsR}>launch sponsors</a>
+  <li> at $12+, we can send a physical <a href=@{MerchandiseR}#stickers>sticker</a> upon request
   <li> $40+ donors may sponsor a specific commit change in our code
+  <li> donate $100+ for a <a href=@{MerchandiseR}#t-shirts>t-shirt</a> (supply limited currently, future printings not planned yet)
   <li> $500+ grants are distinguished as "key sponsors".
-  <li> at $12+, we will send a physical 
-       <a href=@{MerchandiseR}#stickers>sticker
-       upon request
-  <li> donate $100+ for a
-       <a href=@{MerchandiseR}#t-shirts>t-shirt
-       (supply limited currently, future printings not planned yet)
