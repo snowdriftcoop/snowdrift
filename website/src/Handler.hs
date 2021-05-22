@@ -20,6 +20,10 @@ getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
+getLiberaR :: Handler TypedContent
+getLiberaR = return $ TypedContent typePlain
+                    $ toContent $(embedFile "config/libera.txt")
+
 getWelcomeR :: Handler Html
 getWelcomeR = do
     loggedIn <- isJust <$> maybeAuth
