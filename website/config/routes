@@ -5,6 +5,7 @@
 
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
+/libera.txt LiberaR GET
 
 / WelcomeR GET
 /dashboard DashboardR GET
