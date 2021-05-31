@@ -3,16 +3,20 @@
 
 <.section>
   <img .img .m--intro1 src=@{StaticR img_how_it_works_img_intro1_png}>
-  <.arrow .m--1-2>
   <.intro-caption>
     <p .intro .m--1-2>
-      Every patron matches every other.
-      Projects receive their donations monthly.
+      For now, pledges are fixed at $1 per 1,000 patrons.
+      Each patron is billed monthly 0.1¢ times the number of patrons in the crowd.
+    <p .intro .m--1-2>
+      We only run actual payment charges when the bill reaches a level where
+      processing fees will be less than 10%.
+    <p .intro .m--1-2>
+      For now, we have set a fixed maximum bill of $6 per month.
+      Matching will not continue beyond a crowd of 6,000 patrons giving $36,000
+      total.
     <p .intro .m--2-2>
-      As a patron you set your monthly limit.
-      Never will you pay more than that amount.
-  <.arrow .m--2-2>
-  <img .img .m--intro2 src=@{StaticR img_how_it_works_img_intro2_png}>
+      As we move past initial beta and include outside projects, we plan to
+      expand the options for project goals and pledge levels.
 
   $if loggedIn
     <.signup .m--logged-in>
