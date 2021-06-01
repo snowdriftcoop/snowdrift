@@ -20,9 +20,9 @@ getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/robots.txt")
 
-getLiberaR :: Handler TypedContent
-getLiberaR = return $ TypedContent typePlain
-                    $ toContent $(embedFile "config/libera.txt")
+getMatrixR :: Handler TypedContent
+getMatrixR = return $ TypedContent typePlain
+                    $ toContent $(embedFile "config/matrix.txt")
 
 getWelcomeR :: Handler Html
 getWelcomeR = do
