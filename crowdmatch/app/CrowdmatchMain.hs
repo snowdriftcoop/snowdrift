@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import Crowdmatch
-import RunPersist
+import Crowdmatch (crowdmatch)
+import RunPersist (runPersistKeter)
 
 import Data.Time (Day, fromGregorian, getCurrentTime, utctDay)
 import System.Environment (getArgs)
