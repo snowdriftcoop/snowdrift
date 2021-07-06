@@ -67,7 +67,7 @@ main = do
           putStrLn ("Running a crowdmatch on " ++ show day)
           runCrowdmatch day
         _ -> do
-          response <- prompt ("A crowdmatch will be run on " ++ show day ++ ". Do you want to proceed (Y/n)? ")
+          response <- prompt ("A crowdmatch will be run on " ++ show day ++ ". Proceed (Y/n)? ")
           -- Change this if we ever support more than one argument.
           if response == "Y" || response == "y"
             then runCrowdmatch day
