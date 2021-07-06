@@ -31,14 +31,12 @@ parseDay yyyy mm dd = do
 parseDate :: String -> String -> String -> IO Day
 parseDate yyyy mm dd = do
   date <- maybe usage return (parseDay yyyy mm dd)
-  today <- utctDay <$> getCurrentTime
-  ensureBefore today date
-  where
-    ensureBefore today date
-      | date <= today = return date
-      | otherwise = do
-        putStrLn ("ERR: DATE must not be in the future. Provided date was: " ++ show date)
-        exitWith (ExitFailure 3)
+  today <- fmap utctDay getCurrentTime
+  if date <= today
+    then return date
+    else do
+      putStrLn ("ERR: DATE must not be in the future. Provided date was: " ++ show date)
+      exitWith (ExitFailure 3)
 
 -- NB! The string passed to runPersistKeter must match the APPNAME used in
 -- keter.sh to deploy the app. Must fix.
