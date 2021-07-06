@@ -4,9 +4,11 @@ module Main (main) where
 import Crowdmatch (crowdmatch)
 import RunPersist (runPersistKeter)
 
+import Data.List (partition)
 import Data.Time (Day, fromGregorian, getCurrentTime, utctDay)
 import System.Environment (getArgs)
 import System.Exit (ExitCode(ExitFailure), exitWith)
+import System.IO (hFlush, stdout)
 import Text.Read (readMaybe)
 
 usage :: IO a -- exits
@@ -14,6 +16,13 @@ usage = do
   putStrLn "usage: crowdmatch YEAR MONTH DAY"
   putStrLn "e.g. crowdmatch 2019 09 01"
   exitWith (ExitFailure 2)
+
+-- Show a prompt on the command line and return the response
+prompt :: String -> IO String
+prompt p = do
+  putStr p
+  hFlush stdout -- Make sure the prompt is printed before waiting for input
+  getLine
 
 -- In the future we should use ISO 8601 format dates. Newer versions of the
 -- `time` library are able to parse them, so we can replace parseDay with
@@ -43,11 +52,26 @@ parseDate yyyy mm dd = do
 runCrowdmatch :: Day -> IO ()
 runCrowdmatch day = runPersistKeter "SnowdriftReboot" (crowdmatch day)
 
+-- This is pretty terrible FP form. That's intentional, to be more
+-- approachable to non-Haskellers. This is also why parentheses are
+-- preferred over $ for setting the order of operations.
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
+  (options, params) <- return (partition startsWithDash args)
+  case params of
     yyyy : mm : dd : [] -> do
       day <- parseDate yyyy mm dd
-      runCrowdmatch day
+      case options of
+        "-y" : _ -> do
+          putStrLn ("Running a crowdmatch on " ++ show day)
+          runCrowdmatch day
+        _ -> do
+          response <- prompt ("A crowdmatch will be run on " ++ show day ++ ". Do you want to proceed (Y/n)? ")
+          -- Change this if we ever support more than one argument.
+          if response == "Y" || response == "y"
+            then runCrowdmatch day
+            else exitWith (ExitFailure 4)
     _ -> usage
+  where
+    startsWithDash letters = (take 1 letters) == "-"
