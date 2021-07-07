@@ -40,9 +40,6 @@ packages:
   original:
     hackage: stripe-http-streams-2.2.3
 - completed:
-    cabal-file:
-      size: 3868
-      sha256: 438a33d65e0744a3c802412329255cd3a91461e5c5cbe6ba113a42234a07049e
     name: postgresql-simple-migration
     version: 0.1.9.0
     git: https://gitlab.com/snowdrift/postgresql-simple-migration-patches.git
@@ -54,9 +51,6 @@ packages:
     git: https://gitlab.com/snowdrift/postgresql-simple-migration-patches.git
     commit: 55ae21a7ee5b0386ec7c6909409b1bdacebcc924
 - completed:
-    cabal-file:
-      size: 2110
-      sha256: b3c9f1cf36e9b2540158cb2b6b4eb7ac47e9f31beef0ae8a9866599f8bad35c9
     name: shakespeare-sass
     version: 0.1.4
     git: https://notabug.org/fr33domlover/shakespeare-sass.git
@@ -68,9 +62,6 @@ packages:
     git: https://notabug.org/fr33domlover/shakespeare-sass.git
     commit: e25b7f6699096e0ffa619dc71a8ef028940e5bb9
 - completed:
-    cabal-file:
-      size: 2829
-      sha256: 27d979c187015f20c89f6f07361731c5160eae1a770bc39892c92d45170fffd7
     name: codex
     version: 0.5.1.2
     git: https://github.com/aloiscochard/codex.git
@@ -83,7 +74,7 @@ packages:
     commit: 0d59fe5099136015912e13a4c1ea573c5fd7f2ff
 snapshots:
 - completed:
-    size: 536340
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/9/18.yaml
-    sha256: 3378d236577d99911e5325255f2b147e3f2d1f0253dc680d2b85921183c04e4f
-  original: lts-9.18
+    size: 537868
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/9/21.yaml
+    sha256: 0a3be91c2bce851de4755003cfb1d85d62b6f90276231fcc305729c0c5c864a9
+  original: lts-9.21
