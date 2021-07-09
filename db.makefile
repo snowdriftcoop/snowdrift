@@ -23,7 +23,7 @@ pg_start := $(pg_ctl) \
 #   - https://stackoverflow.com/a/16783253/994643
 db_exists := psql -lqt | cut -f1 -d \| | grep -qw
 
-.PHONY: database service cluster stop clean
+.PHONY: database service cluster isrunning stop clean
 
 database: service ; $(db_exists) $(PGDATABASE) || createdb $(PGDATABASE)
 
@@ -34,5 +34,6 @@ cluster_sentinel := $(PGDATA)/PG_VERSION
 cluster: $(cluster_sentinel)
 $(cluster_sentinel): ; $(pg_ctl) initdb -D $(PGDATA)
 
+isrunning: ; $(pg_isready)
 stop: ; -$(pg_isready) && $(pg_ctl) stop
 clean: stop ; rm -rf $(PGDATA)

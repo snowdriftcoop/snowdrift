@@ -31,7 +31,9 @@ export PGDATABASE="snowdrift_development"
 
 # Using stack ensures postgres exists for Nix users, thanks to stack's Nix
 # support.
-dbmake=(stack exec -- make -s -C "$projRoot" -f db.makefile)
+dbmake() {
+    stack exec -- make --quiet --directory="$projRoot" --file=db.makefile "$@"
+}
 
 run_devel () {
     cd "$projRoot"/website
@@ -40,13 +42,19 @@ run_devel () {
 }
 
 with_db () {
-    # Shut down the database on exit
-    ( trap "${dbmake[*]} stop" EXIT
-    # . . . and start it now
-    PGDATABASE="$1" ${dbmake[*]}
-    shift
-    "$@"
-    ) # DB shutdown happens now
+    # If the db is already running, just run the command
+    if dbmake isrunning; then
+        shift
+        "$@"
+    else
+        # Shut down the database on exit
+        ( trap "dbmake stop" EXIT
+        # . . . and start it now
+        PGDATABASE="$1" dbmake
+        shift
+        "$@"
+        ) # DB shutdown happens now
+    fi
 }
 
 main () {
@@ -69,7 +77,17 @@ main () {
             with_db snowdrift_test stack --work-dir .stack-test test "$@"
             ;;
         cleandb)
-            ${dbmake[*]} clean
+            dbmake clean
+            ;;
+        crowdmatch)
+            stack --work-dir .stack-devel build crowdmatch
+            # Unsure how portable '--iso-8601' is => use old-school % formatting
+            date="${1:-$(date +%Y-%m-%d)}"
+            year="$(printf "%s" "$date" | cut -d- -f1)"
+            month="$(printf "%s" "$date" | cut -d- -f2)"
+            day="$(printf "%s" "$date" | cut -d- -f3)"
+            with_db snowdrift_test stack exec --work-dir .stack-devel -- \
+                crowdmatch "$year" "$month" "$day"
             ;;
         *)
             echo "$usage"
