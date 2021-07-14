@@ -26,7 +26,7 @@ Communication options:
 <h2>Live chat
 
 <p>
-  We have a public IRC channel `#snowdrift` at Freenode.net which is also
+  We have a public IRC channel `#snowdrift` at Libera.Chat which is also
   bridged to Matrix.org `#snowdrift:matrix.org`.
 <p>
   If you have JavaScript enabled, a portal to our channel should open right
@@ -37,5 +37,5 @@ Communication options:
   <a href="https://wiki.snowdrift.coop/community/irc">IRC wiki page
   has more details and options.
 
-<iframe src="https://kiwiirc.com/client/irc.freenode.net/#snowdrift"
+<iframe src="https://kiwiirc.com/client/irc.libera.chat/#snowdrift"
   style="border:0; width:100%; height:450px;"></iframe>
