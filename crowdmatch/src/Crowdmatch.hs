@@ -106,7 +106,7 @@ data Patron = Patron
 -- simple. Returned with 'fetchProject'.
 data Project = Project
         { projectCrowd :: Int
-        , projectMonthlyIncome :: Cents
+        , projectMonthlyIncome :: DonationUnits
         , projectPledgeValue :: DonationUnits
         , projectDonationReceivable :: DonationUnits
         , projectDonationsReceived :: DonationUnits
@@ -283,7 +283,7 @@ runMech FetchProjectI = do
     received <- Skeleton.sumField DonationHistoryAmount
 
     let pledgevalue = DonationUnits (fromIntegral numPledges)
-        income = unitsToCents (pledgevalue * pledgevalue)
+        income = pledgevalue * (fromIntegral numPledges)
     pure (Project numPledges income pledgevalue receivable received)
 
 runMech (FetchPatronI pptr) = do
