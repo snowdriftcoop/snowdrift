@@ -334,7 +334,7 @@ unitTests runner = describe "unit tests" $ do
         val <- runner $ do
             mapM_ mkPledge [1..1000]
             projectMonthlyIncome <$> fetchProject
-        val `shouldBe` Cents (100 * 1000)
+        val `shouldBe` DonationUnits (1000 * 1000)
     describe "crowdmatch event" $ do
         now <- runIO getCurrentTime
         let tomorrow = succ $ utctDay now
