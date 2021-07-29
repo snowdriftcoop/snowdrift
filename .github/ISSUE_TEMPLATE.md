@@ -1,0 +1,1 @@
+<!-- Your issue report is welcome, but will be moved to the main Snowdrift.coop repository on gitlab.com. You are encouraged to start there instead! https://gitlab.com/snowdrift/snowdrift/-/issues/new -->
