@@ -2,8 +2,6 @@ module Handler.HowItWorks where
 
 import Import
 
-import Handler.TH
-
 getHowItWorksR :: Handler Html
 getHowItWorksR = do
     loggedIn <- isJust <$> maybeAuth

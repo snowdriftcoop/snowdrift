@@ -2,8 +2,6 @@ module Handler.Projects where
 
 import Import
 
-import Handler.TH
-
 getProjectsR :: Handler Html
 getProjectsR = do
     loggedIn <- isJust <$> maybeAuth
