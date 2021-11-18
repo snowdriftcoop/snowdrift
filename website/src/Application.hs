@@ -34,11 +34,17 @@ import Web.Stripe
 import qualified Yesod.GitRev as G
 
 import Handler
+import Handler.About
 import Handler.Dashboard
 import Handler.Discourse
+import Handler.HowItWorks
 import Handler.PaymentInfo
 import Handler.Pledge
+import Handler.Privacy
 import Handler.Project
+import Handler.Projects
+import Handler.Terms
+import Handler.Welcome
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 

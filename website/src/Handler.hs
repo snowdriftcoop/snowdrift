@@ -24,38 +24,6 @@ getMatrixR :: Handler TypedContent
 getMatrixR = return $ TypedContent typePlain
                     $ toContent $(embedFile "config/matrix.txt")
 
-getWelcomeR :: Handler Html
-getWelcomeR = do
-    loggedIn <- isJust <$> maybeAuth
-    defaultLayoutV2 $ do
-        setTitle "Crowdmatching for Public Goods"
-        $(widgetFile "page/welcome")
-
-getHowItWorksR :: Handler Html
-getHowItWorksR = do
-    loggedIn <- isJust <$> maybeAuth
-    defaultLayoutV2 $ do
-        setTitle "How it Works"
-        $(widgetFile "page/how-it-works")
-
-getPrivacyR :: Handler Html
-getPrivacyR = defaultLayoutV2 $ do
-    setTitle "Privacy Policy"
-    $(widgetFile "page/privacy")
-
-getTermsR :: Handler Html
-getTermsR = do
-    defaultLayoutV2 $ do
-        setTitle "Terms of Service"
-        $(widgetFile "page/terms")
-
-getProjectsR :: Handler Html
-getProjectsR = do
-    loggedIn <- isJust <$> maybeAuth
-    defaultLayoutV2 $ do
-        setTitle "Projects"
-        $(widgetFile "page/projects")
-
 -- Redirect /p to /projects
 getPR :: Handler Html
 getPR = redirect ProjectsR
@@ -65,11 +33,6 @@ getTrademarksR = $(widget "page/trademarks" "Trademarks")
 
 getDonateR :: Handler Html
 getDonateR = $(widget "page/donate" "Donate")
-
-getAboutR :: Handler Html
-getAboutR = defaultLayoutV2 $ do
-    setTitle "About"
-    $(widgetFile "page/about")
 
 getSponsorsR :: Handler Html
 getSponsorsR = $(widget "page/sponsors" "Sponsors")

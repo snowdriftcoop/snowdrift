@@ -46,13 +46,19 @@ library
         Settings
         Settings.StaticFiles
         Handler
+        Handler.About
         Handler.Dashboard
         Handler.Discourse
+        Handler.HowItWorks
         Handler.PaymentInfo
         Handler.Pledge
+        Handler.Privacy
         Handler.Project
+        Handler.Projects
+        Handler.Terms
         Handler.TH
         Handler.Util
+        Handler.Welcome
         MarkupInstances
         TestHooks
     -- }}}2
