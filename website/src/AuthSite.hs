@@ -300,14 +300,17 @@ privilegedLogin :: Yesod master => AuthUser -> HandlerT master IO ()
 privilegedLogin = setSession authSessionKey . toPathPiece . entityKey
 
 -- | Store a provisional user for later verification. Returns the token to
--- use for verification.
+-- use for verification. Replaces existing token for the same email address.
+-- There should be a minimum time that can pass before replacing the existing
+-- token, though. Hm.
 privilegedProvisionalUser :: MonadIO m
                           => Credentials -> SqlPersistT m Verification
 privilegedProvisionalUser creds = do
     verf <- liftIO (genVerificationToken creds)
     prov <- liftIO (provisional creds verf)
-    _ <- upsertBy (UniqueProvisionalUser (provisionalUserEmail prov)) prov []
-    pure verf
+    let constraint = UniqueProvisionalUser (provisionalUserEmail prov)
+    _ <- deleteBy constraint
+    verf <$ insert_ prov
 
 -- | Log out by deleting the session var
 logout :: Yesod master => HandlerT master IO ()
