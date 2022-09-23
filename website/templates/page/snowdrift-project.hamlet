@@ -11,7 +11,7 @@
   <li>
     Current value of one pledge: #{projectPledgeValue project}
   <li>
-    Current total of all pledges: #{projectMonthlyIncome project}
+    Current total of all pledges (to 10ths of a cent): #{projectMonthlyIncome project}
 
 <h2>Pledge
 $maybe _ <- muid
