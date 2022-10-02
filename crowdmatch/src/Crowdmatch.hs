@@ -171,6 +171,7 @@ crowdmatch
 crowdmatch day = runMech $ CrowdmatchI day
 
 -- | Execute a payments event, sending charge commands to Stripe.
+-- This is just an external wrapper around runMech
 --
 -- This holds a lock on the database to ensure consistency. That could kill
 -- concurrent performance, but right now the only thing hitting the payment
@@ -313,35 +314,75 @@ runMech (CrowdmatchI date) = do
 
 runMech (MakePaymentsI strp) = do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
-    -- without a CustomerId :/
+    -- without a Stripe CustomerId :/
+    -- get patrons who have high enough outstanding balance
     chargeable <- Skeleton.patronsReceivable minimumDonation
     let donors =
-            map
-                (\(Entity pId p) -> note pId
-                    (Donor
-                     <$> Just pId
-                     <*> fmap unPaymentToken (Model.patronPaymentToken p)
-                     <*> Just (Model.patronDonationPayable p)))
+            map -- over chargeable patrons
+                (\(Entity pId p) -> note pId -- If the Donor below is Nothing, use just the id
+                    (Donor -- Maybe "ChargeablePatron" would be a better name
+                     <$> Just pId -- first element of Donor record: our system
+                     -- unwrap paymentToken to basic type (string?)
+                     <*> fmap unPaymentToken (Model.patronPaymentToken p) -- Stripe customerID
+                     <*> Just (Model.patronDonationPayable p))) -- Amount they owe, extracted from chargeable
                 chargeable
-        chargeAction = traverse (traverse sendCharge) donors
-        simplifiedOutcomes =
+        -- Run the charges via stripe api
+        -- traverse :: (Traversable t, Applicative f) => (a -> f b) -> t a -> f (t b)
+        -- Data.Traversable:
+        --   traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
+        -- traverse: like fmap, but allows you to run effects while collecing results
+        --           which we need because sendCharge runs actions (hit stripe api)
+        -- `Either` is traversable, hence nested traverse. Its signature:
+        -- traverse :: Applicative f => (a0 -> f b) -> Either a a0 -> f (Either a b)
+        -- maps the second Either value (OK), keeps the first (the error) as-is
+        -- Traversing over the either is the action which we then apply over the list of donors
+        -- One is ignoring errors, the other is mapping over the list
+        -- End result is a list of eithers
+        -- ListLike<Either StripeError ChargeResult>
+        chargeAllDonorsAction = traverse (traverse sendCharge) donors
+        -- There are more outcomes than just NoPaymentInfo, ChargeFailure, and PayOk
+        -- But we'll just consider those 3 => summarized/flattened as PaymentOutcome
+        --
+        -- https://hackage.haskell.org/package/stripe-core-2.2.2/docs/Web-Stripe-Error.html#t:StripeError
+        --
+        -- If chargeAction is StripeError -> NoPaymentInfo(StripeError) -- should really be BadPaymentInfo
+        -- If ChargeAction is StripeReturn ->
+        --      If StripeReturn is Charge -> PayOk(Charge)
+        --      Else -> ChargeFailure(StripeReturn)
+        --
+        -- sendCharge: -> io (Either StripeError ChargeResult)
+        -- ChargeResult: (Either StripeError (StripeReturn a))
+        simplifiedOutcomes = -- List of PaymentOutcome
             fmap
+                -- either :: fn1(a -> c) -> fn2(b -> c) -> Either a b -> c
+                -- here, c is PaymentOutcome
                 (map (either NoPaymentInfo (either ChargeFailure PayOk)))
-                chargeAction
+                chargeAllDonorsAction
     chargeResults <- liftIO simplifiedOutcomes
+    -- Monadic version of traverse, essentially does the same thing
+    -- mapM :: (Traversable t, Monad m) => (a -> m b) -> t a -> m (t b)
+    -- mapM_ :: (Foldable t, Monad m) => (a -> m b) -> t a -> m ()
+    -- Ends up returning success if everyone succeeds or error if any failures (we think)
     mapM_ recordResults chargeResults
   where
     -- | Send the charge command to Stripe
     --
     -- For the Futurama milestone, we tack on a fee that covers the Stripe fee
-    -- to calculate the 'payment'.
+    -- to calculate the 'payment'. (because normally stripe just takes the fee
+    -- out of the project income, but we want the project to get the amount that
+    -- crowdmatching said it would get)
     sendCharge
         :: MonadIO io
         => Donor
         -> io (Either StripeError ChargeResult)
-    sendCharge Donor{..} =
+    sendCharge Donor{..} = -- Donor{_donorPatron, _donorCustomer, _donorDonationPayable}
         fmap
+            -- ChargeResult = patron, fee, net, charge
+            -- If we get a stripeError from chargeCustomer, return that stripeerror
+            -- If not, return the charge, wrapped in a ChargeResult
             (fmap (ChargeResult _donorPatron fee net))
+          -- liftIO :: MonadIO m => IO a -> m a
+          -- liftIO is just here to make monad types match, nothing functional
             (liftIO $ chargeCustomer strp _donorCustomer cents)
       where
         cents = payment (unitsToCents _donorDonationPayable)
@@ -352,13 +393,17 @@ runMech (MakePaymentsI strp) = do
         :: (MonadIO m, Show b, Show c)
         => PaymentOutcome ChargeResult b c
         -> SqlPersistT m ()
+    -- TODO: Record in DB instead of just logging to stderr
     recordResults = \case
+        -- Just log their id
         NoPaymentInfo pId ->
             liftIO
                 (hPrint
                     stderr
                     ("Skipped patron with no payment info: " ++ show pId))
+        -- Log everything we get from stripe
         ChargeFailure e -> liftIO (hPrint stderr e)
+
         PayOk chargeResult -> recordDonation chargeResult
       where
         recordDonation ChargeResult{..} = do
