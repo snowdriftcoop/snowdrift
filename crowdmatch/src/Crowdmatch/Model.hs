@@ -29,6 +29,7 @@ import Database.PostgreSQL.Simple.Migration
 
 import Crowdmatch.ModelDataTypes as Crowdmatch.Model
 
+ -- PaymentToken is whatever we get back from Stripe when the user adds a credit card
 share [mkPersist sqlSettings
       , mkMigrate "migrateCrowdmatch"
       ] [persistLowerCase|

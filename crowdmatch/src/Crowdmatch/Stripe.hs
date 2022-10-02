@@ -16,6 +16,8 @@ where
 
 import Control.Arrow (right)
 import Control.Lens (Iso', iso, view)
+-- https://hackage.haskell.org/package/stripe-core-2.2.2/docs/Web-Stripe-StripeRequest.html#t:StripeReturn
+-- -&- is a cutesy way to add a query parameter to a url
 import Web.Stripe (stripe, (-&-), StripeConfig, StripeError)
 import Web.Stripe.Balance
 import Web.Stripe.Charge
@@ -44,6 +46,12 @@ chargeCents = iso toAmount fromAmount
     toAmount (Cents i) = Amount (fromIntegral i)
     fromAmount (Amount i) = Cents (fromIntegral i)
 
+
+-- StripeRequest is an object with Method, Endpoint, and Params
+-- These functions build one
+-- `stripe`'s type is here:
+-- https://hackage.haskell.org/package/stripe-haskell-2.2.3/docs/Web-Stripe-Client-Stripe.html
+-- https://hackage.haskell.org/package/stripe-http-streams-2.2.3/docs/Web-Stripe-Client-HttpStreams.html
 stripeProduction :: StripeConfig -> StripeActions
 stripeProduction c = StripeActions
     { createCustomer =
@@ -52,14 +60,17 @@ stripeProduction c = StripeActions
         \ cardToken cust -> stripe c $ SC.updateCustomer cust -&- cardToken
     , deleteCustomer =
         \ cust -> right (const ()) <$> stripe c (SC.deleteCustomer cust)
-    , chargeCustomer =
-        \ cust cents ->
-              stripe c
+    , chargeCustomer = -- This is all just building a request
+        \ cust cents -> -- cust: Stripe customerID
+              stripe c -- stripe object makes the request, returns as IO (Either StripeError (StripeReturn a))
             . (-&- cust)
             -- Supported upstream as of 2016-10-06, but not in our resolver yet
             -- . (-&- ExpandParams ["balance_transaction"])
-            . flip createCharge USD
-            . view chargeCents
+            -- https://hackage.haskell.org/package/stripe-core-2.2.2/docs/Web-Stripe-Charge.html
+            . flip createCharge USD -- We want to pass the cents at the end, so reverse order of arguments
+            -- /charges
+            -- https://stripe.com/docs/api/charges/create
+            . view chargeCents -- probably turns cents into string for the url
             $ cents
     , balanceTransaction =
         \ transId -> stripe c $ getBalanceTransaction transId
