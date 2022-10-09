@@ -12,7 +12,9 @@ module Main (main) where
 import Data.ByteString.Char8 (pack)
 import Data.List (partition)
 -- import Data.Text (read)
--- https://hackage.haskell.org/package/stripe-haskell-2.6.2/docs/Web-Stripe.html
+-- Note: There have been some api changes since the version we're using
+-- https://hackage.haskell.org/package/stripe-haskell-2.2.3/docs/Web-Stripe.html
+-- https://hackage.haskell.org/package/stripe-core-2.3.0/docs/Web-Stripe-Client.html
 import Web.Stripe (StripeKey(..), StripeConfig(..))
 import System.Environment (getArgs, lookupEnv)
 import System.Exit (ExitCode(ExitFailure), exitWith)
@@ -31,11 +33,7 @@ usage = do
 -- Needs STRIPE_SECRET_KEY environment variable
 runPayments teamOnly = runScript $ do
     conf <- fmap -- ExceptT String IO
-        -- Stripe config has these two fields:
-            -- secretKey :: StripeKey
-            -- stripeEndpoint :: Maybe Endpoint
-            -- Not sure where the endpoint comes from, 'endpoint' doesn't appear anywhere else in the code base
-            -- Maybe webhook endpoint
+        -- Stripe config just wraps one field, secretKey :: StripeKey
         (StripeConfig . StripeKey . pack) -- Pack converts from bytestring to char list (maybe)
         (lookupEnv "STRIPE_SECRET_KEY" !? "Missing STRIPE_SECRET_KEY in env")
     -- NB! The string passed to runPersistKeter must match the APPNAME used in
