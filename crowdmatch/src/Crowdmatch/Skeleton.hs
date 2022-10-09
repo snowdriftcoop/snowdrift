@@ -44,12 +44,29 @@ activePatrons t =
     activePatron p = p ^. PatronPledgeSince <. just (val t)
 
 -- | Patrons with outstanding donation balances.
+-- Guess that [Entity Patron] is a pair of (patronID, Patron)
 patronsReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
 patronsReceivable minBal =
+    select $ -- patrons
+    from $ \p -> do -- don't know how it knows what table
+        -- Note: we don't check if the payment token is *valid*, only *present*
+        -- WHERE p.PatronPaymentToken IS NOT NULL
+        where_ (not_ (isNothing (p ^. PatronPaymentToken)) -- patrons who have a payment token
+            -- AND p.PatronDonationPayable >= minBal
+            &&. (p ^. PatronDonationPayable >=. val minBal)) -- and have an outstanding balance above the minimum
+        return p
+
+-- | Team Members with outstanding donation balances.
+-- Same as patronsReceivable but it also filters to some hard-coded user ids
+-- so we can test payouts with just team members first
+teamMembersReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
+teamMembersReceivable minBal =
     select $
     from $ \p -> do
         where_ (not_ (isNothing (p ^. PatronPaymentToken))
-            &&. (p ^. PatronDonationPayable >=. val minBal))
+            &&. (p ^. PatronDonationPayable >=. val minBal)
+            &&. (p ^. PatronUsr ==. val 1150) -- 1150 is Stephen's user id
+            )
         return p
 
 sumField
