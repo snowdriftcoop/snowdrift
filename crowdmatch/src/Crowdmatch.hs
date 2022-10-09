@@ -181,8 +181,9 @@ crowdmatch day = runMech $ CrowdmatchI day
 makePayments
     :: MonadIO env
     => StripeActions -- ^
+    -> Bool
     -> SqlPersistT env ()
-makePayments strp = runMech (MakePaymentsI strp)
+makePayments strp teamOnly = runMech (MakePaymentsI strp teamOnly)
 
 --
 -- ONE LEVEL DOWN
@@ -205,7 +206,7 @@ data CrowdmatchI return where
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
     CrowdmatchI :: Day -> CrowdmatchI ()
-    MakePaymentsI :: StripeActions -> CrowdmatchI ()
+    MakePaymentsI :: StripeActions -> Bool -> CrowdmatchI ()
 
 -- | Executing the actions
 runMech :: MonadIO env => CrowdmatchI return -> SqlPersistT env return
@@ -312,11 +313,11 @@ runMech (CrowdmatchI date) = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
 
-runMech (MakePaymentsI strp) = do
+runMech (MakePaymentsI strp teamOnly) = do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
     -- without a Stripe CustomerId :/
     -- get patrons who have high enough outstanding balance
-    chargeable <- Skeleton.patronsReceivable minimumDonation
+    chargeable <- (if teamOnly then Skeleton.teamMembersReceivable else Skeleton.patronsReceivable) minimumDonation
     let donors =
             map -- over chargeable patrons
                 (\(Entity pId p) -> note pId -- If the Donor below is Nothing, use just the id

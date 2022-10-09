@@ -56,6 +56,19 @@ patronsReceivable minBal =
             &&. (p ^. PatronDonationPayable >=. val minBal)) -- and have an outstanding balance above the minimum
         return p
 
+-- | Team Members with outstanding donation balances.
+-- Same as patronsReceivable but it also filters to some hard-coded user ids
+-- so we can test payouts with just team members first
+teamMembersReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
+teamMembersReceivable minBal =
+    select $
+    from $ \p -> do
+        where_ (not_ (isNothing (p ^. PatronPaymentToken))
+            &&. (p ^. PatronDonationPayable >=. val minBal)
+            &&. (p ^. PatronUsr ==. val 1150) -- 1150 is Stephen's user id
+            )
+        return p
+
 sumField
   :: ( PersistEntityBackend val ~ SqlBackend
      , PersistEntity val

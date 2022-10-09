@@ -10,17 +10,26 @@
 module Main (main) where
 
 import Data.ByteString.Char8 (pack)
+import Data.List (partition)
+-- import Data.Text (read)
 -- https://hackage.haskell.org/package/stripe-haskell-2.6.2/docs/Web-Stripe.html
 import Web.Stripe (StripeKey(..), StripeConfig(..))
-import System.Environment (lookupEnv)
+import System.Environment (getArgs, lookupEnv)
+import System.Exit (ExitCode(ExitFailure), exitWith)
 import Control.Error (runScript, (!?), scriptIO)
 
 import Crowdmatch
 import RunPersist
 
+usage :: IO a -- exits
+usage = do
+  putStrLn "usage examples:"
+  putStrLn "  make-payments --all"
+  putStrLn "  make-payments --team-only"
+  exitWith (ExitFailure 2)
+
 -- Needs STRIPE_SECRET_KEY environment variable
-main :: IO ()
-main = runScript $ do
+runPayments teamOnly = runScript $ do
     conf <- fmap -- ExceptT String IO
         -- Stripe config has these two fields:
             -- secretKey :: StripeKey
@@ -34,5 +43,17 @@ main = runScript $ do
     -- CrowdmatchMain.)
     scriptIO $
         runPersistKeter "SnowdriftReboot" $ -- runPersistKeter just chooses which db we use
-        makePayments $ -- from Crowdmatch.hs
-        stripeProduction conf
+        -- from Crowdmatch.hs
+        makePayments (stripeProduction conf) teamOnly
+
+main :: IO ()
+main = do
+    args <- getArgs
+    (options, _) <- return (partition startsWithDashes args)
+    case options of
+        "--all" : _ -> runPayments False
+        "--team-only" : _ -> runPayments True
+        _ -> usage
+
+    where
+        startsWithDashes letters = (take 2 letters) == "--"
