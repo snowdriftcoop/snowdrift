@@ -25,10 +25,10 @@ import RunPersist
 
 usage :: IO a -- exits
 usage = do
-  putStrLn "usage examples:"
-  putStrLn "  make-payments --all"
-  putStrLn "  make-payments --team-only"
-  exitWith (ExitFailure 2)
+    putStrLn "usage examples:"
+    putStrLn "  make-payments --all"
+    putStrLn "  make-payments --team-only"
+    exitWith (ExitFailure 2)
 
 -- Needs STRIPE_SECRET_KEY environment variable
 runPayments teamOnly = runScript $ do
