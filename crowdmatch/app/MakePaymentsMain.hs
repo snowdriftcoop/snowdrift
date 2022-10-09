@@ -31,6 +31,7 @@ usage = do
     exitWith (ExitFailure 2)
 
 -- Needs STRIPE_SECRET_KEY environment variable
+runPayments :: Bool -> IO ()
 runPayments teamOnly = runScript $ do
     conf <- fmap -- ExceptT String IO
         -- Stripe config just wraps one field, secretKey :: StripeKey
