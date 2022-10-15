@@ -48,7 +48,8 @@ activePatrons t =
 patronsReceivable :: MonadIO m => DonationUnits -> SqlPersistT m [Entity Patron]
 patronsReceivable minBal =
     select $ -- patrons
-    from $ \p -> do -- don't know how it knows what table
+    from $ \p -> do -- Esqueleto decides which table to query by type inference
+                    -- E.g. (p ^. PatronPaymentToken) binds this to the Patrons table
         -- Note: we don't check if the payment token is *valid*, only *present*
         -- WHERE p.PatronPaymentToken IS NOT NULL
         where_ (not_ (isNothing (p ^. PatronPaymentToken)) -- patrons who have a payment token
