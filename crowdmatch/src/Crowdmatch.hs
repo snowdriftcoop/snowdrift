@@ -31,6 +31,8 @@ module Crowdmatch (
 
         , crowdmatch
         , makePayments
+        -- And a type to go with it
+        , WhoToCharge(..)
 
         -- * Data retrieval
         , fetchProject
@@ -112,6 +114,9 @@ data Project = Project
         , projectDonationsReceived :: DonationUnits
         }
 
+-- | Flag for restricting who should be charged when running payments
+data WhoToCharge = AllPatrons | TeamOnly
+
 -- | Record a 'TokenId' for a patron.
 storePaymentToken
     :: (ToCrowdmatchPatron usr, MonadIO env)
@@ -181,9 +186,9 @@ crowdmatch day = runMech $ CrowdmatchI day
 makePayments
     :: MonadIO env
     => StripeActions -- ^
-    -> Bool
+    -> WhoToCharge
     -> SqlPersistT env ()
-makePayments strp teamOnly = runMech (MakePaymentsI strp teamOnly)
+makePayments strp whoToCharge = runMech (MakePaymentsI strp whoToCharge)
 
 --
 -- ONE LEVEL DOWN
@@ -206,7 +211,7 @@ data CrowdmatchI return where
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
     CrowdmatchI :: Day -> CrowdmatchI ()
-    MakePaymentsI :: StripeActions -> Bool -> CrowdmatchI ()
+    MakePaymentsI :: StripeActions -> WhoToCharge -> CrowdmatchI ()
 
 -- | Executing the actions
 runMech :: MonadIO env => CrowdmatchI return -> SqlPersistT env return
@@ -313,11 +318,11 @@ runMech (CrowdmatchI date) = do
         insert_ (CrowdmatchHistory pid day amt)
         void (update pid [PatronDonationPayable +=. amt])
 
-runMech (MakePaymentsI strp teamOnly) = do
-    -- Duplicating sql logic with Haskell logic to get rid of patrons
-    -- without a Stripe CustomerId :/
+runMech (MakePaymentsI strp whoToCharge) = do
     -- get patrons who have high enough outstanding balance
-    chargeable <- (if teamOnly then Skeleton.teamMembersReceivable else Skeleton.patronsReceivable) minimumDonation
+    chargeable <- case whoToCharge of
+                    TeamOnly -> Skeleton.teamMembersReceivable minimumDonation
+                    AllPatrons -> Skeleton.patronsReceivable minimumDonation
     let donors =
             map -- over chargeable patrons
                 (\(Entity pId p) -> note pId -- If the Donor below is Nothing, use just the id
