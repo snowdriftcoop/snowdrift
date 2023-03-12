@@ -21,7 +21,7 @@
       <td colspan=2>
         Your pending donation
       <td>
-        #{crowdmatchTotal}
+        #{pendingDonation}
     <tr><td colspan=3><h4>Previous crowdmatches</h4></td></tr>
     $forall month <- crowdmatches
       <tr>

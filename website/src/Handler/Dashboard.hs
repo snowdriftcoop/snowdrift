@@ -15,6 +15,7 @@ getDashboardR = do
     (patron, project) <- runDB $ (,) <$> fetchPatron uid <*> fetchProject
     (pledgeNoCSRF, _) <- generateFormPost (renderDivsNoLabels pledgeForm)
     let crowdmatchTotal = (sum . map snd . patronCrowdmatches) patron
+        pendingDonation = patronDonationPayable patron
         crowdmatches = reverse $ map withMonthView (patronCrowdmatches patron)
     $(widget "page/dashboard" "Dashboard")
   where
