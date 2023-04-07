@@ -52,10 +52,8 @@ $nothing
     <p>
       You are not currently pledged to any projects.
     $maybe _ <- patronPaymentToken patron
-      <form method=post action=@{PledgeSnowdriftR}>
-        ^{pledgeNoCSRF}
-        To join the crowdmatching system,
-        <button>pledge now!
+      Join the <a href=@{SnowdriftProjectR}>Snowdrift.coop
+      crowdmatching now!
     $nothing
       <p>
         Before pledging, you must configure payment settings through
