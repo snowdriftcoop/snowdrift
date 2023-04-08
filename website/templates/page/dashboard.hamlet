@@ -50,9 +50,10 @@ $maybe _ <- patronPledgeSince patron
 $nothing
   <.notpledged>
     <p>
-      You are not currently pledged to any projects.
+      You are currently not pledged to any project.
     $maybe _ <- patronPaymentToken patron
-      Join the <a href=@{SnowdriftProjectR}>Snowdrift.coop
+      Join the
+      <a href=@{SnowdriftProjectR}>Snowdrift.coop
       crowdmatching now!
     $nothing
       <p>
