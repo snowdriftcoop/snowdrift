@@ -7,11 +7,20 @@
     <a href=@{SnowdriftProjectR}>Snowdrift.coop itself
     as our first test project.
   <p>
-    Once you pledge to a project, we add a donation to your balance based on
+    Once you pledge, we add a donation to your balance based on
     the pledge values at the time of each monthly crowdmatch event.
   <p>
     To keep processing fees below 10%, we only charge your pending donations
     when the total goes beyond #{minimumDonation}.
+  <p>  
+    This year, we will begin charging the accumulated amount
+    for patrons who meet this minimum. After the first charge,
+    your balance will reset and must reach #{minimumDonation} before you
+    will be charged again.
+  <p>
+    We are emailing our patrons before this first charge event. 
+    If you no longer wish to participate, 
+    <a href=@{PaymentInfoR}>delete your payment method in Payment Settings.
 
   <table.crowdmatch-progress>
     <caption>
@@ -64,26 +73,29 @@ $nothing
 $maybe _ <- patronPaymentToken patron
   <p>
     Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings
-    (reminder/apology: there is proprietary JavaScript on that page).
+    <a href=@{PaymentInfoR}>configure your payment settings here.
 $nothing
   <.prop-js-note>
     <p>
-      <strong>Please note!
-      We currently rely on Stripe's proprietary JavaScript to maintain
+      <strong>Sorry!
+      The Payment Settings page relies on Stripe's proprietary JavaScript to maintain
       compliance in handling credit card information.
     <p>
-      To avoid this, we will need to implement a method to take financial
+      To avoid this, we would need to implement a method to take financial
       information and pass it, server-side, to Stripe's API without storing any
-      secure information ourselves. We currently lack the resources to handle
-      that adequately. So, for now, we have made this one compromise to our
+      secure information ourselves. When this alpha site was built, we lacked the
+      resources to handle that adequately, so we have made this one compromise to our
       dedication otherwise to software freedom.
+    <p>
+      Fortunately, the upcoming beta site will accomplish this without
+      any proprietary javascript, in the method described above.
     <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
-<h2 .beta-note>Beta note
-<p .beta-note>
-  We are operating in a semi-open beta. Your support helps us both to continue
-  developing and testing. We hope to begin supporting other FLO projects soon.
+<h2 .alpha-note>Alpha note
+<p .alpha-note>
+  This alpha site will only support pledging to Snowdrift.coop itself. Your support helps
+  us to continue developing and testing the upcoming beta site, where we hope to begin 
+  supporting other FLO projects soon.
   Thank you for helping us clear the path!
 <p>
   Besides crowdmatch pledging, you can help us further with
