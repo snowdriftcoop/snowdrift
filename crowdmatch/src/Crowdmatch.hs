@@ -102,6 +102,9 @@ data Patron = Patron
         }
         deriving (Eq, Show)
 
+-- TODO: convert into patronDonations property on `Patron` type above
+type PayoutHistory = [(HistoryTime, DonationUnits, Cents)]
+
 -- | Data about a project. There's only one, Snowdrift, so this is rather
 -- simple. Returned with 'fetchProject'.
 data Project = Project
@@ -163,6 +166,18 @@ fetchPatron
     -> SqlPersistT env Patron
 fetchPatron = runMech . FetchPatronI . (^. from external)
 
+-- | Retrieve Rest of patron info
+--
+-- This should really just be merged with fetchPatron.
+-- However, it was added at a time when we had very little Haskell expertise,
+-- so the path of least resistance to minimize type errors was to add an
+-- entirely new code path, to avoid the need to change other code.
+fetchPatronPayouts
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => usr -- ^
+    -> SqlPersistT env PayoutHistory
+fetchPatronPayouts = runMech . FetchPatronPayoutHistoryI . (^. from external)
+
 -- | Execute a crowdmatch event
 crowdmatch
     :: MonadIO env
@@ -205,6 +220,7 @@ data CrowdmatchI return where
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
+    FetchPatronPayoutHistoryI :: PPtr -> CrowdmatchI PayoutHistory
     CrowdmatchI :: Day -> CrowdmatchI ()
     MakePaymentsI :: StripeActions -> Bool -> CrowdmatchI ()
 
@@ -295,6 +311,14 @@ runMech (FetchPatronI pptr) = do
             [Model.CrowdmatchHistoryPatron ==. pid]
             [Asc Model.CrowdmatchHistoryDate])
     return (fromModel p hist)
+
+runMech (FetchPatronPayoutHistoryI pptr) = do
+    Entity pid p <- upsertPatron pptr []
+    hist <- fmap (map entityVal)
+        (selectList
+            [Model.DonationHistoryPatron ==. pid]
+            [Asc Model.DonationHistoryTime])
+    return hist
 
 --
 -- Crowdmatch and MakePayments

@@ -12,6 +12,7 @@ getDashboardR :: Handler Html
 getDashboardR = do
     Entity uid _ <- requireAuth
     (patron, project) <- runDB $ (,) <$> fetchPatron uid <*> fetchProject
+    payouts <- runDB $ fetchPatronPayouts uid
     let pendingDonation = patronDonationPayable patron
         crowdmatches = reverse $ map withMonthView (patronCrowdmatches patron)
     $(widget "page/dashboard" "Dashboard")
