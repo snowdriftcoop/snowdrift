@@ -318,7 +318,10 @@ runMech (FetchPatronPayoutHistoryI pptr) = do
         (selectList
             [Model.DonationHistoryPatron ==. pid]
             [Asc Model.DonationHistoryTime])
-    return hist
+    return (map values hist)
+  where
+    values DonationHistory{..} =
+        (donationHistoryTime, donationHistoryAmount, donationHistoryFee)
 
 --
 -- Crowdmatch and MakePayments
