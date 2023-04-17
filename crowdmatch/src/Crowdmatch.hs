@@ -35,6 +35,7 @@ module Crowdmatch (
         -- * Data retrieval
         , fetchProject
         , fetchPatron
+        , fetchPatronPayouts
         , minimumDonation
         , patronMaxDonation
 
