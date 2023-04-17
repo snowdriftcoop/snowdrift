@@ -314,7 +314,7 @@ runMech (FetchPatronI pptr) = do
     return (fromModel p hist)
 
 runMech (FetchPatronPayoutHistoryI pptr) = do
-    Entity pid p <- upsertPatron pptr []
+    Entity pid _ <- upsertPatron pptr []
     hist <- fmap (map entityVal)
         (selectList
             [Model.DonationHistoryPatron ==. pid]
