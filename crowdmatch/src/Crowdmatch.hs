@@ -317,7 +317,7 @@ runMech (MakePaymentsI strp teamOnly) = do
     -- Duplicating sql logic with Haskell logic to get rid of patrons
     -- without a Stripe CustomerId :/
     -- get patrons who have high enough outstanding balance
-    chargeable <- (if teamOnly then Skeleton.teamMembersReceivable else Skeleton.patronsReceivable) minimumDonation
+    chargeable <- (if teamOnly then Skeleton.teamMembersReceivable teamMemberMinimumDonation else Skeleton.patronsReceivable minimumDonation)
     let donors =
             map -- over chargeable patrons
                 (\(Entity pId p) -> note pId -- If the Donor below is Nothing, use just the id
@@ -531,6 +531,10 @@ sufficientDonation d =
 -- than the long term ideal.
 minimumDonation :: DonationUnits
 minimumDonation = DonationUnits 3790
+
+-- Adroit was below the threshold and we wanted to charge him anyway
+teamMemberMinimumDonation :: DonationUnits
+teamMemberMinimumDonation = 3000
 
 -- | This is currently hardcoded.
 patronMaxDonation :: DonationUnits
