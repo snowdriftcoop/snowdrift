@@ -33,7 +33,7 @@
         #{pendingDonation}
     <tr><td><h4>Charges</h4></td><td>Amount</td><td>+ Stripe Fee</td></tr>
     $if null payouts
-      <tr><td colspan=3><i>No charges yet</i></td></tr>
+      <tr><td colspan=3><i>You have not been charged yet.</i></td></tr>
     $else
       $forall (chargeDate, amount, fee) <- payouts
         <tr>
