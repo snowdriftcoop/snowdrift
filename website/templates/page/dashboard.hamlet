@@ -31,6 +31,15 @@
         Your pending donation
       <td>
         #{pendingDonation}
+    <tr><td><h4>Charges</h4></td><td>Amount</td><td>+ Stripe Fee</td></tr>
+    $if null payouts
+      <tr><td colspan=3><i>You have not been charged yet.</i></td></tr>
+    $else
+      $forall (chargeDate, amount, fee) <- payouts
+        <tr>
+          <td>#{chargeDate}
+          <td>#{amount}
+          <td>#{fee}
     <tr><td colspan=3><h4>Previous crowdmatches</h4></td></tr>
     $forall month <- crowdmatches
       <tr>
