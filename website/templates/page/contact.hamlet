@@ -1,16 +1,13 @@
 <h1>Contact Snowdrift.coop
 
-As a distributed team with a global pool of volunteers, we communicate almost
-entirely online.
-
 Communication options:
 
-<h2>Community Forum
+<h2>Forum
 
 <p>
-  We run an instance of the wonderful Discourse software at
+  At
   <a href="https://community.snowdrift.coop">community.snowdrift.coop
-  where you can connect with the team and community on any related topic.
+  you can connect with the team and community on any related topic.
 
 <p>
   The forum log-in and registration uses the same account as the main
@@ -23,19 +20,19 @@ Communication options:
   may email us at community@snowdrift.coop for support, general questions,
   privacy concerns etc.
 
-<h2>Live chat
-
+<h2>Live chat through Matrix
 <p>
-  We have a public IRC channel `#snowdrift` at Libera.Chat which is also
-  bridged to Matrix.org `#snowdrift:matrix.org`.
+  We use Matrix.org for open-ended chat. Those already on Matrix, join `#snowdrift:matrix.org`.
+  For those new to Matrix, this link will get you started:
+  <a href="https://matrix.to/#/#snowdrift:matrix.org">matrix.to/#/#snowdrift:matrix.org
+
+<h2>IRC chat
+<p>
+  We use IRC less these days, but we still have a #snowdrift room in Libera.Chat
+  and some of us monitor it.
 <p>
   If you have JavaScript enabled, a portal to our channel should open right
   below. Just pick a username and say "hi".
-
-<p>
-  See our
-  <a href="https://wiki.snowdrift.coop/community/irc">IRC wiki page
-  has more details and options.
 
 <iframe src="https://kiwiirc.com/client/irc.libera.chat/#snowdrift"
   style="border:0; width:100%; height:450px;"></iframe>
