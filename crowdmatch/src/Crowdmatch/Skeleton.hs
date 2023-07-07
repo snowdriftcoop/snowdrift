@@ -65,7 +65,7 @@ teamMembersReceivable minBal =
     from $ \p -> do
         where_ (not_ (isNothing (p ^. PatronPaymentToken))
             &&. (p ^. PatronDonationPayable >=. val minBal)
-            &&. (p ^. PatronUsr ==. val 756) -- MSiep
+            &&. (p ^. PatronUsr ==. val 3) -- wolftune
             )
         return p
 
