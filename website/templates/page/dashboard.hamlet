@@ -88,7 +88,7 @@ $nothing
       resources to handle that adequately, so we have made this one compromise to our
       dedication otherwise to software freedom.
     <p>
-      We should be able to resolve this in our upcoming beta overhaul of the site.
+      We will resolve this in our upcoming beta overhaul of the site.
     <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
 <h2 .alpha-note>Alpha note
