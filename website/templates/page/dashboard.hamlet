@@ -1,26 +1,18 @@
 <h1>Your crowdmatching dashboard
 
-<h2>Crowdmatching
 <.crowdmatching>
   <p>
     In October 2017, we began running crowdmatch events for
     <a href=@{SnowdriftProjectR}>Snowdrift.coop itself
-    as our first test project.
+    as our first test project. We began processing actual
+    donations in 2023.
   <p>
-    Once you pledge, we add a donation to your balance based on
-    the pledge values at the time of each monthly crowdmatch event.
+    Once pledged, we add a donation each month to your balance based on
+    the pledge values at the time.
   <p>
     To keep processing fees below 10%, we only charge your pending donations
-    when the total goes beyond #{minimumDonation}.
-  <p>  
-    This year, we will begin charging the accumulated amount
-    for patrons who meet this minimum. After the first charge,
-    your balance will reset and must reach #{minimumDonation} before you
-    will be charged again.
-  <p>
-    We are emailing our patrons before this first charge event. 
-    If you no longer wish to participate, 
-    <a href=@{PaymentInfoR}>delete your payment method in Payment Settings.
+    when the total gets beyond #{minimumDonation}. After each charge, your
+    balance will reset and must reach the minimum again before the next charge.
 
   <table.crowdmatch-progress>
     <caption>
@@ -31,16 +23,16 @@
         Your pending donation
       <td>
         #{pendingDonation}
-    <tr><td><h4>Charges</h4></td><td>Amount</td><td>+ Stripe Fee</td></tr>
     $if null payouts
-      <tr><td colspan=3><i>You have not been charged yet.</i></td></tr>
+      <tr><td colspan=3 align=center><em>You have not been charged yet.</em></td></tr>
     $else
+      <tr><td><h4>Charges</h4></td><td>Donation Amount</td><td>+ Stripe Fee</td></tr>
       $forall (chargeDate, amount, fee) <- payouts
         <tr>
           <td>#{chargeDate}
           <td>#{amount}
           <td>#{fee}
-    <tr><td colspan=3><h4>Previous crowdmatches</h4></td></tr>
+    <tr><td colspan=3 align=center><h4>Previous crowdmatches</h4></td></tr>
     $forall month <- crowdmatches
       <tr>
         <td>
@@ -52,7 +44,7 @@
 <h2>Budget
 <.sitelimit>
   <p>
-    You will <em>never</em> be charged more than your budget limit of $10 per
+    You will <em>never</em> be charged more than the budget limit of $10 per
     month.
   <p>
 
@@ -81,8 +73,8 @@ $nothing
 <h2>Payment method
 $maybe _ <- patronPaymentToken patron
   <p>
-    Your payment method is Stripe. You may
-    <a href=@{PaymentInfoR}>configure your payment settings here.
+    Your payment method is Stripe.
+    <a href=@{PaymentInfoR}>Click here to configure your payment settings.
 $nothing
   <.prop-js-note>
     <p>
@@ -96,17 +88,16 @@ $nothing
       resources to handle that adequately, so we have made this one compromise to our
       dedication otherwise to software freedom.
     <p>
-      Fortunately, the upcoming beta site will accomplish this without
-      any proprietary javascript, in the method described above.
+      We will resolve this in our upcoming beta overhaul of the site.
     <a .bigbutton href=@{PaymentInfoR}>Continue to payment settings
 
 <h2 .alpha-note>Alpha note
 <p .alpha-note>
-  This alpha site will only support pledging to Snowdrift.coop itself. Your support helps
-  us to continue developing and testing the upcoming beta site, where we hope to begin 
-  supporting other FLO projects soon.
-  Thank you for helping us clear the path!
+  This alpha site only supports pledging to Snowdrift.coop itself. Your support helps
+  us to continue developing and testing the upcoming beta site which will support other FLO projects as well. Thank you for helping us clear the path!
 <p>
-  Besides crowdmatch pledging, you can help us further with
-  <a href=@{DonateR}>larger start-up donations
-  and getting involved — see our <a href="https://community.snowdrift.coop">community forum</a>.
+  Besides participating in crowdmatching, you can help us further by
+  <a href=@{DonateR}>donating larger start-up funding
+  and volunteering.
+  <a href=@{ContactR}>Contact&nbsp;us
+  to learn how you can help.
