@@ -1,3 +1,6 @@
 [submodule "publications"]
 	path = publications
 	url = git@gitlab.com:snowdrift/publications.git
+[submodule "shakespeare-sass"]
+	path = shakespeare-sass
+	url = https://gitlab.com/snowdrift/shakespeare-sass.git
