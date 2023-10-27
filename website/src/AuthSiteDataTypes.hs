@@ -1,4 +1,13 @@
 {-# OPTIONS_HADDOCK hide, prune #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
+
+#if MIN_VERSION_base(4,10,0)
+{-# LANGUAGE DerivingStrategies #-}
+#endif
 
 -- | Core definitions for the Auth subsite (see AuthSite.hs)
 module AuthSiteDataTypes where

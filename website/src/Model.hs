@@ -1,4 +1,13 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
+
+#if MIN_VERSION_base(4,10,0)
+{-# LANGUAGE DerivingStrategies #-}
+#endif
 
 module Model (module Model) where
 
