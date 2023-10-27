@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP #-}
 
 -- | Gather connection info from a config file, rather than the environment.
 -- This expects the same sort of config file that keter does. An example looks
@@ -16,6 +17,9 @@ module ReadConfig (readYamlConfig, RunPersistConfig(..)) where
 
 import Control.Lens
 import Control.Monad.Trans.Maybe
+#if MIN_VERSION_aeson(2,0,0)
+import Data.Aeson.Key (fromText)
+#endif
 import Data.Aeson.Lens
 import Data.Aeson.Types
 import Data.Char
@@ -46,7 +50,11 @@ instance FromJSON RunPersistConfig where
 readYamlConfig :: FilePath -> Text -> IO (Maybe RunPersistConfig)
 readYamlConfig yml configName = runMaybeT $ do
     obj :: Value <- MaybeT $ hush <$> decodeFileEither yml
+#if MIN_VERSION_aeson(2,0,0)
+    thing <- MaybeT $ pure $ obj ^? key (fromText configName)
+#else
     thing <- MaybeT $ pure $ obj ^? key configName
+#endif
     MaybeT $ pure $ thing ^? _JSON
   where
     hush (Left _) = Nothing
