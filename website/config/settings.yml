@@ -10,7 +10,7 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 
 # Default behavior: determine the application root from the request headers.
 # Uncomment to set an explicit approot
-approot:        "_env:APPROOT:"
+approot:        "_env:APPROOT:''"
 
 # Optional values with the following production defaults.
 # In development, they default to the inverse.
@@ -27,9 +27,9 @@ approot:        "_env:APPROOT:"
 # https://github.com/yesodweb/yesod/wiki/Configuration#parsing-numeric-values-as-strings
 
 database:
-  user:     "_env:PGUSER:"
-  password: "_env:PGPASS:"
-  host:     "_env:PGHOST:"
+  user:     "_env:PGUSER:''"
+  password: "_env:PGPASS:''"
+  host:     "_env:PGHOST:''"
   port:     "_env:PGPORT:5432"
   # See config/test-settings.yml for an override during tests
   database: "_env:PGDATABASE:snowdrift_development"
@@ -42,8 +42,8 @@ send-email: "_env:SD_EMAILS:false"
 # API keys for Stripe.
 # WARNING: Even the "testing" secret key should still be a secret. Contact
 # chreekat for assistance.
-stripe-secret-key: "_env:STRIPE_SECRET_KEY:"
-stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:"
+stripe-secret-key: "_env:STRIPE_SECRET_KEY:''"
+stripe-publishable-key: "_env:STRIPE_PUBLISHABLE_KEY:''"
 
 # Discourse SSO
 discourse-sso-secret: "_env:DISCOURSE_SSO_SECRET:snowdrift_sso"
