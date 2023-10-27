@@ -19,7 +19,7 @@ import Data.Text (Text)
 import Data.Time (UTCTime(..), getCurrentTime, utctDay)
 import Database.Persist
 import Database.Persist.Postgresql
-        (SqlPersistT, runMigration, connEscapeName, unSingle, rawSql, rawExecute)
+        (SqlPersistT, runMigration, unSingle, rawSql, rawExecute)
 import RunPersist (runPersistPool)
 import System.Directory (createDirectoryIfMissing)
 import System.Environment (setEnv)
@@ -167,9 +167,9 @@ main = withTestDatabase $ runPersistPool $ \runner -> do
   where
     -- A query that empties all tables, used before each database test.
     buildTruncQuery = do
-        esc <- connEscapeName <$> ask
+        -- esc <- connEscapeName <$> ask
         tables <- fmap
-            (map (esc . DBName . unSingle))
+            (map unSingle)
             (rawSql
                 ("select table_name"
                  <> " from information_schema.tables"

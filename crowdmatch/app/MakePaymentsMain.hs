@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -35,7 +36,7 @@ runPayments :: Bool -> IO ()
 runPayments teamOnly = runScript $ do
     conf <- fmap -- ExceptT String IO
         -- Stripe config just wraps one field, secretKey :: StripeKey
-        (StripeConfig . StripeKey . pack) -- Pack converts from bytestring to char list (maybe)
+        (mkConfig . StripeKey . pack) -- Pack converts from bytestring to char list (maybe)
         (lookupEnv "STRIPE_SECRET_KEY" !? "Missing STRIPE_SECRET_KEY in env")
     -- NB! The string passed to runPersistKeter must match the APPNAME used in
     -- keter.sh to deploy the app. Must fix. (Duplicate comment from
@@ -44,6 +45,14 @@ runPayments teamOnly = runScript $ do
         runPersistKeter "SnowdriftReboot" $ -- runPersistKeter just chooses which db we use
         -- from Crowdmatch.hs
         makePayments (stripeProduction conf) teamOnly
+  where
+-- Not sure when this change happened, but it's greater than 2.2.3 and no later than 2.6.
+#if MIN_VERSION_stripe_haskell(2,3,0)
+    mkConfig k = StripeConfig k Nothing
+#else
+    mkConfig = StripeConfig
+#endif
+
 
 main :: IO ()
 main = do

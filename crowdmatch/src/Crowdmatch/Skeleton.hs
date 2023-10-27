@@ -77,10 +77,10 @@ sumField
      , MonadIO m
      )
      => EntityField val a
-     -> SqlPersistT m a
+     -> SqlPersistT m (Maybe a)
 sumField f = do
-    [row] <-
+    rows <-
         select $
         from $ \entity ->
             return $ coalesceDefault [sum_ (entity ^. f)] $ val 0
-    return $ unValue row
+    return $ fmap unValue $ headMay rows

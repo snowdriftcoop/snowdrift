@@ -79,6 +79,7 @@ import Crowdmatch.Model hiding (Patron(..))
 import Crowdmatch.Stripe
 import qualified Crowdmatch.Model as Model
 import qualified Crowdmatch.Skeleton as Skeleton
+import Data.Maybe (fromMaybe)
 
 -- This is run by the doctests and sets everything up in there:
 --
@@ -296,10 +297,10 @@ runMech (DeletePledgeI pptr) = do
 
 runMech FetchProjectI = do
     numPledges <- count [PatronPledgeSince !=. Nothing]
-    receivable <- Skeleton.sumField PatronDonationPayable
+    receivable <- fromMaybe 0 <$> Skeleton.sumField PatronDonationPayable
     -- This should be verified against Stripe. This calculation is nothing more
     -- than a "guess".
-    received <- Skeleton.sumField DonationHistoryAmount
+    received <- fromMaybe 0 <$> Skeleton.sumField DonationHistoryAmount
 
     let pledgevalue = DonationUnits (fromIntegral numPledges)
         income = pledgevalue * (fromIntegral numPledges)
