@@ -1,7 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Redundant <$>" #-}
 
 {- |
 Description : Subsite for email-and-passphrase authentication
@@ -90,6 +94,13 @@ import Alerts
 -- AuthMaster class.
 import Model
 
+-- Compatibility for old versions of Yesod
+#if !MIN_VERSION_yesod(1,6,0)
+type SubHandlerFor b m a = HandlerT b (HandlerT m IO) a
+liftHandler :: (Monad m, MonadTrans t) => m a -> t m a
+liftHandler = lift
+#endif
+
 -- | This is a cheapo synonym. Eventually AuthUser should be part of the
 -- 'AuthMaster' interface, for this module to be usable outside of
 -- Snowdrift.
@@ -176,7 +187,11 @@ instance (Yesod master
          ,YesodPersistBackend master ~ SqlBackend
          ,RenderMessage master FormMessage
          ,AuthMaster master)
+#if MIN_VERSION_yesod(1,6,0)
+        => YesodSubDispatch AuthSite master where
+#else
         => YesodSubDispatch AuthSite (HandlerT master IO) where
+#endif
     yesodSubDispatch = $(mkYesodSubDispatch resourcesAuthSite)
 
 -- | If the user is authenticated, get the corresponding Entity.
@@ -317,19 +332,23 @@ logout :: Yesod master => HandlerT master IO ()
 logout = deleteSession authSessionKey
 
 getLoginR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
+#if MIN_VERSION_yesod(1,6,0)
+          => SubHandlerFor AuthSite m Html
+#else
           => HandlerT AuthSite (HandlerT m IO) Html
-getLoginR = lift loginHandler
+#endif
+getLoginR = liftHandler loginHandler
 
 postLoginR :: (Yesod master
               ,AuthMaster master
               ,YesodPersist master
               ,YesodPersistBackend master ~ SqlBackend
               ,RenderMessage master FormMessage)
-           => HandlerT AuthSite (HandlerT master IO) Html
+           => SubHandlerFor AuthSite master Html
 postLoginR = do
-    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    ((res, _), _) <- liftHandler $ runFormPost (renderDivs credentialsForm)
     p <- getRouteToParent
-    formResult (lift . (runAuthResult p <=< (runDB . checkCredentials)))
+    formResult (liftHandler . (runAuthResult p <=< (runDB . checkCredentials)))
                res
   where
     runAuthResult master = maybe
@@ -358,18 +377,25 @@ postLoginR = do
             alertInfo "Welcome"
             redirectUltDest =<< (postLoginRoute <$> getYesod))
 
+#if MIN_VERSION_yesod(1,6,0)
+formResult :: (Yesod yesod, RenderMessage yesod FormMessage)
+           => (a -> SubHandlerFor AuthSite yesod Html)
+           -> FormResult a
+           -> SubHandlerFor AuthSite yesod Html
+#else
 formResult :: (Yesod master
               ,MonadTrans child)
            => (t -> child (HandlerT master IO) Html)
            -> FormResult t
            -> child (HandlerT master IO) Html
+#endif
 formResult success = \case
     FormSuccess x -> success x
     FormFailure msgs -> failure msgs
     FormMissing -> failure ["No login data" :: Text]
   where
     failure msgs =
-        lift $ defaultLayout [whamlet|
+        liftHandler $ defaultLayout [whamlet|
             <p>Auth form failures are not handled yet.
             <p>TBD: <a href="https://tree.taiga.io/project/snowdrift/issue/455">See Taiga #455</a>.
             <p>Errors: #{show msgs}
@@ -379,33 +405,34 @@ formResult success = \case
 
 getLogoutR :: (Yesod master
               ,AuthMaster master)
-            => HandlerT AuthSite (HandlerT master IO) Html
-getLogoutR = lift $ do
+            -- => SubHandlerFor AuthSite master Html
+            => SubHandlerFor AuthSite master Html
+getLogoutR = liftHandler $ do
     logout
     alertInfo "You are now logged out."
     redirect =<< (postLogoutRoute <$> getYesod)
 
 -- ** CreateAccount page
 
-getCreateAccountR :: (Yesod m, RenderMessage m FormMessage, AuthMaster m)
-                  => HandlerT AuthSite (HandlerT m IO) Html
-getCreateAccountR = lift createAccountHandler
+getCreateAccountR :: (Yesod yesod, RenderMessage yesod FormMessage, AuthMaster yesod)
+                  => SubHandlerFor AuthSite yesod Html
+getCreateAccountR = liftHandler createAccountHandler
 
-postCreateAccountR :: (Yesod master
-                      ,AuthMaster master
-                      ,YesodPersistBackend master ~ SqlBackend
-                      ,YesodPersist master
-                      ,RenderMessage master FormMessage)
-                   => HandlerT AuthSite (HandlerT master IO) Html
+postCreateAccountR :: (Yesod yesod
+                      ,AuthMaster yesod
+                      ,YesodPersistBackend yesod ~ SqlBackend
+                      ,YesodPersist yesod
+                      ,RenderMessage yesod FormMessage)
+                   => SubHandlerFor AuthSite yesod Html
 postCreateAccountR = do
-    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    ((res, _), _) <- liftHandler $ runFormPost (renderDivs credentialsForm)
     formResult
         (\c -> do
             unless
                 (validPassphrase (credsPass c))
                 (passphraseError (credsIdent c))
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
-            lift $ sendAuthEmail (credsIdent c) =<< maybe
+            mu <- liftHandler (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
+            liftHandler $ sendAuthEmail (credsIdent c) =<< maybe
                 (VerifyUserCreation . verifyToken
                     <$> runDB (privilegedProvisionalUser c))
                 (pure . const BadUserCreation)
@@ -414,26 +441,26 @@ postCreateAccountR = do
         res
 
 -- | ResetPassphrase page
-getResetPassphraseR :: (AuthMaster master
-                       ,YesodPersist master
-                       ,YesodPersistBackend master ~ SqlBackend)
-                    => HandlerT AuthSite (HandlerT master IO) Html
-getResetPassphraseR = lift $ do
+getResetPassphraseR :: (AuthMaster yesod
+                       ,YesodPersist yesod
+                       ,YesodPersistBackend yesod ~ SqlBackend)
+                    => SubHandlerFor AuthSite yesod Html
+getResetPassphraseR = liftHandler $ do
     r <- postLoginRoute <$> getYesod
     maybeAuth >>= maybe resetPassphraseHandler (const (redirect r))
 
-postResetPassphraseR :: (Yesod master
-                        ,AuthMaster master
-                        ,YesodPersistBackend master ~ SqlBackend
-                        ,YesodPersist master
-                        ,RenderMessage master FormMessage)
-                     => HandlerT AuthSite (HandlerT master IO) Html
+postResetPassphraseR :: (Yesod yesod
+                        ,AuthMaster yesod
+                        ,YesodPersistBackend yesod ~ SqlBackend
+                        ,YesodPersist yesod
+                        ,RenderMessage yesod FormMessage)
+                     => SubHandlerFor AuthSite yesod Html
 postResetPassphraseR = do
-    ((res, _), _) <- lift $ runFormPost (renderDivs credentialsForm)
+    ((res, _), _) <- liftHandler $ runFormPost (renderDivs credentialsForm)
     formResult
         (\c -> do
-            mu <- lift (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
-            lift $ sendAuthEmail (credsIdent c) =<< maybe
+            mu <- liftHandler (runDB (getBy (UniqueUsr (fromAuth (credsIdent c)))))
+            liftHandler $ sendAuthEmail (credsIdent c) =<< maybe
                 (pure BadPassReset)
                 (const $ VerifyPassReset . verifyToken
                     <$> runDB (privilegedProvisionalUser c))
@@ -448,9 +475,9 @@ validPassphrase = (>= 9) . T.length . fromClear
 -- | What to do on passphrase error. Should also be part of the AuthSite
 -- interface.
 passphraseError
-    :: Yesod master
+    :: Yesod yesod
     => AuthEmail
-    -> HandlerT AuthSite (HandlerT master IO) b
+    -> SubHandlerFor AuthSite yesod b
 passphraseError e = do
     addMessage
         "warning"
@@ -461,47 +488,47 @@ passphraseError e = do
 --
 -- For easy links that do things without javascript, this GET handler will
 -- do the same thing as the POST if the query param `v=$TOKEN` is present.
-getVerifyAccountR :: (Yesod m
-                     ,RenderMessage m FormMessage
-                     ,AuthMaster m
-                     ,YesodPersist m
-                     ,YesodPersistBackend m ~ SqlBackend)
-                  => HandlerT AuthSite (HandlerT m IO) Html
+getVerifyAccountR :: (Yesod yesod
+                     ,RenderMessage yesod FormMessage
+                     ,AuthMaster yesod
+                     ,YesodPersist yesod
+                     ,YesodPersistBackend yesod ~ SqlBackend)
+                  => SubHandlerFor AuthSite yesod Html
 getVerifyAccountR = do
-    mtoken <- lift $ runInputGet $ fmap AuthToken <$> iopt textField "v"
-    maybe (lift verifyAccountHandler) runToken mtoken
+    mtoken <- liftHandler $ runInputGet $ fmap AuthToken <$> iopt textField "v"
+    maybe (liftHandler verifyAccountHandler) runToken mtoken
 
 -- | Handle an attempted verification.
 --
 -- This method is rather blithe in the belief that the privileged methods
 -- above ensure that a good token is truly "good".
-postVerifyAccountR :: (Yesod m
-                      ,YesodPersist m
-                      ,YesodPersistBackend m ~ SqlBackend
-                      ,RenderMessage m FormMessage)
-                   => HandlerT AuthSite (HandlerT m IO) Html
+postVerifyAccountR :: (Yesod yesod
+                      ,YesodPersist yesod
+                      ,YesodPersistBackend yesod ~ SqlBackend
+                      ,RenderMessage yesod FormMessage)
+                   => SubHandlerFor AuthSite yesod Html
 postVerifyAccountR = do
     ((res, _), _) <-
-        lift $ runFormPost (renderDivs (AuthToken <$> areq textField "" Nothing))
+        liftHandler $ runFormPost (renderDivs (AuthToken <$> areq textField "" Nothing))
     formResult runToken res
 
-runToken :: (Yesod m
-            ,YesodPersist m
-            ,YesodPersistBackend m ~ SqlBackend)
-         => AuthToken -> HandlerT AuthSite (HandlerT m IO) Html
+runToken :: (Yesod yesod
+            ,YesodPersist yesod
+            ,YesodPersistBackend yesod ~ SqlBackend)
+         => AuthToken -> SubHandlerFor AuthSite yesod Html
 runToken tok = do
     -- Have to check the token and insert the user in the same
     -- transaction, lest race conditions boggle the contraptions
-    m <- lift $ runDB $ traverse upsertUser =<< checkDestroyToken tok
+    m <- liftHandler $ runDB $ traverse upsertUser =<< checkDestroyToken tok
     case m of
         Nothing -> do
             -- For https://tree.taiga.io/project/snowdrift/task/405, we
             -- may want to modify this as well (or make it more
             -- accessible to front end devs).
-            lift $ alertWarning "Uh oh, your token appears to be invalid!"
+            liftHandler $ alertWarning "Uh oh, your token appears to be invalid!"
             redirectParent' VerifyAccountR
         Just _ -> do
-            lift $ alertSuccess "You are all set! Log in to continue."
+            liftHandler $ alertSuccess "You are all set! Log in to continue."
             redirectParent' LoginR
   where
     upsertUser :: MonadIO m => VerifiedUser -> SqlPersistT m (Entity User)
@@ -510,13 +537,13 @@ runToken tok = do
         upsert (User verifiedEmail verifiedDigest now now)
                [UserDigest =. verifiedDigest, UserPassUpdated =. now]
 
-redirectParent' :: Route child -> HandlerT child (HandlerT master IO) b
+redirectParent' :: Route child -> SubHandlerFor child yesod b
 redirectParent' route  = redirectParent route []
 
 redirectParent
     :: Route child
     -> [(Text, Text)]
-    -> HandlerT child (HandlerT master IO) b
+    -> SubHandlerFor child yesod b
 redirectParent r qs = do
     p <- getRouteToParent
-    lift (redirect (p r, qs))
+    liftHandler (redirect (p r, qs))
