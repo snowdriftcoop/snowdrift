@@ -395,19 +395,19 @@ unitTests runner = describe "unit tests" $ do
         it "creates history" $ do
             hs :: [Entity Model.DonationHistory] <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 50000) now)
-                makePayments dummyStripe False
+                makePayments dummyStripe AllPatrons
                 selectList [] []
             length hs `shouldBe` 1
         it "zeroes donations" $ do
             p <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe False
+                makePayments dummyStripe AllPatrons
                 fetchPatron (HarnessUser 1)
             patronDonationPayable p `shouldBe` DonationUnits 0
         it "accounts for fees" $ do
             h :: Model.DonationHistory <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe False
+                makePayments dummyStripe AllPatrons
                 (entityVal . head) <$> selectList [] []
             -- 500 * 2.99% + 30.9 (roughly the effective fee rate, after
             -- adding enough to pay the project the true donation amount)
@@ -415,7 +415,7 @@ unitTests runner = describe "unit tests" $ do
         it "adds to the project what it takes from the patron" $ do
             p <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 5000) now)
-                makePayments dummyStripe False
+                makePayments dummyStripe AllPatrons
                 fetchProject
             projectDonationsReceived p `shouldBe` 5000
 

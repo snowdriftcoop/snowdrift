@@ -31,8 +31,8 @@ usage = do
     exitWith (ExitFailure 2)
 
 -- Needs STRIPE_SECRET_KEY environment variable
-runPayments :: Bool -> IO ()
-runPayments teamOnly = runScript $ do
+runPayments :: WhoToCharge -> IO ()
+runPayments whoToCharge = runScript $ do
     conf <- fmap -- ExceptT String IO
         -- Stripe config just wraps one field, secretKey :: StripeKey
         (StripeConfig . StripeKey . pack) -- Pack converts from bytestring to char list (maybe)
@@ -43,15 +43,15 @@ runPayments teamOnly = runScript $ do
     scriptIO $
         runPersistKeter "SnowdriftReboot" $ -- runPersistKeter just chooses which db we use
         -- from Crowdmatch.hs
-        makePayments (stripeProduction conf) teamOnly
+        makePayments (stripeProduction conf) whoToCharge
 
 main :: IO ()
 main = do
     args <- getArgs
     (options, _) <- return (partition startsWithDashes args)
     case options of
-        "--all" : _ -> runPayments False
-        "--team-only" : _ -> runPayments True
+        "--all" : _ -> runPayments AllPatrons
+        "--team-only" : _ -> runPayments TeamOnly
         _ -> usage
 
     where
