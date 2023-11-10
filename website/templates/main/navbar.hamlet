@@ -34,4 +34,4 @@
 
 <.status-wrap>
   <a .status-flag href=@{AboutR}#status>
-    Status
+    Alpha

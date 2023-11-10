@@ -37,6 +37,7 @@ module Crowdmatch (
         -- * Data retrieval
         , fetchProject
         , fetchPatron
+        , fetchPatronPayouts
         , minimumDonation
         , patronMaxDonation
 
@@ -104,6 +105,9 @@ data Patron = Patron
         }
         deriving (Eq, Show)
 
+-- TODO: convert into patronDonations property on `Patron` type above
+type PayoutHistory = [(HistoryTime, DonationUnits, Cents)]
+
 -- | Data about a project. There's only one, Snowdrift, so this is rather
 -- simple. Returned with 'fetchProject'.
 data Project = Project
@@ -168,6 +172,18 @@ fetchPatron
     -> SqlPersistT env Patron
 fetchPatron = runMech . FetchPatronI . (^. from external)
 
+-- | Retrieve Rest of patron info
+--
+-- This should really just be merged with fetchPatron.
+-- However, it was added at a time when we had very little Haskell expertise,
+-- so the path of least resistance to minimize type errors was to add an
+-- entirely new code path, to avoid the need to change other code.
+fetchPatronPayouts
+    :: (ToCrowdmatchPatron usr, MonadIO env)
+    => usr -- ^
+    -> SqlPersistT env PayoutHistory
+fetchPatronPayouts = runMech . FetchPatronPayoutHistoryI . (^. from external)
+
 -- | Execute a crowdmatch event
 crowdmatch
     :: MonadIO env
@@ -210,6 +226,7 @@ data CrowdmatchI return where
     DeletePledgeI :: PPtr -> CrowdmatchI ()
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
+    FetchPatronPayoutHistoryI :: PPtr -> CrowdmatchI PayoutHistory
     CrowdmatchI :: Day -> CrowdmatchI ()
     MakePaymentsI :: StripeActions -> WhoToCharge -> CrowdmatchI ()
 
@@ -301,6 +318,17 @@ runMech (FetchPatronI pptr) = do
             [Asc Model.CrowdmatchHistoryDate])
     return (fromModel p hist)
 
+runMech (FetchPatronPayoutHistoryI pptr) = do
+    Entity pid _ <- upsertPatron pptr []
+    hist <- fmap (map entityVal)
+        (selectList
+            [Model.DonationHistoryPatron ==. pid]
+            [Asc Model.DonationHistoryTime])
+    return (map values hist)
+  where
+    values DonationHistory{..} =
+        (donationHistoryTime, donationHistoryAmount, donationHistoryFee)
+
 --
 -- Crowdmatch and MakePayments
 --
@@ -321,7 +349,7 @@ runMech (CrowdmatchI date) = do
 runMech (MakePaymentsI strp whoToCharge) = do
     -- get patrons who have high enough outstanding balance
     chargeable <- case whoToCharge of
-                    TeamOnly -> Skeleton.teamMembersReceivable minimumDonation
+                    TeamOnly -> Skeleton.teamMembersReceivable teamMemberMinimumDonation
                     AllPatrons -> Skeleton.patronsReceivable minimumDonation
     let donors =
             map -- over chargeable patrons
@@ -536,6 +564,10 @@ sufficientDonation d =
 -- than the long term ideal.
 minimumDonation :: DonationUnits
 minimumDonation = DonationUnits 3790
+
+-- Adroit was below the threshold and we wanted to charge him anyway
+teamMemberMinimumDonation :: DonationUnits
+teamMemberMinimumDonation = 3000
 
 -- | This is currently hardcoded.
 patronMaxDonation :: DonationUnits

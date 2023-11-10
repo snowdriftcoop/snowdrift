@@ -15,15 +15,14 @@ $nothing
 <p>
   Use of this page (and this page alone on Snowdrift.coop) is governed by
   Stripe's <a href="https://stripe.com/us/legal">terms of service</a>,
-  since this page uses their proprietary JavaScript code. We hope to
-  rectify this in the near future. :)
+  since this page uses their proprietary JavaScript code. In the upcoming
+  beta platform, this will not be an issue.
 
 <form method="post" id=#{paymentFormId} enctype=#{enctype}>
   <noscript>
     This page uses JavaScript to submit card information to Stripe. Without
     JavaScript, you cannot use this page. We're not happy about this compromise.
-    <a href="https://tree.taiga.io/project/snowdrift/issue/472">
-      We would like to change this.
+    It will change soon.
 
   $# Button is hidden until 'click' handler is installed.
   <button id=#{paymentButtonId} .hidden .bigbutton>Register a card
