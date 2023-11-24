@@ -212,6 +212,9 @@ unitTests runner = describe "unit tests" $ do
     let payTok = PaymentToken (CustomerId "dummy")
         cardTok = TokenId "pumpkin"
         aelfred = HarnessUser 1
+    now <- runIO getCurrentTime
+    let today = utctDay now
+        tomorrow = succ today
     dummyStripe <-
         runIO $ stripeDevelopment <$> newMVar (StripeDevState Nothing)
     describe "stored token" $ do
@@ -241,8 +244,6 @@ unitTests runner = describe "unit tests" $ do
             length ps `shouldBe` 1
         it "includes crowdmatch history" $ do
             let pid = 90
-            now <- liftIO getCurrentTime
-            let tomorrow = succ $ utctDay now
             p <- runner $ do
                 insert_
                     (Model.Patron
@@ -251,15 +252,13 @@ unitTests runner = describe "unit tests" $ do
                         (Just (PaymentToken (CustomerId "")))
                         0
                         (Just now))
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 fetchPatron (HarnessUser pid)
             length (patronCrowdmatches p) `shouldBe` 1
             (fst . head . patronCrowdmatches) p `shouldBe` CrowdmatchDay tomorrow
         it "includes only relevant crowdmatch history" $ do
             let thunor = 0
                 woden = 1
-            now <- liftIO getCurrentTime
-            let tomorrow = succ $ utctDay now
             runner $ for_ [thunor, woden] (\p ->
                 insert_
                     (Model.Patron
@@ -269,11 +268,11 @@ unitTests runner = describe "unit tests" $ do
                         0
                         (Just now)))
             (thunor', woden') <- runner $ do
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 deletePledge (HarnessUser woden)
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 storePledge (HarnessUser woden)
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 t <- fetchPatron (HarnessUser thunor)
                 w <- fetchPatron (HarnessUser woden)
                 return (t,w)
@@ -337,8 +336,7 @@ unitTests runner = describe "unit tests" $ do
         val `shouldBe` DonationUnits (1000 * 1000)
     describe "crowdmatch event" $ do
         now <- runIO getCurrentTime
-        let tomorrow = succ $ utctDay now
-            mkPatron i =
+        let mkPatron i =
                 void (storePaymentToken dummyStripe (HarnessUser i) cardTok)
             mkPledge i = do
                 mkPatron i
@@ -348,7 +346,7 @@ unitTests runner = describe "unit tests" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
         it "only counts patrons who have not unpledged" $ do
@@ -356,7 +354,7 @@ unitTests runner = describe "unit tests" $ do
                 mkPledge 1
                 mkPledge 2
                 deletePledge (HarnessUser 2)
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 1
         it "only counts pledges made before the crowdmatch date" $ do
@@ -365,33 +363,39 @@ unitTests runner = describe "unit tests" $ do
                 -- which cannot be *before* the current day, so it will not be
                 -- counted.
                 mkPledge 1
-                crowdmatch $ utctDay now
+                crowdmatch today now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 0
         it "looks quadratic; 3 patrons = 9 DUs" $ do -- DU = Donation Unit
             val <- runner $ do
                 mapM_ mkPledge [1..3]
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 9
         it "sums over multiple events" $ do
             val <- runner $ do
                 mkPatron 1
                 mkPledge 2
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 storePledge (HarnessUser 1)
                 -- Now 1 is also active
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 projectDonationReceivable <$> fetchProject
             val `shouldBe` DonationUnits 5
         it "creates history" $ do
             u :: [Entity Model.CrowdmatchHistory] <- runner $ do
                 mkPledge 1
-                crowdmatch tomorrow
+                crowdmatch tomorrow now
                 selectList [] []
             length u `shouldBe` 1
+    -- describe "crowdmatch event, check day varying" $ do
+    --     let mkPatron i =
+    --             void (storePaymentToken dummyStripe (HarnessUser i) cardTok)
+    --         mkPledge i = do
+    --             mkPatron i
+    --             storePledge (HarnessUser i)
+    --     pure ()
     describe "make-payments event" $ do
-        now <- runIO getCurrentTime
         it "creates history" $ do
             hs :: [Entity Model.DonationHistory] <- runner $ do
                 insert_ (modelPatronWithBalance 1 (DonationUnits 50000) now)

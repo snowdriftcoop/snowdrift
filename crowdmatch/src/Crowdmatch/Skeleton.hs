@@ -34,6 +34,14 @@ projectDonationHistory =
     total = sum_ . (^. DonationHistoryAmount)
 
 -- | Patrons actively pledged to Snowdrift since before a given time
+--
+-- Note that there is an implicit dependency on the time this query is run. This
+-- implicit time (which will soon become explicit) is the *check time*. It is
+-- the time that PatronPledgeSince is checked. If someone drops their pledge
+-- after the crowdmatch time but before the check time, they will not be
+-- considered active. To make it explicit, we need to instead look at pledge
+-- history. We want patrons that were active at both the crowdmatch time *and*
+-- the check time.
 activePatrons :: MonadIO m => UTCTime -> SqlPersistT m [Entity Patron]
 activePatrons t =
     select $

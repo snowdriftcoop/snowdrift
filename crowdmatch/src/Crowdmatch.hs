@@ -187,9 +187,21 @@ fetchPatronPayouts = runMech . FetchPatronPayoutHistoryI . (^. from external)
 -- | Execute a crowdmatch event
 crowdmatch
     :: MonadIO env
-    => Day
+    => Day  -- ^ Crowdmatch day
+    -> UTCTime -- ^ Check time
     -> SqlPersistT env ()
-crowdmatch day = runMech $ CrowdmatchI day
+crowdmatch crowd check = do
+    -- Active patrons are those who have pledged before midnight (the 0 in the
+    -- line below) of the crowdmatch day, *as witnessed at the check time*.
+    active <- Skeleton.activePatrons (UTCTime crowd 0)
+    let projectValue = fromIntegral (length active)
+    mapM_
+        (recordCrowdmatch (CrowdmatchDay crowd) (DonationUnits projectValue))
+        active
+  where
+    recordCrowdmatch day amt (Entity pid _) = do
+        insert_ (CrowdmatchHistory pid day amt)
+        void (update pid [PatronDonationPayable +=. amt])
 
 -- | Execute a payments event, sending charge commands to Stripe.
 -- This is just an external wrapper around runMech
@@ -212,6 +224,13 @@ makePayments strp whoToCharge = runMech (MakePaymentsI strp whoToCharge)
 --
 
 -- | Actions provided by the library
+--
+-- FIXME: DO NOT EXTEND
+--
+-- This indirection ended up being useless and is deprecated. Just implement
+-- actions directly. See 'crowdmatch', which is the first action implemented in
+-- the new direct manner.
+{-# DEPRECATED CrowdmatchI "Implement actions directly instead" #-}
 data CrowdmatchI return where
     StorePaymentTokenI
         :: StripeActions
@@ -227,7 +246,6 @@ data CrowdmatchI return where
     FetchProjectI :: CrowdmatchI Project
     FetchPatronI :: PPtr -> CrowdmatchI Patron
     FetchPatronPayoutHistoryI :: PPtr -> CrowdmatchI PayoutHistory
-    CrowdmatchI :: Day -> CrowdmatchI ()
     MakePaymentsI :: StripeActions -> WhoToCharge -> CrowdmatchI ()
 
 -- | Executing the actions
@@ -332,19 +350,6 @@ runMech (FetchPatronPayoutHistoryI pptr) = do
 --
 -- Crowdmatch and MakePayments
 --
-
-runMech (CrowdmatchI date) = do
-    -- Active patrons are those who have pledged before midnight (the 0 in the
-    -- line below) of the crowdmatch day
-    active <- Skeleton.activePatrons (UTCTime date 0)
-    let projectValue = fromIntegral (length active)
-    mapM_
-        (recordCrowdmatch (CrowdmatchDay date) (DonationUnits projectValue))
-        active
-  where
-    recordCrowdmatch day amt (Entity pid _) = do
-        insert_ (CrowdmatchHistory pid day amt)
-        void (update pid [PatronDonationPayable +=. amt])
 
 runMech (MakePaymentsI strp whoToCharge) = do
     -- get patrons who have high enough outstanding balance
