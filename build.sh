@@ -23,7 +23,8 @@ usage="
 "
 
 #  Figure out project root from this script's location and make it absolute:
-projRoot=$(cd $(dirname "$0"); git rev-parse --show-toplevel)
+SCRIPT_DIR=$(dirname -- "${BASH_SOURCE[0]}")
+projRoot=$(realpath -s -- "$SCRIPT_DIR")
 
 export PGDATA="$projRoot"/.postgres-work
 export PGHOST="$PGDATA"
